@@ -15,6 +15,8 @@ Develop an app to help college students with focus and productivity when studyin
  - HTML, CSS, and JS/TS
 
 ### Rough outline
+
+```text
 focuspet/
 ├── assets/              # Static assets (images, sounds, icons)
 ├── src/                 # Source code
@@ -28,5 +30,5 @@ focuspet/
 ├── package.json         # Project dependencies and scripts
 ├── tsconfig.json        # TypeScript configuration
 └── README.md            # This file
-
+```
 
