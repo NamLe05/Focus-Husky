@@ -1,5 +1,5 @@
 # Focus-Husky
-Nam le, Daniel Li, Nitya Addanki, Emily Du, Aradhna Prassad, Tony Punnacherry
+Nam Le, Daniel Li, Nitya Addanki, Emily Du, Aradhna Prassad, Tony Punnacherry
 
 ## Pomodoro Technique
 Our app builds on the Pomodoro Technique by adding playful pet animations to make focus sessions more engaging and fun. The Pomodoro Technique, developed in the late 1980s, is a time management method that breaks work into 25-minute intervals called “Pomodoros,” followed by short 5-minute breaks. After every four intervals, users take a longer break. This structured approach helps reduce mental fatigue, improve focus, and make tasks feel more manageable. By combining this method with cute virtual pet experiences, our app transforms productivity into a more rewarding and enjoyable experience for users.
