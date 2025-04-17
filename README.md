@@ -35,3 +35,6 @@ focuspet/
 └── README.md            # This file
 ```
 
+## Reports
+[Week 2](https://docs.google.com/document/d/1Bsd1egGcnewWG8jHSsGyXPu48Lx69Tji3vfa08LBwyQ/edit?usp=sharing) 
+
