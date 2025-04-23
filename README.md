@@ -36,7 +36,6 @@ focuspet/
 ```
 
 ## Weekly status report
-[Week 2](https://docs.google.com/document/d/1Bsd1egGcnewWG8jHSsGyXPu48Lx69Tji3vfa08LBwyQ/edit?usp=sharing) 
+[Week 2](https://docs.google.com/document/d/1Bsd1egGcnewWG8jHSsGyXPu48Lx69Tji3vfa08LBwyQ/edit?usp=sharing) [Week 3](https://docs.google.com/document/d/1f0t0lijOo-dq4oamzSGP2oimdpmsyRFSfkzo9aAPGZY/edit?usp=sharing)
 
-[Week 3](https://docs.google.com/document/d/1f0t0lijOo-dq4oamzSGP2oimdpmsyRFSfkzo9aAPGZY/edit?usp=sharing)
 
