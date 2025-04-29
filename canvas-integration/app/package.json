@@ -1,0 +1,42 @@
+{
+  "name": "canvas-integration",
+  "version": "1.0.0",
+  "description": "Canvas LMS integration for time management app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron --inspect .",
+    "debug": "electron --inspect-brk .",
+    "package": "electron-builder build --mac --win --linux",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["canvas", "lms", "time-management", "electron", "assignments"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "electron": "^36.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.yourcompany.canvas-integration",
+    "productName": "Canvas Time Management",
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Utility"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "protocols": {
+      "name": "canvas-time-app",
+      "schemes": ["canvas-time-app"]
+    }
+  }
+}

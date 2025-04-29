@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas Assignment Timeline</title>
+  <!-- Updated CSP to specifically allow scripts and style from self -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self';">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Canvas Assignment Timeline</h1>
+      <div id="auth-buttons">
+        <button id="logout-button" class="hidden">Logout</button>
+      </div>
+    </header>
+
+    <div id="message-container" class="hidden"></div>
+
+    <!-- Login Section -->
+    <div id="login-section" class="hidden">
+      <div class="login-form">
+        <h2>Connect to Canvas</h2>
+        <div class="instructions">
+          <p>To use this app, you need to provide your Canvas Personal Access Token.</p>
+          <ol>
+            <li>In Canvas, go to <strong>Account</strong> → <strong>Settings</strong></li>
+            <li>Scroll down to <strong>Approved Integrations</strong></li>
+            <li>Click <strong>New Access Token</strong></li>
+            <li>Enter a purpose (e.g., "Time Management App") and click <strong>Generate Token</strong></li>
+            <li>Copy the token and paste it below</li>
+          </ol>
+          <p><strong>Note:</strong> Your token grants access to your Canvas account. This app stores it locally on your computer only.</p>
+        </div>
+        
+        <form id="token-form">
+          <div class="form-group">
+            <label for="canvas-domain">Canvas URL</label>
+            <input type="url" id="canvas-domain" placeholder="https://canvas.uw.edu" required>
+          </div>
+          <div class="form-group">
+            <label for="access-token">Access Token</label>
+            <input type="text" id="access-token" placeholder="Enter your Canvas access token" required>
+          </div>
+          <button type="submit" class="button">Connect to Canvas</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- User Info Section -->
+    <div id="user-section" class="hidden">
+      <div class="user-info">
+        <h3>Connected to Canvas</h3>
+        <p id="user-name"></p>
+        <p id="canvas-url"></p>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading hidden">
+    </div>
+
+    <!-- Assignments Section -->
+    <div id="assignments-section" class="hidden">
+      <h2>Your Upcoming Assignments</h2>
+      <div id="assignments-list"></div>
+    </div>
+
+    <!-- Debug Section -->
+    <div class="debug-section">
+      <h3>Debugging Tools</h3>
+      <p>If you're having trouble seeing your assignments, these tools can help diagnose the issue:</p>
+      
+      <button id="check-courses-button" class="debug-button">Check Courses</button>
+      <button id="check-all-assignments-button" class="debug-button">Check All Assignments</button>
+      <button id="refresh-button" class="debug-button">Refresh Assignments</button>
+      
+      <div id="debug-output" class="debug-output hidden"></div>
+    </div>
+  </div>
+
+  <!-- Script reference should be at the bottom -->
+  <script src="renderer.js"></script>
+</body>
+</html>
