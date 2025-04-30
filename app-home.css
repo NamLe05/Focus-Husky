@@ -1,0 +1,902 @@
+@import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css");
+
+/* Custom font imports */
+@import url("https://fonts.googleapis.com/css2?family=ABeeZee&family=Abel&family=Poppins:wght@400;500;600&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(180, 164, 191, 1);
+  overflow: auto;
+}
+
+.page-background {
+  border-radius: 2px;
+  background-color: rgba(180, 164, 191, 1);
+  width: 100%;
+}
+
+.header-background {
+  border-radius: 50px 0px 0px 0px;
+  background-color: rgba(222, 210, 229, 1);
+  width: 100%;
+  padding: 9px 28px 60px;
+}
+
+.header-content {
+  display: flex;
+  gap: 20px;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 23%;
+}
+
+.dashboard-title {
+  display: flex;
+  margin-top: 14px;
+  align-items: start;
+  gap: 40px 50px;
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 28px;
+  color: rgba(0, 0, 0, 1);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.dashboard-icon {
+  aspect-ratio: 1.04;
+  object-fit: contain;
+  object-position: center;
+  width: 25px;
+  margin-top: 9px;
+  flex-shrink: 0;
+}
+
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 55%;
+  margin-left: 20px;
+}
+
+.search-bar {
+  border-radius: 18px;
+  background-color: rgba(239, 239, 239, 0.47);
+  padding: 17px 36px 29px;
+  font-family:
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 16px;
+  color: rgba(117, 117, 117, 1);
+  font-weight: 400;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 22%;
+  margin-left: 20px;
+}
+
+.user-profile-header {
+  display: flex;
+  margin-top: 4px;
+  flex-grow: 1;
+  align-items: start;
+  gap: 40px 82px;
+  font-weight: 400;
+  text-align: right;
+}
+
+.user-avatar-small {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 56px;
+  border-radius: 0px 0px 0px 0px;
+  flex-shrink: 0;
+}
+
+.user-info-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1;
+}
+
+.user-name-header {
+  color: rgba(0, 0, 0, 1);
+  font-size: 16px;
+  font-family:
+    "Abel",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  align-self: end;
+}
+
+.user-role {
+  color: rgba(143, 143, 143, 1);
+  font-size: 12px;
+  font-family:
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  margin-top: 18px;
+}
+
+.main-content {
+  z-index: 10;
+  margin-top: -20px;
+  width: 100%;
+  display: flex;
+  gap: 20px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 24%;
+}
+
+.sidebar-background {
+  border-radius: 2px;
+  background-color: rgba(233, 233, 233, 1);
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  padding-top: 180px;
+  padding-bottom: 20px;
+  flex-direction: column;
+  align-items: stretch;
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 18px;
+  color: rgba(0, 0, 0, 1);
+  font-weight: 400;
+  height: calc(100vh - 100px);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 24px 70px;
+  margin-top: 9px;
+  background-color: rgba(255, 255, 255, 1);
+  cursor: pointer;
+}
+
+.sidebar-item:first-child {
+  margin-top: 0;
+  border-radius: 18px;
+  background-color: rgba(0, 0, 0, 1);
+  align-self: center;
+  margin-left: 10px;
+  width: 245px;
+  max-width: 100%;
+  color: rgba(255, 255, 255, 1);
+  white-space: nowrap;
+}
+
+.sidebar-item.active {
+  background-color: rgba(0, 0, 0, 1);
+  color: rgba(255, 255, 255, 1);
+}
+
+.sidebar-icon {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 30px;
+  flex-shrink: 0;
+  margin-right: 26px;
+}
+
+.content-area {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 76%;
+  margin-left: 20px;
+  margin-top: 30px;
+  margin-bottom: auto;
+  align-self: stretch;
+}
+
+.content-top {
+  margin-left: 35px;
+  display: flex;
+  gap: 20px;
+}
+
+.date-section {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 41%;
+  margin-top: 18px;
+  color: rgba(0, 0, 0, 1);
+}
+
+.today-title {
+  font-size: 54px;
+  font-family:
+    "Poppins SemiBold",
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-weight: 600;
+  align-self: start;
+}
+
+.date-display {
+  font-size: 28px;
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-weight: 400;
+  margin-top: 6px;
+}
+
+.widgets-section {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 59%;
+  margin-left: 20px;
+}
+
+.pomodoro-card {
+  border-radius: 34px;
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0px 16px 31px rgba(0, 0, 0, 0.01);
+  padding: 39px 52px;
+  display: flex;
+  cursor: pointer;
+}
+
+.pomodoro-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 77%;
+}
+
+.pomodoro-title {
+  color: rgba(0, 0, 0, 1);
+  font-size: 28px;
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-weight: 400;
+  margin-top: auto;
+  margin-bottom: auto;
+  align-self: stretch;
+}
+
+.pomodoro-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  line-height: normal;
+  width: 23%;
+  margin-left: 20px;
+}
+
+.pomodoro-icon {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 90px;
+  border-radius: 24px;
+  flex-shrink: 0;
+}
+
+.widgets-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.activity-card,
+.tasks-card {
+  border-radius: 34px;
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0px 16px 31px rgba(0, 0, 0, 0.01);
+  padding: 20px 26px;
+  display: flex;
+  flex-direction: column;
+  color: rgba(0, 0, 0, 1);
+  width: 330px;
+  max-width: 100%;
+}
+
+.activity-title,
+.tasks-title {
+  font-size: 28px;
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-weight: 400;
+  align-self: start;
+}
+
+.activity-content,
+.tasks-content {
+  align-self: end;
+  display: flex;
+  margin-top: 35px;
+  width: 261px;
+  max-width: 100%;
+  align-items: stretch;
+  gap: 20px;
+  font-family:
+    "Poppins SemiBold",
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 44px;
+  font-weight: 600;
+  white-space: nowrap;
+  justify-content: space-between;
+}
+
+.activity-percentage,
+.tasks-count {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.activity-icon,
+.tasks-icon {
+  aspect-ratio: 1.07;
+  object-fit: contain;
+  object-position: center;
+  width: 108px;
+  border-radius: 38px;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.content-bottom {
+  margin-top: 40px;
+  width: 100%;
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.friends-card,
+.todo-card {
+  border-radius: 34px;
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0px 16px 31px rgba(0, 0, 0, 0.01);
+  flex-grow: 1;
+  width: 50%;
+}
+
+.friends-card {
+  padding: 29px 7px 30px 7px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.todo-card {
+  padding: 28px 22px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.friends-title,
+.todo-title {
+  font-size: 28px;
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-weight: 400;
+}
+
+.friends-content,
+.todo-content {
+  display: flex;
+  margin-top: 20px;
+}
+
+.friends-column,
+.todo-column {
+  display: flex;
+  flex-direction: column;
+  width: 43%;
+}
+
+.time-column {
+  display: flex;
+  flex-direction: column;
+  width: 57%;
+  margin-left: 20px;
+}
+
+.friends-label,
+.todo-label,
+.time-label {
+  color: rgba(154, 154, 154, 1);
+  font-family:
+    "Poppins Medium",
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 27px;
+  padding-left: 25px;
+}
+
+.friend-avatar {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 29px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  margin-top: 11px;
+  flex-shrink: 0;
+}
+
+.friend-name {
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 1);
+  font-weight: 400;
+}
+
+.online-indicator {
+  background-color: rgba(1, 229, 10, 1);
+  border-color: rgba(255, 255, 255, 1);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 50%;
+  align-self: center;
+  display: flex;
+  width: 6px;
+  flex-shrink: 0;
+  height: 8px;
+}
+
+.time-filters {
+  display: flex;
+  align-items: stretch;
+  gap: 29px;
+  font-family:
+    "Poppins Medium",
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 16px;
+  color: rgba(154, 154, 154, 1);
+  font-weight: 500;
+  margin-top: 59px;
+}
+
+.time-filter {
+  cursor: pointer;
+}
+
+.time-entries {
+  margin-top: 36px;
+  width: 100%;
+  padding-left: 13px;
+  font-family:
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 1);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.time-row {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  margin-top: 49px;
+}
+
+.time-row:first-child {
+  margin-top: 0;
+}
+
+.time-badge {
+  z-index: 10;
+  border-radius: 10px;
+  background-color: rgba(255, 248, 232, 1);
+  padding: 9px 20px;
+}
+
+.todo-item {
+  font-family:
+    "Poppins SemiBold",
+    "Poppins",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-weight: 600;
+  text-align: right;
+  margin-top: 45px;
+}
+
+.timer-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 33px;
+}
+
+.timer-row:first-child {
+  margin-top: 37px;
+}
+
+.progress-bar {
+  border-radius: 10px;
+  background-color: rgba(223, 223, 223, 1);
+  display: flex;
+  margin-top: auto;
+  margin-bottom: auto;
+  flex-direction: column;
+  align-items: start;
+  flex-grow: 1;
+  height: 10px;
+}
+
+.progress-fill {
+  border-radius: 10px;
+  background-color: rgba(250, 187, 24, 1);
+  display: flex;
+  flex-shrink: 0;
+  height: 3px;
+  width: 50%;
+}
+
+.edit-button {
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 1);
+  align-self: end;
+  margin-top: 34px;
+  width: 85px;
+  padding: 11px 10px 19px;
+  font-family:
+    "ABeeZee",
+    -apple-system,
+    Roboto,
+    Helvetica,
+    sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 1);
+  font-weight: 400;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Media Queries */
+@media (max-height: 800px) {
+  .sidebar-background {
+    padding-top: 100px;
+    padding-bottom: 10px;
+  }
+
+  .sidebar-item {
+    padding: 15px 70px;
+    margin-top: 5px;
+  }
+
+  .content-top {
+    margin-top: 10px;
+  }
+
+  .today-title {
+    font-size: 40px;
+  }
+
+  .date-display {
+    font-size: 22px;
+  }
+
+  .pomodoro-card,
+  .tasks-card {
+    padding: 20px;
+  }
+
+  .pomodoro-title,
+  .tasks-title,
+  .friends-title,
+  .todo-title {
+    font-size: 22px;
+  }
+
+  .content-bottom {
+    margin-top: 20px;
+  }
+
+  .friends-card,
+  .todo-card {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 991px) {
+  .page-background {
+    max-width: 100%;
+  }
+
+  .header-background {
+    max-width: 100%;
+    padding: 9px 20px 40px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0px;
+  }
+
+  .header-left,
+  .header-center,
+  .header-right {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .dashboard-title {
+    margin-top: 40px;
+    white-space: initial;
+  }
+
+  .search-bar {
+    max-width: 100%;
+    margin-top: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    white-space: initial;
+  }
+
+  .user-profile-header {
+    margin-top: 40px;
+  }
+
+  .main-content {
+    max-width: 100%;
+    margin-top: -10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0px;
+  }
+
+  .sidebar,
+  .content-area {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .sidebar-background {
+    margin-top: 14px;
+    padding-top: 120px;
+    padding-bottom: 20px;
+    height: auto;
+    min-height: 400px;
+  }
+
+  .sidebar-item {
+    padding-left: 20px;
+    padding-right: 20px;
+    white-space: initial;
+  }
+
+  .content-area {
+    max-width: 100%;
+    margin-top: 30px;
+  }
+
+  .content-top {
+    max-width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0px;
+  }
+
+  .date-section,
+  .widgets-section {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .date-section {
+    margin-top: 40px;
+  }
+
+  .today-title {
+    font-size: 40px;
+  }
+
+  .widgets-section {
+    max-width: 100%;
+    margin-top: 40px;
+  }
+
+  .pomodoro-card {
+    max-width: 100%;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .pomodoro-content,
+  .pomodoro-icon-container {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .pomodoro-title {
+    margin-top: 40px;
+  }
+
+  .pomodoro-icon {
+    margin-top: 40px;
+  }
+
+  .content-bottom {
+    max-width: 100%;
+    margin-right: 9px;
+    margin-top: 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .friends-card,
+  .todo-card {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 26px;
+  }
+
+  .friends-card {
+    padding-right: 20px;
+  }
+
+  .todo-card {
+    padding-right: 20px;
+  }
+
+  .friends-content,
+  .todo-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0px;
+  }
+
+  .friends-column,
+  .todo-column,
+  .time-column {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 40px;
+  }
+
+  .friend-item {
+    margin-left: 6px;
+  }
+
+  .time-filters {
+    margin-top: 40px;
+  }
+
+  .time-row {
+    margin-top: 40px;
+    white-space: initial;
+  }
+
+  .time-badge {
+    white-space: initial;
+  }
+
+  .todo-item {
+    margin-left: 8px;
+    margin-top: 40px;
+  }
+
+  .timer-row {
+    margin-left: 2px;
+  }
+
+  .edit-button {
+    padding-right: 20px;
+    white-space: initial;
+  }
+}

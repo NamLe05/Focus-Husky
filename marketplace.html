@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marketplace - Desktop Application</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./marketplace.css" />
+  </head>
+  <body>
+    <div class="marketplace-container">
+      <div class="category-nav">
+        <div class="category-item active" data-tab="pets">Pets</div>
+        <div class="category-item" data-tab="accessories">Accessories</div>
+        <div class="category-item" data-tab="timer">Timer</div>
+        <div class="category-item" data-tab="sounds">Sounds</div>
+        <div class="category-item" data-tab="tasks">Tasks</div>
+      </div>
+
+      <div class="tab-content">
+        <div class="tab-pane active" id="pets-tab">
+          <div class="pet-grid">
+            <div class="pet-card">
+              <div class="pet-image-container">
+                <img src="./assets/frog.jpg" alt="Frog" class="pet-image" />
+              </div>
+              <div class="pet-name">Frog</div>
+              <div class="pet-stars">
+                <img src="./assets/star.png" alt="Star" class="star-icon" />
+                <span>200</span>
+              </div>
+            </div>
+
+            <div class="pet-card">
+              <div class="pet-image-container">
+                <img src="./assets/tiger.jpg" alt="Tiger" class="pet-image" />
+              </div>
+              <div class="pet-name">Tiger</div>
+              <div class="pet-stars">
+                <img src="./assets/star.png" alt="Star" class="star-icon" />
+                <span>200</span>
+              </div>
+            </div>
+
+            <div class="pet-card">
+              <div class="pet-image-container">
+                <img src="./assets/duck.jpg" alt="Duck" class="pet-image" />
+              </div>
+              <div class="pet-name">Duck</div>
+              <div class="pet-stars">
+                <img src="./assets/star.png" alt="Star" class="star-icon" />
+                <span>200</span>
+              </div>
+            </div>
+
+            <div class="pet-card">
+              <div class="pet-image-container">
+                <img src="./assets/husky.jpg" alt="Husky" class="pet-image" />
+              </div>
+              <div class="pet-name">Husky</div>
+              <div class="pet-stars">
+                <img src="./assets/star.png" alt="Star" class="star-icon" />
+                <span>200</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="accessories-tab">
+          <div class="coming-soon">
+            <h2>Accessories Coming Soon</h2>
+            <p>This section will be available in a future update.</p>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="timer-tab">
+          <div class="coming-soon">
+            <h2>Timer Coming Soon</h2>
+            <p>This section will be available in a future update.</p>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="sounds-tab">
+          <div class="coming-soon">
+            <h2>Sounds Coming Soon</h2>
+            <p>This section will be available in a future update.</p>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="tasks-tab">
+          <div class="coming-soon">
+            <h2>Tasks Coming Soon</h2>
+            <p>This section will be available in a future update.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="star-counter">
+        <div class="star-background">
+          <svg
+            width="176"
+            height="170"
+            viewBox="0 0 176 170"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g filter="url(#filter0_d_53_21)">
+              <ellipse cx="88" cy="81" rx="84" ry="81" fill="#A593B2"></ellipse>
+              <path
+                d="M88 0.5C134.133 0.5 171.5 36.5581 171.5 81C171.5 125.442 134.133 161.5 88 161.5C41.8669 161.5 4.5 125.442 4.5 81C4.5 36.5581 41.8669 0.5 88 0.5Z"
+                stroke="#705E86"
+              ></path>
+            </g>
+            <defs>
+              <filter
+                id="filter0_d_53_21"
+                x="0"
+                y="0"
+                width="176"
+                height="170"
+                filterUnits="userSpaceOnUse"
+                color-interpolation-filters="sRGB"
+              >
+                <feFlood
+                  flood-opacity="0"
+                  result="BackgroundImageFix"
+                ></feFlood>
+                <feColorMatrix
+                  in="SourceAlpha"
+                  type="matrix"
+                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                  result="hardAlpha"
+                ></feColorMatrix>
+                <feOffset dy="4"></feOffset>
+                <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="out"></feComposite>
+                <feColorMatrix
+                  type="matrix"
+                  values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                ></feColorMatrix>
+                <feBlend
+                  mode="normal"
+                  in2="BackgroundImageFix"
+                  result="effect1_dropShadow_53_21"
+                ></feBlend>
+                <feBlend
+                  mode="normal"
+                  in="SourceGraphic"
+                  in2="effect1_dropShadow_53_21"
+                  result="shape"
+                ></feBlend>
+              </filter>
+            </defs>
+          </svg>
+        </div>
+        <img src="./assets/star-large.png" alt="Star" class="star-icon-large" />
+        <div class="total-stars">200</div>
+      </div>
+    </div>
+
+    <script src="./marketplace.js"></script>
+  </body>
+</html>

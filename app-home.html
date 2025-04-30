@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Desktop Application</title>
+    <link rel="stylesheet" href="./app-home.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="page-background">
+        <div class="header-background">
+          <div class="header-content">
+            <div class="header-left">
+              <div class="dashboard-title">
+                <img
+                  src="./assets/dashboard-icon.png"
+                  alt="Dashboard Icon"
+                  class="dashboard-icon"
+                />
+                <div>Dashboard</div>
+              </div>
+            </div>
+            <div class="header-center">
+              <div class="search-bar">Search</div>
+            </div>
+            <div class="header-right">
+              <div class="user-profile-header">
+                <img
+                  src="./assets/cat.jpg"
+                  alt="User Avatar"
+                  class="user-avatar-small"
+                />
+                <div class="user-info-header">
+                  <div class="user-name-header">User</div>
+                  <div class="user-role">UW Student</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="main-content">
+          <div class="sidebar">
+            <div class="sidebar-background">
+              <div class="sidebar-item active">Dashboard</div>
+              <div class="sidebar-item">
+                <img
+                  src="./assets/marketplace-icon.png"
+                  alt="Marketplace Icon"
+                  class="sidebar-icon"
+                />
+                <div class="sidebar-text">MarketPlace</div>
+              </div>
+              <div class="sidebar-item">
+                <img
+                  src="./assets/schedule-icon.png"
+                  alt="Schedule Icon"
+                  class="sidebar-icon"
+                />
+                <div class="sidebar-text">Schedules</div>
+              </div>
+              <div class="sidebar-item">
+                <img
+                  src="./assets/timer-icon.png"
+                  alt="Timer Icon"
+                  class="sidebar-icon"
+                />
+                <div class="sidebar-text">Pomodoro Timer</div>
+              </div>
+              <div class="sidebar-item">Settings</div>
+            </div>
+          </div>
+          <div class="content-area">
+            <div class="content-top">
+              <div class="date-section">
+                <div class="today-title">Today</div>
+                <div class="date-display">THU 4,24, 2025 | 10:00 AM</div>
+              </div>
+              <div class="widgets-section">
+                <div class="pomodoro-card">
+                  <div class="pomodoro-content">
+                    <div class="pomodoro-title">Start Pomodoro Timer</div>
+                  </div>
+                  <div class="pomodoro-icon-container">
+                    <img
+                      src="./assets/pomodoro-icon.png"
+                      alt="Pomodoro Icon"
+                      class="pomodoro-icon"
+                    />
+                  </div>
+                </div>
+                <div class="widgets-row">
+                  <div class="tasks-card">
+                    <div class="tasks-title">Tasks Completed</div>
+                    <div class="tasks-content">
+                      <div class="tasks-count">02</div>
+                      <img
+                        src="./assets/tasks-icon.png"
+                        alt="Tasks Icon"
+                        class="tasks-icon"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="content-bottom">
+              <div class="friends-card">
+                <div class="card-header">
+                  <div class="friends-title">Friends</div>
+                </div>
+                <div class="friends-content">
+                  <div class="friends-column">
+                    <div class="friends-label">Member Info</div>
+                    <div class="friend-item">
+                      <img
+                        src="./assets/friend1.png"
+                        alt="Friend 1"
+                        class="friend-avatar"
+                      />
+                      <div class="friend-name">Friend1</div>
+                    </div>
+                    <div class="online-indicator"></div>
+                    <div class="friend-item">
+                      <img
+                        src="./assets/friend2.png"
+                        alt="Friend 2"
+                        class="friend-avatar"
+                      />
+                      <div class="friend-name">Friend2</div>
+                    </div>
+                  </div>
+                  <div class="time-column">
+                    <div class="time-filters">
+                      <div class="time-filter">Today</div>
+                      <div class="time-filter">This Week</div>
+                    </div>
+                    <div class="time-entries">
+                      <div class="time-row">
+                        <div class="time-badge">00:40:00</div>
+                        <div class="time-badge">08:40:00</div>
+                      </div>
+                      <div class="time-row">
+                        <div class="time-badge">00:40:00</div>
+                        <div class="time-badge">08:40:00</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="todo-card">
+                <div class="card-header">
+                  <div class="todo-title">To Do</div>
+                </div>
+                <div class="todo-content">
+                  <div class="todo-column">
+                    <div class="todo-label">To Dos</div>
+                    <div class="todo-item">Creating Wireframe</div>
+                    <div class="todo-item">Research Development</div>
+                  </div>
+                  <div class="time-column">
+                    <div class="time-label">Time</div>
+                    <div class="timer-row">
+                      <div class="time-badge">00:40:00</div>
+                      <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                      </div>
+                    </div>
+                    <div class="timer-row">
+                      <div class="time-badge">00:20:00</div>
+                      <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                      </div>
+                    </div>
+                    <div class="edit-button">Edit</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app-home.js"></script>
+  </body>
+</html>

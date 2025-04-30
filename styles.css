@@ -1,0 +1,583 @@
+@import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css");
+
+/* Custom font import - you may need to replace this with the actual font */
+@font-face {
+  font-family: "Jersey 10";
+  src: url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+  /* Fallback to a system font if Jersey 10 is not available */
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Login Page Styles */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #b4a4bf;
+}
+
+.login-card {
+  width: 1255px;
+  height: 846px;
+  border-radius: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 66px;
+  background-color: #ded2e5;
+}
+
+.login-title {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 80px;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.login-subtitle {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 30px;
+  color: #fff;
+  margin-bottom: 50px;
+}
+
+#login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-group {
+  margin-bottom: 30px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.button-group {
+  margin-top: 20px;
+}
+
+.input-label {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 45px;
+  color: #8f7a97;
+  margin-bottom: 10px;
+  align-self: flex-start;
+  margin-left: 10px;
+}
+
+.input-field {
+  width: 451px;
+  height: 81px;
+  border-radius: 20px;
+  border: 1px solid #000;
+  background-color: #e9e9e9;
+  padding: 0 15px;
+  font-size: 24px;
+  font-family: "Jersey 10", sans-serif;
+}
+
+.login-button {
+  width: 219px;
+  height: 101px;
+  border-radius: 50px;
+  color: #ded2e5;
+  font-family: "Jersey 10", sans-serif;
+  font-size: 60px;
+  margin-top: 40px;
+  background-color: #9881a1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cat-image {
+  width: 205px;
+  height: 205px;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+}
+
+/* Validation styles */
+.input-field.error {
+  border: 2px solid #ff3860;
+  background-color: #fff0f3;
+}
+
+.input-field.success {
+  border: 2px solid #23d160;
+  background-color: #f0fff4;
+}
+
+.validation-message {
+  color: #ff3860;
+  font-size: 16px;
+  margin-top: -35px;
+  margin-bottom: 20px;
+  font-family: sans-serif;
+  display: none;
+}
+
+.validation-message.visible {
+  display: block;
+}
+
+/* Dashboard Styles */
+.dashboard-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #b4a4bf;
+}
+
+.dashboard-card {
+  width: 90%;
+  max-width: 1200px;
+  height: 85vh;
+  border-radius: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  background-color: #ded2e5;
+  overflow: hidden;
+}
+
+.dashboard-title {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 40px;
+  color: #000;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.tabs-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #9881a1;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  padding: 10px 20px;
+  font-family: "Jersey 10", sans-serif;
+  font-size: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8f7a97;
+  border-bottom: 3px solid transparent;
+  margin-right: 10px;
+}
+
+.tab-button.active {
+  color: #000;
+  border-bottom: 3px solid #9881a1;
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tab-pane {
+  display: none;
+  padding: 20px;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.tab-title {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 24px;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.tab-description {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 16px;
+  color: #8f7a97;
+  margin-bottom: 20px;
+}
+
+.planning-tools,
+.build-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.tool-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tool-card h3 {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 18px;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.tool-card p {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 14px;
+  color: #8f7a97;
+  margin-bottom: 15px;
+}
+
+.tool-button {
+  background-color: #9881a1;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-family: "Jersey 10", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+}
+
+.search-input {
+  flex: 1;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid #9881a1;
+  padding: 0 15px;
+  font-family: "Jersey 10", sans-serif;
+}
+
+.search-button {
+  background-color: #9881a1;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0 20px;
+  font-family: "Jersey 10", sans-serif;
+  cursor: pointer;
+}
+
+.search-filters {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.search-filters h3 {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 16px;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-option {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 14px;
+  color: #8f7a97;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.search-results {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  min-height: 200px;
+}
+
+.no-results {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 16px;
+  color: #8f7a97;
+  text-align: center;
+  padding: 20px;
+}
+
+.result-item {
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-item h3 {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 18px;
+  color: #000;
+  margin-bottom: 5px;
+}
+
+.result-type {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 12px;
+  color: #fff;
+  background-color: #9881a1;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-left: 10px;
+}
+
+.result-item p {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 14px;
+  color: #8f7a97;
+  margin-top: 5px;
+}
+
+.user-profile {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 16px;
+  color: #000;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: #9881a1;
+  font-family: "Jersey 10", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+/* Media Queries for Dashboard */
+@media (max-width: 768px) {
+  .dashboard-card {
+    padding: 15px;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .dashboard-title {
+    font-size: 30px;
+  }
+
+  .planning-tools,
+  .build-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .user-profile {
+    top: 15px;
+    right: 15px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .tab-button {
+    padding: 8px 15px;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+}
+
+/* Media Queries for Login */
+@media (max-width: 991px) {
+  .login-card {
+    width: 90%;
+    height: auto;
+    padding: 40px;
+  }
+
+  .login-title {
+    font-size: 60px;
+  }
+
+  .login-subtitle {
+    font-size: 24px;
+  }
+
+  .input-label {
+    font-size: 36px;
+  }
+
+  .input-field {
+    width: 80%;
+    height: 70px;
+  }
+
+  .form-group {
+    width: 100%;
+    margin-bottom: 25px;
+  }
+
+  .login-button {
+    width: 180px;
+    height: 80px;
+    font-size: 50px;
+  }
+
+  .cat-image {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-card {
+    width: 100%;
+    padding: 20px;
+    height: 100vh;
+    border-radius: 0;
+    justify-content: center;
+  }
+
+  .login-title {
+    font-size: 36px;
+    text-align: center;
+  }
+
+  .login-subtitle {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .input-label {
+    font-size: 22px;
+    align-self: flex-start;
+    margin-left: 10px;
+  }
+
+  .input-field {
+    width: 100%;
+    height: 60px;
+    font-size: 18px;
+    -webkit-appearance: none; /* Remove default iOS styling */
+    border-radius: 15px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    width: 90%;
+  }
+
+  .button-group {
+    margin-top: 10px;
+  }
+
+  .login-button {
+    width: 150px;
+    height: 60px;
+    font-size: 40px;
+  }
+
+  .cat-image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .validation-message {
+    font-size: 14px;
+    margin-top: -30px;
+    margin-bottom: 15px;
+    width: 100%;
+    text-align: left;
+    padding-left: 10px;
+  }
+}
+
+/* Small phone optimization */
+@media (max-width: 380px) {
+  .login-title {
+    font-size: 30px;
+  }
+
+  .login-subtitle {
+    font-size: 16px;
+  }
+
+  .input-label {
+    font-size: 20px;
+  }
+
+  .input-field {
+    height: 50px;
+  }
+
+  .login-button {
+    width: 130px;
+    height: 50px;
+    font-size: 30px;
+  }
+}

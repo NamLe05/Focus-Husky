@@ -1,0 +1,14 @@
+{
+  "name": "electron-testing",
+  "version": "1.0.0",
+  "description": "\"UI for Web App\"",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Aradhna",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^35.2.1"
+  }
+}

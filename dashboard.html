@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Desktop Application</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <div class="dashboard-card">
+        <h1 class="dashboard-title">Welcome to Your Workspace</h1>
+
+        <div class="tabs-container">
+          <div class="tabs">
+            <button class="tab-button active" data-tab="plan">Plan</button>
+            <button class="tab-button" data-tab="search">Search</button>
+            <button class="tab-button" data-tab="build">Build</button>
+          </div>
+
+          <div class="tab-content">
+            <div class="tab-pane active" id="plan-tab">
+              <h2 class="tab-title">Plan Your Project</h2>
+              <p class="tab-description">
+                Create and organize your project tasks, set milestones, and
+                track progress.
+              </p>
+
+              <div class="planning-tools">
+                <div class="tool-card">
+                  <h3>Project Timeline</h3>
+                  <p>Create a visual timeline for your project milestones.</p>
+                  <button class="tool-button">Create Timeline</button>
+                </div>
+
+                <div class="tool-card">
+                  <h3>Task Management</h3>
+                  <p>Organize and prioritize your project tasks.</p>
+                  <button class="tool-button">Manage Tasks</button>
+                </div>
+
+                <div class="tool-card">
+                  <h3>Resource Allocation</h3>
+                  <p>Assign resources to different parts of your project.</p>
+                  <button class="tool-button">Allocate Resources</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane" id="search-tab">
+              <h2 class="tab-title">Search Resources</h2>
+              <p class="tab-description">
+                Find the resources, components, and information you need for
+                your project.
+              </p>
+
+              <div class="search-section">
+                <div class="search-box">
+                  <input
+                    type="text"
+                    placeholder="Search for resources..."
+                    class="search-input"
+                  />
+                  <button class="search-button">Search</button>
+                </div>
+
+                <div class="search-filters">
+                  <h3>Filter By:</h3>
+                  <div class="filter-options">
+                    <label class="filter-option">
+                      <input type="checkbox" /> Components
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" /> Documentation
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" /> Templates
+                    </label>
+                    <label class="filter-option">
+                      <input type="checkbox" /> Libraries
+                    </label>
+                  </div>
+                </div>
+
+                <div class="search-results">
+                  <p class="no-results">
+                    Enter a search term to find resources
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane" id="build-tab">
+              <h2 class="tab-title">Build Your Application</h2>
+              <p class="tab-description">
+                Use our tools to build, test, and deploy your application.
+              </p>
+
+              <div class="build-tools">
+                <div class="tool-card">
+                  <h3>Component Builder</h3>
+                  <p>Create reusable components for your application.</p>
+                  <button class="tool-button">Open Builder</button>
+                </div>
+
+                <div class="tool-card">
+                  <h3>Test Environment</h3>
+                  <p>Test your application in different environments.</p>
+                  <button class="tool-button">Run Tests</button>
+                </div>
+
+                <div class="tool-card">
+                  <h3>Deployment</h3>
+                  <p>Deploy your application to production.</p>
+                  <button class="tool-button">Deploy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="user-profile">
+          <img src="./assets/cat.jpg" alt="User Avatar" class="user-avatar" />
+          <div class="user-info">
+            <p class="user-name">User Name</p>
+            <button class="logout-button">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./dashboard.js"></script>
+  </body>
+</html>
