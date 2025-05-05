@@ -18,27 +18,16 @@ export interface PetState {
   mood: PetMood;
   animation: PetAnimation;
   position: {x: number; y: number};
-  accessories: string[];
+  accessories: Set<PetAccessoryId>;
   happiness: number; // 0-100
   energy: number; // 0-100
   cleanliness: number; // 0-100
-  lastInteraction: string;
+  lastInteraction: Date;
 }
 
 export class PetModel {
-  private name: string;
   private id: PetId;
-  private species: PetSpecies;
-  private accessories: Set<PetAccessoryId>;
-
-  private mood: PetMood;
-  private animation: PetAnimation;
-  private position: {x: number; y: number};
-  private happiness: number; // 0-100
-  private energy: number; // 0-100
-  private cleanliness: number; // 0-100
-  private lastInteraction: Date;
-
+  private state: PetState;
   /**
    * Create a new pet instance with no accessories
    * @param id unique pet identifier
@@ -48,20 +37,18 @@ export class PetModel {
   public constructor(name: string, species: PetSpecies) {
     // Generate a UUID identified for the pet
     this.id = uuid();
-    // Set the pet's initial name and species
-    this.name = name;
-    this.species = species;
-    // Create an empty set of accessories
-    this.accessories = new Set();
-
-    // Initialize state with default values
-    this.mood = 'neutral';
-    this.animation = 'idle';
-    this.position = {x: 0, y: 0};
-    this.happiness = 70;
-    this.energy = 100;
-    this.cleanliness = 100;
-    this.lastInteraction = new Date();
+    this.state = {
+      name,
+      species,
+      accessories: new Set(),
+      mood: 'neutral',
+      animation: 'idle',
+      position: {x: 0, y: 0},
+      happiness: 70,
+      energy: 100,
+      cleanliness: 100,
+      lastInteraction: new Date(),
+    };
   }
 
   /**
@@ -77,7 +64,7 @@ export class PetModel {
    * @returns {string} the name of the pet
    */
   public getName(): string {
-    return this.name;
+    return this.state.name;
   }
 
   /**
@@ -85,7 +72,7 @@ export class PetModel {
    * @returns {PetSpecies} the species of the pet
    */
   public getSpecies(): PetSpecies {
-    return this.species;
+    return this.state.species;
   }
 
   /**
@@ -94,9 +81,7 @@ export class PetModel {
    */
   public getAccessories(): Set<PetAccessoryId> {
     // Returns a copy.
-    return new Set(this.accessories);
-
-    return this.accessories;
+    return new Set(this.state.accessories);
   }
 
   /**
@@ -104,7 +89,7 @@ export class PetModel {
    * @param {string} name the new name for the pet
    */
   public rename(name: string): PetState {
-    this.name = name;
+    this.state.name = name;
     return this.getState();
   }
 
@@ -113,10 +98,10 @@ export class PetModel {
    * @param {PetAccessory} accessory the unique accessory identifier
    */
   public addAccessory(accessory: PetAccessoryId): PetState {
-    if (this.accessories.has(accessory)) {
+    if (this.state.accessories.has(accessory)) {
       throw new Error('Accessory is already added to pet');
     }
-    this.accessories.add(accessory);
+    this.state.accessories.add(accessory);
 
     return this.getState();
   }
@@ -126,10 +111,10 @@ export class PetModel {
    * @param {PetAccessory} accessory the new name for the pet
    */
   public removeAccessory(accessory: PetAccessoryId): PetState {
-    if (!this.accessories.has(accessory)) {
+    if (!this.state.accessories.has(accessory)) {
       throw new Error('Pet does not have accessory');
     }
-    this.accessories.delete(accessory);
+    this.state.accessories.delete(accessory);
 
     return this.getState();
   }
@@ -139,7 +124,7 @@ export class PetModel {
    * @returns {PetMood} the current mood
    */
   public getMood(): PetMood {
-    return this.mood;
+    return this.state.mood;
   }
 
   /**
@@ -147,7 +132,7 @@ export class PetModel {
    * @returns {PetAnimation} the current animation
    */
   public getAnimation(): PetAnimation {
-    return this.animation;
+    return this.state.animation;
   }
 
   /**
@@ -155,7 +140,7 @@ export class PetModel {
    * @returns {object} x and y coordinates
    */
   public getPosition(): {x: number; y: number} {
-    return {...this.position};
+    return {...this.state.position};
   }
 
   /**
@@ -163,7 +148,7 @@ export class PetModel {
    * @returns {number} happiness level (0-100)
    */
   public getHappiness(): number {
-    return this.happiness;
+    return this.state.happiness;
   }
 
   /**
@@ -171,7 +156,7 @@ export class PetModel {
    * @returns {number} energy level (0-100)
    */
   public getEnergy(): number {
-    return this.energy;
+    return this.state.energy;
   }
 
   /**
@@ -179,7 +164,7 @@ export class PetModel {
    * @returns {number} cleanliness level (0-100)
    */
   public getCleanliness(): number {
-    return this.cleanliness;
+    return this.state.cleanliness;
   }
 
   /**
@@ -187,7 +172,7 @@ export class PetModel {
    * @returns {Date} timestamp of last interaction
    */
   public getLastInteraction(): Date {
-    return new Date(this.lastInteraction);
+    return new Date(this.state.lastInteraction);
   }
 
   /**
@@ -195,18 +180,7 @@ export class PetModel {
    * @returns {PetState} all pet state data
    */
   public getState(): PetState {
-    return {
-      name: this.name,
-      species: this.species,
-      accessories: Array.from(this.accessories),
-      mood: this.mood,
-      animation: this.animation,
-      position: {...this.position},
-      happiness: this.happiness,
-      energy: this.energy,
-      cleanliness: this.cleanliness,
-      lastInteraction: this.lastInteraction.toISOString(),
-    };
+    return this.state;
   }
 
   /**
@@ -232,7 +206,7 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public feed(): PetState {
-    this.setEnergy(this.energy + 30);
+    this.setEnergy(this.state.energy + 30);
     this.setAnimation('eating');
     this.updateLastInteraction();
     this.updateMood();
@@ -246,8 +220,8 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public play(): PetState {
-    this.setHappiness(this.happiness + 15);
-    this.setEnergy(this.energy - 10);
+    this.setHappiness(this.state.happiness + 15);
+    this.setEnergy(this.state.energy - 10);
     this.setAnimation('walking');
     this.updateLastInteraction();
     this.updateMood();
@@ -262,7 +236,7 @@ export class PetModel {
    */
   public groom(): PetState {
     this.setCleanliness(100);
-    this.setHappiness(this.happiness + 5);
+    this.setHappiness(this.state.happiness + 5);
     this.updateLastInteraction();
     this.updateMood();
 
@@ -277,7 +251,7 @@ export class PetModel {
    * @returns {PetState} updated pet state
    */
   public setPosition(x: number, y: number): PetState {
-    this.position = {x, y};
+    this.state.position = {x, y};
     return this.getState();
   }
 
@@ -285,25 +259,26 @@ export class PetModel {
    * Update the last interaction timestamp
    */
   private updateLastInteraction(): void {
-    this.lastInteraction = new Date();
+    this.state.lastInteraction = new Date();
   }
 
   /**
    * Update pet mood based on overall stats
    */
   private updateMood(): void {
-    const average = (this.happiness + this.energy + this.cleanliness) / 3;
+    const average =
+      (this.state.happiness + this.state.energy + this.state.cleanliness) / 3;
 
     if (average >= 80) {
-      this.mood = 'excited';
+      this.state.mood = 'excited';
     } else if (average >= 60) {
-      this.mood = 'happy';
+      this.state.mood = 'happy';
     } else if (average >= 40) {
-      this.mood = 'neutral';
+      this.state.mood = 'neutral';
     } else if (average >= 20) {
-      this.mood = 'tired';
+      this.state.mood = 'tired';
     } else {
-      this.mood = 'sad';
+      this.state.mood = 'sad';
     }
   }
 
@@ -312,7 +287,7 @@ export class PetModel {
    * @param animation New animation state
    */
   private setAnimation(animation: PetAnimation): void {
-    this.animation = animation;
+    this.state.animation = animation;
   }
 
   /**
@@ -320,7 +295,7 @@ export class PetModel {
    * @param {number} value new happiness value
    */
   private setHappiness(value: number): void {
-    this.happiness = Math.max(0, Math.min(100, value));
+    this.state.happiness = Math.max(0, Math.min(100, value));
   }
 
   /**
@@ -328,7 +303,7 @@ export class PetModel {
    * @param {number} value new energy value
    */
   private setEnergy(value: number): void {
-    this.energy = Math.max(0, Math.min(100, value));
+    this.state.energy = Math.max(0, Math.min(100, value));
   }
 
   /**
@@ -336,7 +311,7 @@ export class PetModel {
    * @param {number} value new cleanliness value
    */
   private setCleanliness(value: number): void {
-    this.cleanliness = Math.max(0, Math.min(100, value));
+    this.state.cleanliness = Math.max(0, Math.min(100, value));
   }
 
   /**
@@ -344,7 +319,7 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public onTaskComplete(): PetState {
-    this.setHappiness(this.happiness + 10);
+    this.setHappiness(this.state.happiness + 10);
     this.setAnimation('celebrating');
     this.updateLastInteraction();
     this.updateMood();
@@ -363,8 +338,8 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public onPomodoroComplete(): PetState {
-    this.setHappiness(this.happiness + 20);
-    this.setEnergy(this.energy - 10);
+    this.setHappiness(this.state.happiness + 20);
+    this.setEnergy(this.state.energy - 10);
     this.setAnimation('celebrating');
     this.updateLastInteraction();
     this.updateMood();
@@ -391,19 +366,22 @@ export class PetModel {
     const minutes = deltaTime / (1000 * 60);
 
     // Store initial mood for comparison
-    const initialMood = this.mood;
-    const initialAnimation = this.animation;
+    const initialMood = this.state.mood;
+    const initialAnimation = this.state.animation;
 
     // Decrease stats over time
-    this.setHappiness(this.happiness - 0.5 * minutes);
-    this.setEnergy(this.energy - 0.3 * minutes);
-    this.setCleanliness(this.cleanliness - 0.2 * minutes);
+    this.setHappiness(this.state.happiness - 0.5 * minutes);
+    this.setEnergy(this.state.energy - 0.3 * minutes);
+    this.setCleanliness(this.state.cleanliness - 0.2 * minutes);
 
     // Update mood based on new stats
     this.updateMood();
 
     // Only return state if visible changes occurred
-    if (this.mood !== initialMood || this.animation !== initialAnimation) {
+    if (
+      this.state.mood !== initialMood ||
+      this.state.animation !== initialAnimation
+    ) {
       return this.getState();
     }
 
