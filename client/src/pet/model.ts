@@ -3,6 +3,7 @@ import {v4 as uuid} from 'uuid';
 export type PetSpecies = 'husky';
 export type PetId = string;
 export type PetAccessoryId = string;
+
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'excited' | 'tired';
 export type PetAnimation = 'idle' | 'walking' | 'celebrating' | 'sleeping' | 'eating';
 
@@ -17,11 +18,13 @@ export interface PetState {
   lastInteraction: string;
 }
 
+
 export class PetModel {
   private name: string;
   private id: PetId;
   private species: PetSpecies;
   private accessories: Set<PetAccessoryId>;
+
 
   private mood: PetMood;
   private animation: PetAnimation;
@@ -37,7 +40,10 @@ export class PetModel {
    * @param name name of the pet
    * @param species species
    */
+
   public constructor(name: string, species: PetSpecies) {
+
+  public constructor(id: number, name: string, species: PetSpecies) {
     // Generate a UUID identified for the pet
     this.id = uuid();
     // Set the pet's initial name and species
@@ -45,6 +51,7 @@ export class PetModel {
     this.species = species;
     // Create an empty set of accessories
     this.accessories = new Set();
+
 
     // Initialize state with default values
     this.mood = 'neutral';
@@ -87,6 +94,8 @@ export class PetModel {
   public getAccessories(): Set<PetAccessoryId> {
     // Returns a copy.
     return new Set(this.accessories);
+=======
+    return this.accessories;
   }
 
   /**
@@ -96,6 +105,9 @@ export class PetModel {
   public rename(name: string): PetState {
     this.name = name;
     return this.getState();
+=======
+  public rename(name: string) {
+    this.name = name;
   }
 
   /**
