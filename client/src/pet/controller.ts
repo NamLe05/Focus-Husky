@@ -1,4 +1,4 @@
-import { PetModel, PetId, PetAccessoryId } from './model';
+import { PetModel, PetId, PetAccessoryId, PetState } from './model';
 
 export class PetController {
   // Collection of all pet instances managed by this controller
@@ -8,7 +8,7 @@ export class PetController {
   // When called, the PetController will pass the petId of the updated pet 
   // to this callback function, allowing the view to then retrieve the 
   // latest data for that pet and update its display accordingly.
-  private viewUpdateCallback: (petId: PetId) => void;
+  private viewUpdateCallback: (petId: PetId, state: PetState) => void;
 
   // Update interval tracking for periodic update loop runs
   private updateIntervalId: NodeJS.Timeout | null = null;
@@ -18,7 +18,7 @@ export class PetController {
     * Create a new pet controller instance
     * @param viewUpdateCallback Callback to notify view of updates
    */
-  constructor(viewUpdateCallback: (petId: PetId) => void) {
+  constructor(viewUpdateCallback: (petId: PetId, state: PetState) => void) {
     this.pets = new Map();
     this.viewUpdateCallback = viewUpdateCallback;
     this.lastUpdateTime = Date.now();
@@ -53,7 +53,7 @@ export class PetController {
     this.savePetToDatabase(petId);
     
     // Notify view
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, pet.getState());
     
     return petId;
   }
@@ -71,11 +71,11 @@ export class PetController {
     }
     
     // Update via model
-    pet.rename(newName);
+    const updatedState = pet.rename(newName);
     
     // Save and update view
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, updatedState);
   }
 
   /**
@@ -87,11 +87,11 @@ export class PetController {
     if (!pet) return;
     
     // Let model handle the feeding logic
-    pet.interact('feed');
+    const updatedState = pet.interact('feed');
     
     // Save and notify view
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, updatedState);
   }
 
   /**
@@ -103,11 +103,11 @@ export class PetController {
     if (!pet) return;
     
     // Let model handle the play logic
-    pet.interact('play');
+    const updatedState = pet.interact('play');
     
     // Save and notify view
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, updatedState);
   }
 
   /**
@@ -119,11 +119,11 @@ export class PetController {
     if (!pet) return;
     
     // Let model handle the grooming logic
-    pet.interact('groom');
+    const updatedState = pet.interact('groom');
     
     // Save and notify view
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, updatedState);
   }  
 
   /**
@@ -137,10 +137,10 @@ export class PetController {
     if (!pet) return;
     
     // Let model update position
-    pet.setPosition(x, y);
+    const updatedState = pet.setPosition(x, y);
     
     // Only update view (no need to save position to database)
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, updatedState);
   }
 
   /**
@@ -152,11 +152,11 @@ export class PetController {
     if (!pet) return;
     
     // Let model handle task completion logic
-    pet.onTaskComplete();
+    const updatedState = pet.onTaskComplete();
     
     // Save and notify view
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, updatedState);
   }
 
   /**
@@ -168,11 +168,11 @@ export class PetController {
     if (!pet) return;
     
     // Let model handle Pomodoro completion logic
-    pet.onPomodoroComplete();
+    const updatedState = pet.onPomodoroComplete();
     
     // Save and notify view
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId);
+    this.notifyViewUpdate(petId, updatedState);
   }
 
   /**
@@ -217,9 +217,9 @@ export class PetController {
   /**
    * Notify view of pet updates
    */
-  private notifyViewUpdate(petId: PetId): void {
+  private notifyViewUpdate(petId: PetId, petState: PetState): void {
     if (this.viewUpdateCallback) {
-      this.viewUpdateCallback(petId);
+      this.viewUpdateCallback(petId, petState);
     }
   }
 
@@ -234,7 +234,7 @@ export class PetController {
       // Update each pet's stats via the model
       this.pets.forEach((pet, petId) => {
         pet.updateStats(deltaTime);
-        this.notifyViewUpdate(petId);
+        this.notifyViewUpdate(petId, pet.getState());
       });
       
       this.lastUpdateTime = currentTime;
