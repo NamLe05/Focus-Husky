@@ -8,6 +8,8 @@ export type PetMood = 'happy' | 'neutral' | 'sad' | 'excited' | 'tired';
 export type PetAnimation = 'idle' | 'walking' | 'celebrating' | 'sleeping' | 'eating';
 
 export interface PetState {
+  name: string;
+  species: PetSpecies;
   mood: PetMood;
   animation: PetAnimation;
   position: { x: number; y: number };
@@ -192,6 +194,8 @@ export class PetModel {
    */
   public getState(): PetState {
     return {
+      name: this.name,
+      species: this.species,
       accessories: Array.from(this.accessories),
       mood: this.mood,
       animation: this.animation,
