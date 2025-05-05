@@ -40,10 +40,7 @@ export class PetModel {
    * @param name name of the pet
    * @param species species
    */
-
   public constructor(name: string, species: PetSpecies) {
-
-  public constructor(id: number, name: string, species: PetSpecies) {
     // Generate a UUID identified for the pet
     this.id = uuid();
     // Set the pet's initial name and species
@@ -94,7 +91,7 @@ export class PetModel {
   public getAccessories(): Set<PetAccessoryId> {
     // Returns a copy.
     return new Set(this.accessories);
-=======
+
     return this.accessories;
   }
 
@@ -105,9 +102,6 @@ export class PetModel {
   public rename(name: string): PetState {
     this.name = name;
     return this.getState();
-=======
-  public rename(name: string) {
-    this.name = name;
   }
 
   /**
