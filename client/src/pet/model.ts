@@ -5,14 +5,19 @@ export type PetId = string;
 export type PetAccessoryId = string;
 
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'excited' | 'tired';
-export type PetAnimation = 'idle' | 'walking' | 'celebrating' | 'sleeping' | 'eating';
+export type PetAnimation =
+  | 'idle'
+  | 'walking'
+  | 'celebrating'
+  | 'sleeping'
+  | 'eating';
 
 export interface PetState {
   name: string;
   species: PetSpecies;
   mood: PetMood;
   animation: PetAnimation;
-  position: { x: number; y: number };
+  position: {x: number; y: number};
   accessories: string[];
   happiness: number; // 0-100
   energy: number; // 0-100
@@ -20,17 +25,15 @@ export interface PetState {
   lastInteraction: string;
 }
 
-
 export class PetModel {
   private name: string;
   private id: PetId;
   private species: PetSpecies;
   private accessories: Set<PetAccessoryId>;
 
-
   private mood: PetMood;
   private animation: PetAnimation;
-  private position: { x: number; y: number };
+  private position: {x: number; y: number};
   private happiness: number; // 0-100
   private energy: number; // 0-100
   private cleanliness: number; // 0-100
@@ -51,11 +54,10 @@ export class PetModel {
     // Create an empty set of accessories
     this.accessories = new Set();
 
-
     // Initialize state with default values
     this.mood = 'neutral';
     this.animation = 'idle';
-    this.position = { x: 0, y: 0 };
+    this.position = {x: 0, y: 0};
     this.happiness = 70;
     this.energy = 100;
     this.cleanliness = 100;
@@ -152,8 +154,8 @@ export class PetModel {
    * Get the pet's position on screen
    * @returns {object} x and y coordinates
    */
-  public getPosition(): { x: number; y: number } {
-    return { ...this.position };
+  public getPosition(): {x: number; y: number} {
+    return {...this.position};
   }
 
   /**
@@ -199,7 +201,7 @@ export class PetModel {
       accessories: Array.from(this.accessories),
       mood: this.mood,
       animation: this.animation,
-      position: { ...this.position },
+      position: {...this.position},
       happiness: this.happiness,
       energy: this.energy,
       cleanliness: this.cleanliness,
@@ -234,7 +236,7 @@ export class PetModel {
     this.setAnimation('eating');
     this.updateLastInteraction();
     this.updateMood();
-    
+
     // Return current state for view updates
     return this.getState();
   }
@@ -249,7 +251,7 @@ export class PetModel {
     this.setAnimation('walking');
     this.updateLastInteraction();
     this.updateMood();
-    
+
     // Return current state for view updates
     return this.getState();
   }
@@ -263,7 +265,7 @@ export class PetModel {
     this.setHappiness(this.happiness + 5);
     this.updateLastInteraction();
     this.updateMood();
-    
+
     // Return current state for view updates
     return this.getState();
   }
@@ -275,7 +277,7 @@ export class PetModel {
    * @returns {PetState} updated pet state
    */
   public setPosition(x: number, y: number): PetState {
-    this.position = { x, y };
+    this.position = {x, y};
     return this.getState();
   }
 
@@ -286,12 +288,12 @@ export class PetModel {
     this.lastInteraction = new Date();
   }
 
-   /**
+  /**
    * Update pet mood based on overall stats
    */
-   private updateMood(): void {
+  private updateMood(): void {
     const average = (this.happiness + this.energy + this.cleanliness) / 3;
-    
+
     if (average >= 80) {
       this.mood = 'excited';
     } else if (average >= 60) {
@@ -337,21 +339,21 @@ export class PetModel {
     this.cleanliness = Math.max(0, Math.min(100, value));
   }
 
-   /**
+  /**
    * Handle task completion event
    * @returns Updated pet state information
    */
-   public onTaskComplete(): PetState {
+  public onTaskComplete(): PetState {
     this.setHappiness(this.happiness + 10);
     this.setAnimation('celebrating');
     this.updateLastInteraction();
     this.updateMood();
-    
+
     // Auto-reset animation after celebrating
     setTimeout(() => {
       this.setAnimation('idle');
     }, 3000);
-    
+
     // Return current state for view updates
     return this.getState();
   }
@@ -366,12 +368,12 @@ export class PetModel {
     this.setAnimation('celebrating');
     this.updateLastInteraction();
     this.updateMood();
-    
+
     // Auto-reset animation after celebrating
     setTimeout(() => {
       this.setAnimation('idle');
     }, 3000);
-    
+
     // Return current state for view updates
     return this.getState();
   }
@@ -384,27 +386,27 @@ export class PetModel {
   public updateStats(deltaTime: number): PetState | null {
     // Skip tiny updates
     if (deltaTime < 100) return null;
-    
+
     // Convert to minutes for easier calculation
     const minutes = deltaTime / (1000 * 60);
-    
+
     // Store initial mood for comparison
     const initialMood = this.mood;
     const initialAnimation = this.animation;
-    
+
     // Decrease stats over time
     this.setHappiness(this.happiness - 0.5 * minutes);
     this.setEnergy(this.energy - 0.3 * minutes);
     this.setCleanliness(this.cleanliness - 0.2 * minutes);
-    
+
     // Update mood based on new stats
     this.updateMood();
-    
+
     // Only return state if visible changes occurred
     if (this.mood !== initialMood || this.animation !== initialAnimation) {
       return this.getState();
     }
-    
+
     return null;
   }
 }

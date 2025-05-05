@@ -1,12 +1,12 @@
-import { PetModel, PetId, PetAccessoryId, PetState } from './model';
+import {PetModel, PetId, PetAccessoryId, PetState} from './model';
 
 export class PetController {
   // Collection of all pet instances managed by this controller
   private pets: Map<PetId, PetModel>;
-  
+
   // View update callback
-  // When called, the PetController will pass the petId of the updated pet 
-  // to this callback function, allowing the view to then retrieve the 
+  // When called, the PetController will pass the petId of the updated pet
+  // to this callback function, allowing the view to then retrieve the
   // latest data for that pet and update its display accordingly.
   private viewUpdateCallback: (petId: PetId, state: PetState) => void;
 
@@ -15,8 +15,8 @@ export class PetController {
   private lastUpdateTime: number;
 
   /**
-    * Create a new pet controller instance
-    * @param viewUpdateCallback Callback to notify view of updates
+   * Create a new pet controller instance
+   * @param viewUpdateCallback Callback to notify view of updates
    */
   constructor(viewUpdateCallback: (petId: PetId, state: PetState) => void) {
     this.pets = new Map();
@@ -27,7 +27,7 @@ export class PetController {
 
   /**
    * Clean up resources when controller is destroyed
-  */
+   */
   public destroy(): void {
     if (this.updateIntervalId) {
       clearInterval(this.updateIntervalId);
@@ -45,16 +45,16 @@ export class PetController {
     // Create pet using the model
     const pet = new PetModel(name, species);
     const petId = pet.getId();
-    
+
     // Store the pet
     this.pets.set(petId, pet);
-    
+
     // Save to database
     this.savePetToDatabase(petId);
-    
+
     // Notify view
     this.notifyViewUpdate(petId, pet.getState());
-    
+
     return petId;
   }
 
@@ -69,10 +69,10 @@ export class PetController {
       console.error(`Cannot rename pet: Pet with ID ${petId} not found`);
       return;
     }
-    
+
     // Update via model
     const updatedState = pet.rename(newName);
-    
+
     // Save and update view
     this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
@@ -85,10 +85,10 @@ export class PetController {
   public handleFeedPet(petId: PetId): void {
     const pet = this.getPet(petId);
     if (!pet) return;
-    
+
     // Let model handle the feeding logic
     const updatedState = pet.interact('feed');
-    
+
     // Save and notify view
     this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
@@ -101,10 +101,10 @@ export class PetController {
   public handlePlayWithPet(petId: PetId): void {
     const pet = this.getPet(petId);
     if (!pet) return;
-    
+
     // Let model handle the play logic
     const updatedState = pet.interact('play');
-    
+
     // Save and notify view
     this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
@@ -117,14 +117,14 @@ export class PetController {
   public handleGroomPet(petId: PetId): void {
     const pet = this.getPet(petId);
     if (!pet) return;
-    
+
     // Let model handle the grooming logic
     const updatedState = pet.interact('groom');
-    
+
     // Save and notify view
     this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
-  }  
+  }
 
   /**
    * Handle pet movement on screen
@@ -135,10 +135,10 @@ export class PetController {
   public handleMovePet(petId: PetId, x: number, y: number): void {
     const pet = this.getPet(petId);
     if (!pet) return;
-    
+
     // Let model update position
     const updatedState = pet.setPosition(x, y);
-    
+
     // Only update view (no need to save position to database)
     this.notifyViewUpdate(petId, updatedState);
   }
@@ -150,10 +150,10 @@ export class PetController {
   public handleTaskCompleted(petId: PetId): void {
     const pet = this.getPet(petId);
     if (!pet) return;
-    
+
     // Let model handle task completion logic
     const updatedState = pet.onTaskComplete();
-    
+
     // Save and notify view
     this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
@@ -166,10 +166,10 @@ export class PetController {
   public handlePomodoroCompleted(petId: PetId): void {
     const pet = this.getPet(petId);
     if (!pet) return;
-    
+
     // Let model handle Pomodoro completion logic
     const updatedState = pet.onPomodoroComplete();
-    
+
     // Save and notify view
     this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
@@ -195,7 +195,7 @@ export class PetController {
    */
   public loadPetsFromDatabase(): void {
     console.log('Loading pets from database...');
-    
+
     // TODO:: This SHOULD query database
     // For testing, created a mock pet
     if (this.pets.size === 0) {
@@ -209,7 +209,7 @@ export class PetController {
   private savePetToDatabase(petId: PetId): void {
     const pet = this.pets.get(petId);
     if (!pet) return;
-    
+
     console.log(`Saving pet ${petId} to database:`, pet.getState());
     // TODO: call database APIs
   }
@@ -230,15 +230,14 @@ export class PetController {
     this.updateIntervalId = setInterval(() => {
       const currentTime = Date.now();
       const deltaTime = currentTime - this.lastUpdateTime;
-      
+
       // Update each pet's stats via the model
       this.pets.forEach((pet, petId) => {
         pet.updateStats(deltaTime);
         this.notifyViewUpdate(petId, pet.getState());
       });
-      
+
       this.lastUpdateTime = currentTime;
     }, 1000);
   }
-
 }
