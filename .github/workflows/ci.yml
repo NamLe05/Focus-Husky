@@ -1,0 +1,49 @@
+name: CI Pipeline
+
+# Define when this workflow will run
+on:
+  push:
+    branches: [main] # Trigger on pushes to the main branch
+  pull_request:
+    branches: [main] # Trigger on pull requests targeting the main branch
+
+# Define the jobs that will run in this workflow
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest # Specify the runner environment
+
+    # Define the steps for this job
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*' # Use the latest LTS version of Node.js
+
+      # Install dependencies (adjust based on your package manager)
+      - name: Install dependencies
+        run: npm install # Or yarn install
+
+      # Run frontend unit tests (Vitest)
+      - name: Run Frontend Unit Tests
+        run: npm run test:frontend # Ensure you have a script in package.json
+
+      # Run backend unit tests (Jest)
+      - name: Run Backend Unit Tests
+        run: npm run test:backend # Ensure you have a script in package.json
+
+      # Run integration tests (if you have a specific script)
+      - name: Run Integration Tests
+        run: npm run test:integration # Optional: Add if you have a dedicated script
+
+      # Optional: Add steps for linting, building, etc.
+      # - name: Run linter
+      #   run: npm run lint
+
+      # - name: Build application
+      #   run: npm run build
