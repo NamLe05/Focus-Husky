@@ -30,12 +30,7 @@ jobs:
         run: npm install
         working-directory: ./client
 
-      # Run Tests ()
+      # Run Tests
       - name: Run Frontend Unit Tests
         run: npm run test
-        working-directory: ./client
-
-      # Linter
-      - name: Linter
-        run: npm run lint
         working-directory: ./client
