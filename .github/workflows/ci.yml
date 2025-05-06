@@ -11,7 +11,7 @@ on:
 jobs:
   build-and-test:
     name: Build and Test
-    runs-on: ubuntu-latest # Specify the runner environment
+    runs-on: ubuntu-latest
 
     # Define the steps for this job
     steps:
@@ -23,15 +23,19 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*' # Use the latest LTS version of Node.js
+          node-version: 'lts/*'
 
-      # Install dependencies (adjust based on your package manager)
+      # Install dependencies 
       - name: Install dependencies
-        run: npm install # Or yarn install
+        run: npm install
+        working-directory: ./client
 
-      # Run frontend unit tests (Vitest)
+      # Run Tests ()
       - name: Run Frontend Unit Tests
         run: npm run test
+        working-directory: ./client
 
+      # Linter
       - name: Linter
         run: npm run lint
+        working-directory: ./client
