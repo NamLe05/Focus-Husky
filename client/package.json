@@ -13,16 +13,35 @@
     "clean": "gts clean",
     "compile": "tsc",
     "fix": "gts fix",
-    "prepare": "npm.cmd run compile",
-    "pretest": "npm.cmd run compile",
-    "posttest": "npm.cmd run lint",
     "test": "vitest"
   },
   "keywords": [],
-  "author": {
+  "contributors": [
+  {
     "name": "Tony",
     "email": "tonytpunnacherry@gmail.com"
   },
+  {
+    "name": "Daniel Li",
+    "email": "haochl5@uw.edu"
+  },
+  {
+    "name": "Nam Le",
+    "email": "nle7147@uw.edu"
+  },
+  {
+    "name": "Aradhna J. Prasad",
+    "email": "ajp2005@uw.edu"
+  },
+  {
+    "name": "Emily Du",
+    "email": "emilydu96@gmail.com"
+  },
+  {
+    "name": "Nitya Addanki",
+    "email": "nityaadd@uw.edu"
+  }
+  ],
   "license": "MIT",
   "devDependencies": {
     "@electron-forge/cli": "^7.8.0",
