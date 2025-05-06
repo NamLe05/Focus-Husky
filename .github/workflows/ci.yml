@@ -31,19 +31,12 @@ jobs:
 
       # Run frontend unit tests (Vitest)
       - name: Run Frontend Unit Tests
-        run: npm run test:frontend # Ensure you have a script in package.json
+        run: npm run test:frontend
 
-      # Run backend unit tests (Jest)
+      # Run backend unit tests
       - name: Run Backend Unit Tests
-        run: npm run test:backend # Ensure you have a script in package.json
+        run: npm run test:backend
 
-      # Run integration tests (if you have a specific script)
+      # Run integration tests
       - name: Run Integration Tests
-        run: npm run test:integration # Optional: Add if you have a dedicated script
-
-      # Optional: Add steps for linting, building, etc.
-      # - name: Run linter
-      #   run: npm run lint
-
-      # - name: Build application
-      #   run: npm run build
+        run: npm run test:integration
