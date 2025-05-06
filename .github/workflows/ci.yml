@@ -31,12 +31,7 @@ jobs:
 
       # Run frontend unit tests (Vitest)
       - name: Run Frontend Unit Tests
-        run: npm run test:frontend
+        run: npm run test
 
-      # Run backend unit tests
-      - name: Run Backend Unit Tests
-        run: npm run test:backend
-
-      # Run integration tests
-      - name: Run Integration Tests
-        run: npm run test:integration
+      - name: Linter
+        run: npm run lint
