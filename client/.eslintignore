@@ -1,4 +1,4 @@
-build/
+dist/
 node_modules/
 .webpack/
 forge.config.ts
@@ -6,3 +6,5 @@ webpack.main.config.ts
 webpack.renderer.config.ts
 webpack.plugins.ts
 webpack.rules.ts
+src/declaration.d.ts
+vitest.config.ts

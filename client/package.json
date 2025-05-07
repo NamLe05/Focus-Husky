@@ -17,30 +17,30 @@
   },
   "keywords": [],
   "contributors": [
-  {
-    "name": "Tony",
-    "email": "tonytpunnacherry@gmail.com"
-  },
-  {
-    "name": "Daniel Li",
-    "email": "haochl5@uw.edu"
-  },
-  {
-    "name": "Nam Le",
-    "email": "nle7147@uw.edu"
-  },
-  {
-    "name": "Aradhna J. Prasad",
-    "email": "ajp2005@uw.edu"
-  },
-  {
-    "name": "Emily Du",
-    "email": "emilydu96@gmail.com"
-  },
-  {
-    "name": "Nitya Addanki",
-    "email": "nityaadd@uw.edu"
-  }
+    {
+      "name": "Tony",
+      "email": "tonytpunnacherry@gmail.com"
+    },
+    {
+      "name": "Daniel Li",
+      "email": "haochl5@uw.edu"
+    },
+    {
+      "name": "Nam Le",
+      "email": "nle7147@uw.edu"
+    },
+    {
+      "name": "Aradhna J. Prasad",
+      "email": "ajp2005@uw.edu"
+    },
+    {
+      "name": "Emily Du",
+      "email": "emilydu96@gmail.com"
+    },
+    {
+      "name": "Nitya Addanki",
+      "email": "nityaadd@uw.edu"
+    }
   ],
   "license": "MIT",
   "devDependencies": {
@@ -64,6 +64,7 @@
     "electron": "35.2.0",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
+    "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^7.3.0",
     "gts": "^6.0.2",
     "node-loader": "^2.1.0",
