@@ -28,4 +28,5 @@ export const rules: Required<ModuleOptions>['rules'] = [
       },
     },
   },
+  { test: /\.(gif|svg|jpg|png)$/, use: { loader: 'file-loader' }, }
 ];

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { PetModel, PetSpecies } from '../model';
+import {describe, it, expect} from 'vitest';
+import {PetModel, PetSpecies} from '../model';
 
 describe('PetModel', () => {
   it('should create a pet with the correct name and species', () => {
@@ -12,7 +12,7 @@ describe('PetModel', () => {
   it('should rename the pet', () => {
     const pet = new PetModel('Dubs', 'husky');
     pet.rename('Fluff');
-    
+
     expect(pet.getName()).toBe('Fluff');
   });
 
