@@ -37,4 +37,13 @@ describe('PetModel', () => {
 
     expect(pet.getMood()).not.toBe(initialMood);
   });
+
+  it('should update stats correctly based on the change in time', () => {
+    const pet = new PetModel('Dubs', 'husky');
+    // How do the stats change after a minute?
+    pet.updateStats(60000);
+    expect(pet.getHappiness()).toBe(69.5);
+    expect(pet.getEnergy()).toBe(99.7);
+    expect(pet.getCleanliness()).toBe(99.8);
+  });
 });
