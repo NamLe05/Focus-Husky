@@ -1,5 +1,6 @@
+/* eslint-disable prettier/prettier */
 import {createRoot} from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Link } from "react-router";
+import { BrowserRouter, Routes, Route, Link } from 'react-router';
 import PetView from './pet/view';
 import PomodoroView from './pomodoro/view';
 
