@@ -1,0 +1,143 @@
+@font-face {
+  font-family: 'Jersey 10';
+  src: url('../Static/fonts/Jersey10-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+
+/* BODY */
+body {
+    font-size: 22px;
+    font-family: 'Jersey 10', sans-serif;
+    font-style: normal;
+    letter-spacing: 3px;
+}
+
+
+
+/* NAVIGATION BAR  */
+.navBar {
+    display: flex;
+    justify-content: space-between;
+    width: 120px;
+    height: 40px;
+}
+
+.settings, .calendar, .notes {
+    border: none;
+    cursor: pointer;
+    display: flex;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    opacity: 1;
+    position: absolute;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    opacity: 0.35;
+    transition: opacity 0.3s ease;
+}
+
+.settings {
+    left: 30px;
+}
+
+.calendar {
+    left: 90px;
+}
+
+.notes {
+    left: 150px;
+}
+
+.settings:hover, .calendar:hover,.notes:hover {
+    opacity: 1;
+}
+
+.settings:active, .calendar:active, .notes:active {
+  transform: scale(0.9);
+}
+
+/* TIMER  */
+.timerBackground {
+    display: flex;
+    width: 200px;
+    height: 100px;
+    background-color: #DED2E5;
+    border: 3px solid #8F7A97;
+    border-radius: 15px;
+    justify-content: space-between; /* Space between the two timers evenly */
+    padding: 4px; /* Adjust padding if necessary */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+.innerBackground {
+    width: 180px;
+    height: 85px;
+    background-color: #8F7A9789;
+    border-radius: 15px;
+    margin-left: 3px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+    
+}
+
+.timerLabel {
+    margin-left: 60px;
+    margin-top: 5px;
+    color: white;
+    text-shadow: 2px 3px 4px rgba(0, 0, 0, 0.7);
+}
+
+.timerCountdown {
+    width: 150px;
+    height: 45px;
+    margin-left: 18px;
+    margin-top: 1px;
+    font-size: 60px;
+    text-align: center;
+    line-height: 75%;
+    color: white;
+    text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.6);
+}
+
+.timerButton {
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    background-color: #8F7A97;
+    color: white;
+    border-radius: 50%;
+    padding-top: 2px;
+    padding-left: 7px;
+    margin-top: 10px;
+    margin-left: 80px;
+    font-size: 18px;
+    line-height: 0px;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.6);
+    text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.4);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    opacity: 0.5;
+}
+
+.timerButton:hover {
+    opacity: 1;
+    box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+.timerButton:active {
+  transform: scale(0.9);
+}
+/* Timer Controller */
+
