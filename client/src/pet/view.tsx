@@ -61,7 +61,6 @@ export default function PetView() {
     };
   }, []);
 
-
   // Handle pet interactions
   const handleInteraction = (type: 'feed' | 'play' | 'groom') => {
     if (!controllerRef.current || !petId || interactionCooldowns[type] > 0) return;
@@ -90,6 +89,26 @@ export default function PetView() {
       ...prev,
       [type]: cooldownTime
     }));
+  };
+
+  // Handle the pet sprite being clicked
+  const handlePetClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleInteraction('play');
+  };
+  
+  // Simulate completing a Pomodoro session
+  const handleCompletePomo = () => {
+    if (controllerRef.current && petId) {
+      controllerRef.current.handlePomodoroCompleted(petId);
+    }
+  };
+  
+  // Simulate completing a task
+  const handleCompleteTask = () => {
+    if (controllerRef.current && petId) {
+      controllerRef.current.handleTaskCompleted(petId);
+    }
   };
 
   // If no pet is loaded, show a loading sign.
