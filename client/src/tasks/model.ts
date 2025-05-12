@@ -1,4 +1,7 @@
 import {v4 as uuid} from 'uuid';
+import {mapSubmissionToStatus} from './helpers';
+
+export const CANVAS_BASE_URL = 'https://canvas.uw.edu/';
 
 export type TaskId = string;
 
@@ -7,16 +10,20 @@ export type TaskStatus =
   | 'in progress'
   | 'completed'
   | 'submitted'
-  | 'graded';
+  | 'evaluated';
+
+export type TaskState = {
+  title: string;
+  description: string;
+  status: TaskStatus;
+  course: string;
+  deadline: Date;
+  link?: URL;
+};
 
 export class TaskModel {
   private id: TaskId;
-  private title: string;
-  private description: string;
-  private status: TaskStatus;
-  private course: string;
-  private deadline: Date;
-  private link?: URL;
+  private state: TaskState;
 
   public constructor(
     title: string,
@@ -24,28 +31,71 @@ export class TaskModel {
     course: string,
     deadline: Date,
     link?: URL,
+    status?: TaskStatus,
   ) {
     this.id = uuid();
-    this.title = title;
-    this.description = description;
-    this.course = course;
-    this.deadline = deadline;
-    this.link = link;
+    if (status === undefined) status = 'not started';
+    this.state = {title, description, course, deadline, link, status};
+  }
+
+  public getId(): TaskId {
+    return this.id;
+  }
+
+  public getState(): TaskState {
+    return this.state;
+  }
+
+  public setState(state: TaskState) {
+    this.state = state;
   }
 }
 
-export type CanvasTask = {
+export type CanvasPlannable = {
   id: number;
   title: string;
-  description: string;
+  created_at: string;
+  updated_at: string;
+  points_possible: number;
+  due_at: string;
+};
+
+export type CanvasTaskOverride = {
+  id: number;
+  plannable_type: string;
+  plannable_id: number;
   user_id: number;
   workflow_state: string;
-  course_id: number;
-  todo_date: string;
-  linked_object_type: string;
-  linked_object_id: number;
-  linked_object_html_url: string;
-  linked_object_url: string;
+  marked_completed: boolean;
+  dismissed: boolean;
+  deleted_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type CanvasSubmission = {
+  submitted: boolean;
+  excused: boolean;
+  graded: boolean;
+  late: boolean;
+  missing: boolean;
+  needs_grading: boolean;
+  with_feedback: boolean;
+  redo_request: boolean;
+  posted_at: string;
+};
+
+export type CanvasTask = {
+  context_type?: 'Course';
+  course_id?: number;
+  plannable_id: number;
+  planner_override: CanvasTaskOverride;
+  submissions: false | CanvasSubmission;
+  plannable_date: string;
+  plannable: CanvasPlannable;
+  html_url: string;
+  context_name: string;
+  context_image: string;
 };
 
 export class CanvasTaskModel extends TaskModel {
@@ -53,11 +103,12 @@ export class CanvasTaskModel extends TaskModel {
 
   public constructor(canvas_data: CanvasTask) {
     super(
-      canvas_data.title,
-      canvas_data.description,
+      canvas_data.plannable.title,
+      'Assignment imported from Canvas',
       canvas_data.course_id.toString(),
-      new Date(canvas_data.todo_date),
-      new URL(canvas_data.linked_object_url),
+      new Date(canvas_data.plannable_date),
+      new URL(CANVAS_BASE_URL + canvas_data.html_url),
+      mapSubmissionToStatus(canvas_data.submissions),
     );
     this.canvas_data = canvas_data;
   }
