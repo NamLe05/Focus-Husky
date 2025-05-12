@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link } from 'react-router';
 import PetView from './pet/view';
 import PomodoroView from './pomodoro/view';
+import MarketView from './rewards-store/view';
 
 const root = createRoot(document.body);
 root.render(
@@ -16,6 +17,6 @@ root.render(
   <Routes>
       <Route path="/petView" element={<PetView />} />
       <Route path="/pomodoroView" element={<PomodoroView />} />
-      {/* <Route path="/marketView" element={<MarketView />} /> */}
+      <Route path="/marketView" element={<MarketView />} />
   </Routes>
 </BrowserRouter>);
