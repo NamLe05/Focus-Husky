@@ -1,5 +1,16 @@
-//When user purhcases a pet, the points go down
-//and new pet is equipped
+/* eslint-disable prettier/prettier */
+import { RewardsStore, Pet} from './model';
 
+export class RewardsController {
+    private store: RewardsStore;
 
-//same for accessories, timer, and sounds. 
+    constructor(){
+        this.store = new RewardsStore();
+    }
+
+    getAvailablePets(): Pet[] {
+        return this.store.getListOfPets();
+    }
+    // getUserPoints(): number{
+    // }
+}
