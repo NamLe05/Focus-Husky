@@ -1,9 +1,10 @@
 /* eslint-disable prettier/prettier */
-import React from 'react';
+import React, { useState } from 'react';
 import './styles.css';
 
 
 export default function marketView() {
+     const [activeTab, setActiveTab] = useState<'pets' | 'accessories' | 'timer' | 'sounds' | 'tasks'>('pets');
   return (
     <div className="your-class">
       {<>
@@ -22,21 +23,36 @@ export default function marketView() {
   <link rel="stylesheet" href="./marketplace.css" />
   <div className="marketplace-container">
     <div className="category-nav">
-      <div className="category-item active" data-tab="pets">
-        Pets
-      </div>
-      <div className="category-item" data-tab="accessories">
-        Accessories
-      </div>
-      <div className="category-item" data-tab="timer">
-        Timer
-      </div>
-      <div className="category-item" data-tab="sounds">
-        Sounds
-      </div>
-      <div className="category-item" data-tab="tasks">
-        Tasks
-      </div>
+       <div
+              className={`category-item ${activeTab === 'pets' ? 'active' : ''}`}
+              onClick={() => setActiveTab('pets')}
+            >
+              Pets
+            </div>
+            <div
+              className={`category-item ${activeTab === 'accessories' ? 'active' : ''}`}
+              onClick={() => setActiveTab('accessories')}
+            >
+              Accessories
+            </div>
+            <div
+              className={`category-item ${activeTab === 'timer' ? 'active' : ''}`}
+              onClick={() => setActiveTab('timer')}
+            >
+              Timer
+            </div>
+            <div
+              className={`category-item ${activeTab === 'sounds' ? 'active' : ''}`}
+              onClick={() => setActiveTab('sounds')}
+            >
+              Sounds
+            </div>
+            <div
+              className={`category-item ${activeTab === 'tasks' ? 'active' : ''}`}
+              onClick={() => setActiveTab('tasks')}
+            >
+              Tasks
+            </div>
     </div>
     <div className="tab-content">
       <div className="tab-pane active" id="pets-tab">
@@ -83,7 +99,7 @@ export default function marketView() {
           </div>
         </div>
       </div>
-      <div className="tab-pane" id="accessories-tab">
+      {/* <div className="tab-pane" id="accessories-tab">
         <div className="coming-soon">
           <h2>Accessories Coming Soon</h2>
           <p>This section will be available in a future update.</p>
@@ -106,7 +122,34 @@ export default function marketView() {
           <h2>Tasks Coming Soon</h2>
           <p>This section will be available in a future update.</p>
         </div>
-      </div>
+      </div> */}
+      <div
+              className={`tab-pane ${activeTab === 'accessories' ? 'active' : ''}`}
+              id="accessories-tab"
+            >
+              <div className="coming-soon">
+                <h2>Accessories Coming Soon</h2>
+                <p>This section will be available in a future update.</p>
+              </div>
+            </div>
+            <div className={`tab-pane ${activeTab === 'timer' ? 'active' : ''}`} id="timer-tab">
+              <div className="coming-soon">
+                <h2>Timer Coming Soon</h2>
+                <p>This section will be available in a future update.</p>
+              </div>
+            </div>
+            <div className={`tab-pane ${activeTab === 'sounds' ? 'active' : ''}`} id="sounds-tab">
+              <div className="coming-soon">
+                <h2>Sounds Coming Soon</h2>
+                <p>This section will be available in a future update.</p>
+              </div>
+            </div>
+            <div className={`tab-pane ${activeTab === 'tasks' ? 'active' : ''}`} id="tasks-tab">
+              <div className="coming-soon">
+                <h2>Tasks Coming Soon</h2>
+                <p>This section will be available in a future update.</p>
+              </div>
+            </div>
     </div>
     <div className="star-counter">
       <div className="star-background">
@@ -176,3 +219,4 @@ export default function marketView() {
     </div>
   );
 }
+
