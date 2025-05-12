@@ -69,9 +69,9 @@ export class RewardsStore {
     }
 
     // checking to see if a pet purchase is successful or not
-    public purchasePet(petId: string): boolean {
+    public purchasePet(name: string): boolean {
 
-        const wantedPet = this.getPet(petId);
+        const wantedPet = this.getPet(name);
 
         if(wantedPet && wantedPet.owned === false){
             if (this.canAfford(wantedPet.price)){
@@ -80,23 +80,22 @@ export class RewardsStore {
                 return true;
             }
         }
-
         return false;
-
     }
+
 
     // gets the specific pet based on petID
     // returns exception if pet with give ID is not in list of available pets
-    public getPet(petId: string): Pet {
+    public getPet(petName: string): Pet {
 
         for (let i = 0; i < this.pets.length; i++){
 
-            if(this.pets[i].ID === petId){
+            if(this.pets[i].name === petName){
                 return this.pets[i];
             }
         }
 
-        throw new Error(`Pet with ID ${petId} not found`);
+        throw new Error(`Pet with ID ${petName} not found`);
     }
 
     // equipping pet:

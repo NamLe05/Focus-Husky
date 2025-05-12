@@ -1,16 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { RewardsStore, Pet} from './model';
 
-export class RewardsController {
-    private store: RewardsStore;
+export class PetController {
 
-    constructor(){
-        this.store = new RewardsStore();
-    }
+  private model: RewardsStore;
 
-    getAvailablePets(): Pet[] {
-        return this.store.getListOfPets();
-    }
-    // getUserPoints(): number{
-    // }
+  //if(model.purchasePet(petName: string, petCost: number)
+  
 }
+
