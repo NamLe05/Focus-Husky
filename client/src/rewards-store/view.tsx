@@ -1,9 +1,26 @@
 /* eslint-disable prettier/prettier */
-import React from 'react';
+import React, { useState } from 'react';
 import './styles.css';
-
+import {handlePetClick, store} from './controller';
+import { v4 as uuidv4 } from 'uuid';
+import HuskyImage from '../Static/Husky.png';
+import FrogImage from '../Static/Frog.png';
+import DuckImage from '../Static/Duck.png';
+import TigerImage from '../Static/Tiger.png';
+import StarImage from '../Static/Star.png';
+import {RewardsStore, Pet} from './model';
 
 export default function marketView() {
+
+  const [points, changedPoints] = useState(store.getTotalPoints());
+
+  const onPetClick = (pet: Pet) => {
+    handlePetClick(pet, () => {
+      changedPoints(store.getTotalPoints());
+    });
+  };
+
+
   return (
     <div className="your-class">
       {<>
@@ -41,43 +58,45 @@ export default function marketView() {
     <div className="tab-content">
       <div className="tab-pane active" id="pets-tab">
         <div className="pet-grid">
-          <div className="pet-card">
+          <div className="pet-card"
+            onClick={() => onPetClick({ID: uuidv4(), name: 'Frog', price: 200, owned: false})}
+            >
             <div className="pet-image-container">
-              <img src="./assets/frog.jpg" alt="Frog" className="pet-image" />
+              <img src = {FrogImage} alt="Frog" className="pet-image" />
             </div>
             <div className="pet-name">Frog</div>
             <div className="pet-stars">
-              <img src="./assets/star.png" alt="Star" className="star-icon" />
+              <img src= {StarImage} alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
           <div className="pet-card">
             <div className="pet-image-container">
-              <img src="./assets/tiger.jpg" alt="Tiger" className="pet-image" />
+              <img src= {TigerImage} alt="Tiger" className="pet-image" />
             </div>
             <div className="pet-name">Tiger</div>
             <div className="pet-stars">
-              <img src="./assets/star.png" alt="Star" className="star-icon" />
+              <img src= {StarImage} alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
           <div className="pet-card">
             <div className="pet-image-container">
-              <img src="./assets/duck.jpg" alt="Duck" className="pet-image" />
+              <img src= {DuckImage} alt="Duck" className="pet-image" />
             </div>
             <div className="pet-name">Duck</div>
             <div className="pet-stars">
-              <img src="./assets/star.png" alt="Star" className="star-icon" />
+              <img src= {StarImage} alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
           <div className="pet-card">
             <div className="pet-image-container">
-              <img src="./assets/husky.jpg" alt="Husky" className="pet-image" />
+              <img src= {HuskyImage} alt="Husky" className="pet-image" />
             </div>
             <div className="pet-name">Husky</div>
             <div className="pet-stars">
-              <img src="./assets/star.png" alt="Star" className="star-icon" />
+              <img src= {StarImage} alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
@@ -164,11 +183,11 @@ export default function marketView() {
         </svg>
       </div>
       <img
-        src="./assets/star-large.png"
+        src= {StarImage}
         alt="Star"
         className="star-icon-large"
       />
-      <div className="total-stars">200</div>
+      <div className="total-stars">{points}</div>
     </div>
   </div>
 </>

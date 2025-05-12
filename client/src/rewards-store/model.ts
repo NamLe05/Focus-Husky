@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 //all the pets:
 
+
+
 export interface Pet {
     ID: string,
     name: string,
@@ -17,6 +19,7 @@ export interface equippedItems {
 }
 
 export class RewardsStore {
+
     private pets: Pet[] = [];
     private points: number;
     private equipped: equippedItems;
@@ -69,7 +72,7 @@ export class RewardsStore {
     }
 
     // checking to see if a pet purchase is successful or not
-    public purchasePet(name: string): boolean {
+    public purchasePet(name: string): void {
 
         const wantedPet = this.getPet(name);
 
@@ -77,29 +80,30 @@ export class RewardsStore {
             if (this.canAfford(wantedPet.price)){
                 wantedPet.owned = true;
                 this.points -= wantedPet.price;
-                return true;
+                //return true;
             }
         }
-        return false;
+        //return false;
     }
 
 
-    // gets the specific pet based on petID
-    // returns exception if pet with give ID is not in list of available pets
-    public getPet(petName: string): Pet {
+    // gets the specific pet based on pet name
+    // returns exception if pet with give name is not in list of available pets
+    public getPet(petID: string): Pet {
 
         for (let i = 0; i < this.pets.length; i++){
 
-            if(this.pets[i].name === petName){
+            if(this.pets[i].ID === petID){
                 return this.pets[i];
             }
         }
 
-        throw new Error(`Pet with ID ${petName} not found`);
+        throw new Error(`Pet with name ${petID} not found`);
     }
 
     // equipping pet:
     public equipPet(petID: string): boolean {
+
         const pet = this.getPet(petID);
 
         if(pet && pet.owned){
