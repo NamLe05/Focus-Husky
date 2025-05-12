@@ -54,6 +54,10 @@ export class RewardsStore {
         return this.points;
     }
 
+    public getOwnedPets() {
+        return this.pets.filter(pet => pet.owned);
+    }
+
     // checks if user has enough points to spend on an item
     public canAfford(amount: number): boolean {
         if (amount > this.points){
@@ -108,23 +112,36 @@ export class RewardsStore {
         }
         return false;
     }
+    //updates the users new points
+    public updatePoints(newPoints: number): void {
+        this.points = newPoints;
+    }
 }
 
 
+
+const store = new RewardsStore();
 //get all the pets:
+store.getListOfPets();
 
 
 
 //get the available pets for purchase:
 
-
+store.getListOfPets();
 
 //get the users' points
+store.getTotalPoints();
 
 
 //check if the pet can be purchased eg. if they have
 //enough points to purchase
-
+const pet = store.getPet('Tiger');
+    if (store.canAfford(pet.price)) {
+        console.log('You can afford this pet');
+    } else {
+        console.log('Not enough points');
+    }
 
 
 //purchase pet
@@ -136,5 +153,6 @@ export class RewardsStore {
 
 
 //get owned pets.
+store.getOwnedPets();
 
 
