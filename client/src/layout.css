@@ -23,17 +23,35 @@
 }
 
 .sidebar nav ul li {
-  margin: 10px 0;
+  margin: 5px 5px;
 }
 
 .sidebar nav ul li a {
   color: black;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 22px;
 }
 
 .sidebar nav ul li a:hover {
   color: #dcaeee;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  color: inherit;
+}
+
+.sidebar-link:hover {
+  background-color: #eaeaea;
+  border-radius: 4px;
+}
+
+.icon {
+  object-fit: contain;
+  vertical-align: middle;
 }
 
 /* Main content styles */

@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// import starImg from '../Static/star.png';
+import starImg from './Static/star.png';
+import timerImg from './Static/Time-schedule.png';
+import calendarImg from './Static/Calendar.png';
+import homeImg from './Static/Home.png';
 
 const Sidebar: React.FC = () => {
   return (
@@ -8,19 +11,28 @@ const Sidebar: React.FC = () => {
       <nav>
         <ul>
           <li>
-            <Link to="/view">Dashboard</Link>
+            <Link to="/view">
+            <img src={homeImg} width="40" />
+            Dashboard
+            </Link>
           </li>
           <li>
             <Link to="/marketView">
-            {/* <img src="starImg" alt="Marketplace" /> */}
+            <img src={starImg} width="50" />
             Marketplace
             </Link>
           </li>
           <li>
-            <Link to="/pomodoroView">Pomodoro Timer</Link>
+            <Link to="/pomodoroView">
+            <img src={timerImg} width="40" />
+            Pomodoro Timer
+            </Link>
           </li>
           <li>
-            <Link to="/taskView">Schedule</Link>
+            <Link to="/taskView">
+            <img src={calendarImg} width="35" />
+            Schedule
+            </Link>
           </li>
         </ul>
       </nav>
