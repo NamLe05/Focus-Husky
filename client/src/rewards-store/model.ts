@@ -140,12 +140,12 @@ store.getTotalPoints();
 
 //check if the pet can be purchased eg. if they have
 //enough points to purchase
-const pet = store.getPet('Tiger');
-    if (store.canAfford(pet.price)) {
-        console.log('You can afford this pet');
-    } else {
-        console.log('Not enough points');
-    }
+// const pet = store.getPet('Tiger');
+//     if (store.canAfford(pet.price)) {
+//         console.log('You can afford this pet');
+//     } else {
+//         console.log('Not enough points');
+//     }
 
 
 //purchase pet
