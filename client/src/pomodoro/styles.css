@@ -33,7 +33,6 @@ body {
     opacity: 1;
     position: absolute;
     overflow: hidden;
-    background-color: #8F7A97;
 }
 
 
@@ -41,7 +40,7 @@ body {
     display: flex;
     width: 200px;
     height: 200px;
-    margin-left: 120px;
+    margin-left: 100px;
     margin-top: -50px;
 }
 

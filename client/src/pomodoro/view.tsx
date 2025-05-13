@@ -14,16 +14,16 @@ export default function PomodoroView() {
   const [timerState, setTimerState] = useState<boolean>(false);
   const [pomodoroState, setPomodoroState] = useState<PomodoroState>({
     state: 'focus',
-    focusTime: 60,
-    breakTime: 60,
-    remainingTime: 60,
+    focusTime: 2,
+    breakTime: 2,
+    remainingTime: 2,
   });
 
   const controllerRef = useRef<PomodoroController | null>(null);
 
   useEffect(() => {
     // Only create the controller once
-    controllerRef.current = new PomodoroController(60, 60, (state, pomodoroState) => {
+    controllerRef.current = new PomodoroController(2, 2, (state, pomodoroState) => {
       setTimerState(state);
       setPomodoroState({ ...pomodoroState });
     });
