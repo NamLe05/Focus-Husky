@@ -20,6 +20,7 @@ const config: ForgeConfig = {
   plugins: [
     new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
+      devContentSecurityPolicy: "",
       mainConfig,
       renderer: {
         config: rendererConfig,
