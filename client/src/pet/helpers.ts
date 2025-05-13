@@ -16,7 +16,7 @@ export function getPetSpritePath(
   mood: PetMood,
   animation: PetAnimation
 ): string {
-  return `/assets/pets/${species}/${mood}_${animation}.png`;
+  return `../Static/pets/${species}/${mood}_${animation}.png`;
 }
 
 /**
@@ -25,7 +25,7 @@ export function getPetSpritePath(
  * @returns Path to the accessory sprite
  */
 export function getAccessorySpritePath(accessoryId: string): string {
-    return `/assets/accessories/${accessoryId}.png`;
+    return `../Static/accessories/${accessoryId}.png`;
 }
 
 
