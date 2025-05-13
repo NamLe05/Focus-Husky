@@ -1,47 +1,9 @@
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react';
 import './styles.css';
-import {handlePetClick, store} from './controller';
-import { v4 as uuidv4 } from 'uuid';
-import HuskyImage from '../Static/Husky.png';
-import FrogImage from '../Static/Frog.png';
-import DuckImage from '../Static/Duck.png';
-import TigerImage from '../Static/Tiger.png';
-import StarImage from '../Static/Star.png';
-import {RewardsStore, Pet} from './model';
-
-export default function MarketView() {
-
-  const [points, setPoints] = useState(store.getTotalPoints());
-  const [selectedPet, setSelectedPet] = useState<Pet|null>(null);
-  const [popUpMessage, setPopUpMessage] = useState<string |null>(null);
-
-  const onPetClick = (pet: Pet) => {
-
-    const pointsBefore = store.getTotalPoints();
-
-    if(pet.owned) {
-      console.log('ALREADY OWNED');
-      setPopUpMessage(`${pet.name} is already owned!`)
-      return;
-    }
-
-    if(pointsBefore < pet.price){
-      console.log('NOT ENOUGH POINTS');
-      setPopUpMessage(`Sorry, you don't have enough points for ${pet.name}.`);
-      return;
-    }
-
-    handlePetClick(pet);
-    const updatedPoints = store.getTotalPoints();
-    setPoints(updatedPoints);
-    setSelectedPet(pet);
-
-    console.log('PURCHASED');
-    setPopUpMessage(`Congrats! You successfully purchased ${pet.name}!`);
-  };
 
 
+export default function marketView() {
   return (
     <div className="your-class">
       {<>
@@ -79,68 +41,47 @@ export default function MarketView() {
     <div className="tab-content">
       <div className="tab-pane active" id="pets-tab">
         <div className="pet-grid">
-          <div className="pet-card"
-            onClick={() => onPetClick({ID: uuidv4(), name: 'Frog', price: 200, owned: false})}
-            >
+          <div className="pet-card">
             <div className="pet-image-container">
-              <img src = {FrogImage} alt="Frog" className="pet-image" />
+              <img src="./assets/frog.jpg" alt="Frog" className="pet-image" />
             </div>
             <div className="pet-name">Frog</div>
             <div className="pet-stars">
-              <img src= {StarImage} alt="Star" className="star-icon" />
+              <img src="./assets/star.png" alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
-          <div className="pet-card"
-          onClick={() => onPetClick({ID: uuidv4(), name: 'Tiger', price: 200, owned: false})}
-            >
+          <div className="pet-card">
             <div className="pet-image-container">
-              <img src= {TigerImage} alt="Tiger" className="pet-image" />
+              <img src="./assets/tiger.jpg" alt="Tiger" className="pet-image" />
             </div>
             <div className="pet-name">Tiger</div>
             <div className="pet-stars">
-              <img src= {StarImage} alt="Star" className="star-icon" />
+              <img src="./assets/star.png" alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
-          <div className="pet-card"
-          onClick={() => onPetClick({ID: uuidv4(), name: 'Duck', price: 200, owned: false})}
-            >
+          <div className="pet-card">
             <div className="pet-image-container">
-              <img src= {DuckImage} alt="Duck" className="pet-image" />
+              <img src="./assets/duck.jpg" alt="Duck" className="pet-image" />
             </div>
             <div className="pet-name">Duck</div>
             <div className="pet-stars">
-              <img src= {StarImage} alt="Star" className="star-icon" />
+              <img src="./assets/star.png" alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
-          <div className="pet-card"
-          onClick={() => onPetClick({ID: uuidv4(), name: 'Husky', price: 200, owned: true})}
-            >
+          <div className="pet-card">
             <div className="pet-image-container">
-              <img src= {HuskyImage} alt="Husky" className="pet-image" />
+              <img src="./assets/husky.jpg" alt="Husky" className="pet-image" />
             </div>
             <div className="pet-name">Husky</div>
             <div className="pet-stars">
-              <img src= {StarImage} alt="Star" className="star-icon" />
+              <img src="./assets/star.png" alt="Star" className="star-icon" />
               <span>200</span>
             </div>
           </div>
         </div>
-
-        {/*MODAL FOR POPUP HERE*/}
-        {popUpMessage && (
-          <div className = "modal-overlay">
-            <div className = "modal">
-              <p>
-               {popUpMessage}
-              </p>
-              <button
-                onClick ={() => setPopUpMessage(null)}>Close</button>
-            </div>
-          </div>
-        )}
       </div>
       <div className="tab-pane" id="accessories-tab">
         <div className="coming-soon">
@@ -223,11 +164,11 @@ export default function MarketView() {
         </svg>
       </div>
       <img
-        src= {StarImage}
+        src="./assets/star-large.png"
         alt="Star"
         className="star-icon-large"
       />
-      <div className="total-stars">{points}</div>
+      <div className="total-stars">200</div>
     </div>
   </div>
 </>
