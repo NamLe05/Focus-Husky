@@ -45,8 +45,8 @@ export class PetModel {
       animation: 'idle',
       position: {x: 0, y: 0},
       happiness: 70,
-      energy: 100,
-      cleanliness: 100,
+      energy: 60,
+      cleanliness: 50,
       lastInteraction: new Date(),
     };
   }
@@ -206,7 +206,7 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public feed(): PetState {
-    this.setEnergy(this.state.energy + 30);
+    this.setEnergy(this.state.energy + 80);
     this.setAnimation('eating');
     this.updateLastInteraction();
     this.updateMood();
@@ -225,7 +225,7 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public play(): PetState {
-    this.setHappiness(this.state.happiness + 15);
+    this.setHappiness(this.state.happiness + 25);
     this.setEnergy(this.state.energy - 10);
     this.setAnimation('walking');
     this.updateLastInteraction();
@@ -245,8 +245,8 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public groom(): PetState {
-    this.setCleanliness(100);
-    this.setHappiness(this.state.happiness + 5);
+    this.setCleanliness(this.state.cleanliness + 10);
+    this.setHappiness(this.state.happiness + 10);
     this.updateLastInteraction();
     this.updateMood();
 
@@ -385,9 +385,9 @@ export class PetModel {
     const initialAnimation = this.state.animation;
 
     // Decrease stats over time
-    this.setHappiness(this.state.happiness - 2.5 * minutes);
-    this.setEnergy(this.state.energy - 1.5 * minutes);
-    this.setCleanliness(this.state.cleanliness - 1.0 * minutes);
+    this.setHappiness(this.state.happiness - 10 * minutes);
+    this.setEnergy(this.state.energy - 5 * minutes);
+    this.setCleanliness(this.state.cleanliness - 2.5 * minutes);
 
     // Update mood based on new stats
     this.updateMood();

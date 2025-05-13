@@ -85,6 +85,7 @@ timestamp: number;
 }
 
 // Sound effects
+// Currently set to only printing message because audio not recognized
 const SOUND_EFFECTS = {
   feed: { play: () => console.log('Feed sound played') },
   play: { play: () => console.log('Play sound played') },
