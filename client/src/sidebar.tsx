@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+// import starImg from '../Static/star.png';
 
 const Sidebar: React.FC = () => {
   return (
@@ -10,7 +11,10 @@ const Sidebar: React.FC = () => {
             <Link to="/view">Dashboard</Link>
           </li>
           <li>
-            <Link to="/marketView">Marketplace</Link>
+            <Link to="/marketView">
+            {/* <img src="starImg" alt="Marketplace" /> */}
+            Marketplace
+            </Link>
           </li>
           <li>
             <Link to="/pomodoroView">Pomodoro Timer</Link>
