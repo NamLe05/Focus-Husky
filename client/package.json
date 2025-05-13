@@ -92,6 +92,9 @@
     "react-router-dom": "^7.6.0",
     "uuid": "^11.1.0"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
+  },
   "files": [
     "build"
   ]
