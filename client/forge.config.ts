@@ -28,9 +28,13 @@ const config: ForgeConfig = {
             html: './src/index.html',
             js: './src/renderer.ts',
             name: 'main_window',
-            preload: {
-              js: './src/preload.ts',
-            },
+            preload: {js: './src/preload.ts'}
+          },
+          {
+            html: './src/pomodoro/indexPomodoro.html',  
+            js: './src/pomodoro/rendererPomodoro.tsx',  
+            name: 'pomodoro_window',
+            preload: {js: './src/pomodoro/preloadPomodoro.ts'}
           },
         ],
       },

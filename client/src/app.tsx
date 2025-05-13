@@ -1,10 +1,30 @@
+import { createRoot } from 'react-dom/client';
+import PetView from './pet/view';
 
-import {createRoot} from 'react-dom/client';
+const App = () => {
+  const handleOpenPomodoro = () => {
+    window.electronAPI?.openPomodoroWindow();
+  };
+
+  return (
+    <div>
+      <PetView />
+      <button onClick={handleOpenPomodoro}>Open Pomodoro</button>
+    </div>
+  );
+};
+
+const root = createRoot(document.body);
+root.render(<App />);
+
+
+
+/*import {createRoot} from 'react-dom/client';
 
 import PetView from './pet/view';
 import PomodoroView from './pomodoro/view'
 const root = createRoot(document.body);
-root.render(<PomodoroView />);
+root.render(<PomodoroView />);*/
 
 
 
