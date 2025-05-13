@@ -1,4 +1,4 @@
-import { PetModel, PetSpecies, PetMood, PetAnimation } from './model';
+import {PetModel, PetSpecies, PetMood, PetAnimation} from './model';
 
 /**
  * Helper functions for pet engine
@@ -14,10 +14,9 @@ import { PetModel, PetSpecies, PetMood, PetAnimation } from './model';
 export function getPetSpritePath(
   species: PetSpecies,
   mood: PetMood,
-  animation: PetAnimation
+  animation: PetAnimation,
 ): string {
   return `../Static/pets/${mood}_${animation}.png`;
-
 }
 
 /**
@@ -26,9 +25,8 @@ export function getPetSpritePath(
  * @returns Path to the accessory sprite
  */
 export function getAccessorySpritePath(accessoryId: string): string {
-    return `../Static/accessories/${accessoryId}.png`;
+  return `../Static/accessories/${accessoryId}.png`;
 }
-
 
 /**
  * Get position constraints based on screen size
@@ -36,15 +34,14 @@ export function getAccessorySpritePath(accessoryId: string): string {
  * @param screenHeight Current screen height
  * @returns Object containing min/max x/y coordinates
  */
-export function getPositionConstraints(screenWidth: number, screenHeight: number) {
-    return {
-      minX: 50,
-      maxX: screenWidth - 100,
-      minY: 50,
-      maxY: screenHeight - 100
-    };
+export function getPositionConstraints(
+  screenWidth: number,
+  screenHeight: number,
+) {
+  return {
+    minX: 50,
+    maxX: screenWidth - 100,
+    minY: 50,
+    maxY: screenHeight - 100,
+  };
 }
-  
-
-
-
