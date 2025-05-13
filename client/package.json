@@ -83,11 +83,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-<<<<<<< HEAD
-    "react-router-dom": "^7.6.0",
-=======
     "react-router": "^7.6.0",
->>>>>>> 587093cf2259a57d2dac953e485003f6d5bc201e
     "uuid": "^11.1.0"
   },
   "files": [
