@@ -6,21 +6,24 @@ import { PomodoroState } from "./model";
 import settingImg from '../Static/settings.png';
 import calendarImg from '../Static/calendar.png';
 import notesImg from '../Static/notes.png';
+import petImg from '../Static/pet.png';
+
+
 
 export default function PomodoroView() {
   const [timerState, setTimerState] = useState<boolean>(false);
   const [pomodoroState, setPomodoroState] = useState<PomodoroState>({
     state: 'focus',
-    focusTime: 2,
-    breakTime: 2,
-    remainingTime: 2,
+    focusTime: 60,
+    breakTime: 60,
+    remainingTime: 60,
   });
 
   const controllerRef = useRef<PomodoroController | null>(null);
 
   useEffect(() => {
     // Only create the controller once
-    controllerRef.current = new PomodoroController(2, 2, (state, pomodoroState) => {
+    controllerRef.current = new PomodoroController(60, 60, (state, pomodoroState) => {
       setTimerState(state);
       setPomodoroState({ ...pomodoroState });
     });
@@ -36,27 +39,33 @@ export default function PomodoroView() {
     const secs = seconds % 60;
   return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
+  console.log('petImg URL:', petImg);
   return (
     <>
-      <div className="navBar">
-        <button className="settings" style={{ backgroundImage: `url(${settingImg})` }}></button>
-        <button className="calendar" style={{ backgroundImage: `url(${calendarImg})` }}></button>
-        <button className="notes" style={{ backgroundImage: `url(${notesImg})` }}></button>
-      </div>
+    <div className="root">
+      <div className="petModel" style={{ backgroundImage: `url(${petImg})` }}></div>
 
-      <div className="timerBackground">
-        <div className="innerBackground" style={{ 
-          backgroundColor: pomodoroState.state == 'focus' ? '#8F7A97' : '#8F7A9789'}}>
-            
-          <div className="timerLabel">{pomodoroState.state == 'focus' ? 'Focus' : 'Break'}</div>
-          <div className="timerCountdown">{formatTime(pomodoroState.remainingTime)}</div>
+      <div className="pomodoroTimerRoot">
+        <div className="navBar">
+          <button className="settings" style={{ backgroundImage: `url(${settingImg})` }}></button>
+          <button className="calendar" style={{ backgroundImage: `url(${calendarImg})` }}></button>
+          <button className="notes" style={{ backgroundImage: `url(${notesImg})` }}></button>
         </div>
-      </div>
 
-      <button className="timerButton" onClick={handleStartStop}>
-        {timerState ? "◼" : "▶"}
-      </button>
+        <div className="timerBackground">
+          <div className="innerBackground" style={{ 
+            backgroundColor: pomodoroState.state == 'focus' ? '#8F7A97' : '#8F7A9789'}}>
+              
+            <div className="timerLabel">{pomodoroState.state == 'focus' ? 'Focus' : 'Break'}</div>
+            <div className="timerCountdown">{formatTime(pomodoroState.remainingTime)}</div>
+          </div>
+        </div>
+
+        <button className="timerButton" onClick={handleStartStop}>
+          {timerState ? "◼" : "▶"}
+        </button>
+      </div>
+    </div>
     </>
   );
 }

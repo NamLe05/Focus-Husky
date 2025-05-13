@@ -18,14 +18,39 @@ body {
     letter-spacing: 3px;
 }
 
+.root {
+    display:flex;
+    margin-top: 50px;
+    -webkit-app-region: drag;
+}
 
+.petModel {
+    width: 100px;
+    height: 100px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    opacity: 1;
+    position: absolute;
+    overflow: hidden;
+    background-color: #8F7A97;
+}
+
+
+.pomodoroTimerRoot {
+    display: flex;
+    width: 200px;
+    height: 200px;
+    margin-left: 120px;
+    margin-top: -50px;
+}
 
 /* NAVIGATION BAR  */
 .navBar {
     display: flex;
-    justify-content: space-between;
     width: 120px;
     height: 40px;
+    margin-top: 10px;
 }
 
 .settings, .calendar, .notes {
@@ -39,7 +64,6 @@ body {
     background-position: center center;
     background-size: cover;
     opacity: 1;
-    position: absolute;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
     opacity: 0.35;
@@ -47,15 +71,15 @@ body {
 }
 
 .settings {
-    left: 30px;
+    left: 20px;
 }
 
 .calendar {
-    left: 90px;
+    left: 50px;
 }
 
 .notes {
-    left: 150px;
+    left: 80px;
 }
 
 .settings:hover, .calendar:hover,.notes:hover {
@@ -71,6 +95,8 @@ body {
     display: flex;
     width: 200px;
     height: 100px;
+    position: absolute;
+    margin-top: 50px;
     background-color: #DED2E5;
     border: 3px solid #8F7A97;
     border-radius: 15px;
@@ -114,6 +140,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: absolute;
     width: 35px;
     height: 35px;
     background-color: #8F7A97;
@@ -121,7 +148,7 @@ body {
     border-radius: 50%;
     padding-top: 2px;
     padding-left: 7px;
-    margin-top: 10px;
+    margin-top: 165px;
     margin-left: 80px;
     font-size: 18px;
     line-height: 0px;
@@ -129,6 +156,7 @@ body {
     text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.4);
     transition: background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
     opacity: 0.5;
+    -webkit-app-region: no-drag;
 }
 
 .timerButton:hover {
