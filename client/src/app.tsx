@@ -57,6 +57,12 @@ const routes: {[path: string]: Route} = {
     navText: 'Pomodoro Sessions',
     navIcon: 'stopwatch-fill',
   },
+  '/marketView': {
+    component: MarketView,
+    title: 'Market Place',
+    navText: 'Market Place',
+    navIcon: 'bi bi-star-fill',
+  },
 };
 
 function App() {
