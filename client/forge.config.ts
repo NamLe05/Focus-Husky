@@ -20,7 +20,7 @@ const config: ForgeConfig = {
   plugins: [
     new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
-      devContentSecurityPolicy: "",
+      devContentSecurityPolicy: "style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;",
       mainConfig,
       renderer: {
         config: rendererConfig,
