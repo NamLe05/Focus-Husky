@@ -16,7 +16,8 @@ export function getPetSpritePath(
   mood: PetMood,
   animation: PetAnimation
 ): string {
-  return `../Static/pets/${species}/${mood}_${animation}.png`;
+  return `../Static/pets/${mood}_${animation}.png`;
+
 }
 
 /**

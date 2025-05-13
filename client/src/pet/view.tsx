@@ -5,6 +5,79 @@ import {PetController} from './controller';
 import {PetId, PetState} from './model';
 import { getPetSpritePath, getAccessorySpritePath} from './helpers';
 
+// FIXED: Import all the sprite images directly
+import huskyNeutralIdle from '../Static/pets/neutral_idle.png';
+import huskyHappyIdle from '../Static/pets/happy_idle.png';
+import huskySadIdle from '../Static/pets/sad_idle.png';
+import huskyExcitedIdle from '../Static/pets/excited_idle.png';
+import huskyTiredIdle from '../Static/pets/tired_idle.png';
+
+import huskyNeutralWalking from '../Static/pets/neutral_walking.png';
+import huskyHappyWalking from '../Static/pets/happy_walking.png';
+import huskySadWalking from '../Static/pets/sad_walking.png';
+import huskyExcitedWalking from '../Static/pets/excited_walking.png';
+import huskyTiredWalking from '../Static/pets/tired_walking.png';
+
+import huskyNeutralCelebrating from '../Static/pets/neutral_celebrating.png';
+import huskyHappyCelebrating from '../Static/pets/happy_celebrating.png';
+import huskySadCelebrating from '../Static/pets/sad_celebrating.png';
+import huskyExcitedCelebrating from '../Static/pets/excited_celebrating.png';
+import huskyTiredCelebrating from '../Static/pets/tired_celebrating.png';
+
+import huskyNeutralSleeping from '../Static/pets/neutral_sleeping.png';
+import huskyHappySleeping from '../Static/pets/happy_sleeping.png';
+import huskySadSleeping from '../Static/pets/sad_sleeping.png';
+import huskyExcitedSleeping from '../Static/pets/excited_sleeping.png';
+import huskyTiredSleeping from '../Static/pets/tired_sleeping.png';
+
+import huskyNeutralEating from '../Static/pets/neutral_eating.png';
+import huskyHappyEating from '../Static/pets/happy_eating.png';
+import huskySadEating from '../Static/pets/sad_eating.png';
+import huskyExcitedEating from '../Static/pets/excited_eating.png';
+import huskyTiredEating from '../Static/pets/tired_eating.png';
+
+
+// FIXED: Create a sprite map for easy lookup
+const spriteMap = {
+  husky: {
+    neutral: {
+      idle: huskyNeutralIdle,
+      walking: huskyNeutralWalking,
+      celebrating: huskyNeutralCelebrating,
+      sleeping: huskyNeutralSleeping,
+      eating: huskyNeutralEating
+    },
+    happy: {
+      idle: huskyHappyIdle,
+      walking: huskyHappyWalking,
+      celebrating: huskyHappyCelebrating,
+      sleeping: huskyHappySleeping,
+      eating: huskyHappyEating
+    },
+    sad: {
+      idle: huskySadIdle,
+      walking: huskySadWalking,
+      celebrating: huskySadCelebrating,
+      sleeping: huskySadSleeping,
+      eating: huskySadEating
+    },
+    excited: {
+      idle: huskyExcitedIdle,
+      walking: huskyExcitedWalking,
+      celebrating: huskyExcitedCelebrating,
+      sleeping: huskyExcitedSleeping,
+      eating: huskyExcitedEating
+    },
+    tired: {
+      idle: huskyTiredIdle,
+      walking: huskyTiredWalking,
+      celebrating: huskyTiredCelebrating,
+      sleeping: huskyTiredSleeping,
+      eating: huskyTiredEating
+    }
+  }
+};
+
 // Type for interaction queue
 interface QueuedInteraction {
 type: 'feed' | 'play' | 'groom';
@@ -13,10 +86,10 @@ timestamp: number;
 
 // Sound effects
 const SOUND_EFFECTS = {
-  feed: new Audio('../static/sounds/feed.mp3'),
-  play: new Audio('../static/sounds/play.mp3'),
-  groom: new Audio('../static/sounds/groom.mp3'),
-  error: new Audio('../static/sounds/error.mp3')
+  feed: { play: () => console.log('Feed sound played') },
+  play: { play: () => console.log('Play sound played') },
+  groom: { play: () => console.log('Groom sound played') },
+  error: { play: () => console.log('Error sound played') }
 };
 
 export default function PetView() {
@@ -24,6 +97,8 @@ export default function PetView() {
   const [petId, setPetId] = useState<PetId | undefined>(undefined);
   const [petState, setPetState] = useState<PetState | undefined>(undefined);
   
+  // Track if component has initialized
+  const hasInitializedRef = useRef(false);
 
   // Respond to any callback from the controller
   const viewUpdateCallback = (petId: PetId, state: PetState) => {
@@ -82,8 +157,12 @@ export default function PetView() {
       handleInteraction(nextInteraction.type, true);
     }, [interactionQueue]);
     
-  // For now, we will manually create a pet every time, but this should be loaded automatically.
+  // FIXED: Split the useEffect for initialization and state updates
+  // Initialize controller and pet once on component mount
   useEffect(() => { 
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+    
     // Create controller with callback for state updates
     const handlePetUpdate = (updatedPetId: PetId, state: PetState) => {
       setPetId(updatedPetId);
@@ -124,7 +203,7 @@ export default function PetView() {
         controllerRef.current = null;
       }
     };
-  }, [petId]);
+  }, []); // FIXED: Empty dependency array - only run once on mount
 
   // Update cooldowns
     useEffect(() => {
@@ -249,9 +328,9 @@ export default function PetView() {
     
     // Set cooldown
     const cooldownTime = {
-      feed: 30 * 60 * 1000, // 30 minutes
-      play: 10 * 60 * 1000, // 10 minutes
-      groom: 60 * 60 * 1000  // 1 hour
+      feed: 0.5 * 60 * 1000, // 30 seconds
+      play: 0.5 * 60 * 1000, // 30 seconds
+      groom: 0.5 * 60 * 1000  // 30 seconds
     }[type];
     
     setInteractionCooldowns(prev => ({
@@ -349,20 +428,38 @@ export default function PetView() {
       return <div className="pet-loading">Loading pet...</div>;
     }
     
-    // Get sprite path (or use default image if not available)
-    let spritePath = petImg;
+    // FIXED: Get sprite path using the imported image map
+    let spritePath = petImg; // default fallback
     try {
-      if (typeof getPetSpritePath === 'function') {
+      // Try to get sprite from our map first 
+      if (
+        spriteMap[petState.species] && 
+        spriteMap[petState.species][petState.mood] && 
+        spriteMap[petState.species][petState.mood][petState.animation]
+      ) {
+        spritePath = spriteMap[petState.species][petState.mood][petState.animation];
+        console.log("Using imported sprite:", spritePath);
+      } 
+      // Fallback to the helper function if sprite not in our map
+      else if (typeof getPetSpritePath === 'function') {
         const path = getPetSpritePath(petState.species, petState.mood, petState.animation);
         if (path) spritePath = path;
       }
+      
+      // Log debug info
+      console.log("Pet state:", {
+        species: petState.species,
+        mood: petState.mood,
+        animation: petState.animation
+      });
     } catch (e) {
       console.warn('Error getting pet sprite:', e);
     }
+    
   // Otherwise, render the pet...
   return (
     <div className="pet-container">
-          {/* Pet sprite that can be positioned anywhere */}
+      {/* Pet sprite that can be positioned anywhere */}
           <div 
             ref={petElementRef}
             className={`pet-sprite mood-${petState.mood} ${petState.animation} ${isDragging ? 'dragging' : ''}`}
@@ -389,18 +486,36 @@ export default function PetView() {
                 key={accessoryId}
                 className="pet-accessory"
                 style={{
+                  position: 'absolute', /* FIXED: Added absolute positioning for accessories */
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
                   backgroundImage: `url(${
                     typeof getAccessorySpritePath === 'function' 
                       ? getAccessorySpritePath(accessoryId) 
                       : ''
-                  })`
+                  })`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat'
                 }}
               />
             ))}
             
             {/* Hover metrics display */}
             {isHovering && (
-              <div className="pet-hover-metrics">
+              <div className="pet-hover-metrics" style={{
+                position: 'absolute',
+                top: '-60px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.7)',
+                color: 'white',
+                padding: '5px',
+                borderRadius: '5px',
+                width: 'auto',
+                whiteSpace: 'nowrap'
+              }}>
                 <div className="metric">💖 {Math.round(petState.happiness)}%</div>
                 <div className="metric">⚡ {Math.round(petState.energy)}%</div>
                 <div className="metric">✨ {Math.round(petState.cleanliness)}%</div>
@@ -409,11 +524,29 @@ export default function PetView() {
             
             {/* Wheel menu for interactions */}
             {showWheelMenu && (
-              <div className="pet-wheel-menu">
+              <div className="pet-wheel-menu" style={{
+                position: 'absolute',
+                top: '-120px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '5px'
+              }}>
                 <button 
                   className={`wheel-option wheel-feed ${interactionCooldowns.feed > 0 ? 'disabled' : ''}`}
                   onClick={() => handleInteraction('feed')}
                   disabled={interactionCooldowns.feed > 0}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 10px',
+                    background: interactionCooldowns.feed > 0 ? '#ccc' : '#f5a742',
+                    border: 'none',
+                    borderRadius: '15px',
+                    cursor: interactionCooldowns.feed > 0 ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <span className="wheel-icon">🍔</span>
                   <span className="wheel-label">Feed</span>
@@ -422,6 +555,16 @@ export default function PetView() {
                   className={`wheel-option wheel-play ${interactionCooldowns.play > 0 ? 'disabled' : ''}`}
                   onClick={() => handleInteraction('play')}
                   disabled={interactionCooldowns.play > 0}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 10px',
+                    background: interactionCooldowns.play > 0 ? '#ccc' : '#42aef5',
+                    border: 'none',
+                    borderRadius: '15px',
+                    cursor: interactionCooldowns.play > 0 ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <span className="wheel-icon">🎮</span>
                   <span className="wheel-label">Play</span>
@@ -430,6 +573,16 @@ export default function PetView() {
                   className={`wheel-option wheel-groom ${interactionCooldowns.groom > 0 ? 'disabled' : ''}`}
                   onClick={() => handleInteraction('groom')}
                   disabled={interactionCooldowns.groom > 0}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 10px',
+                    background: interactionCooldowns.groom > 0 ? '#ccc' : '#42f5a4',
+                    border: 'none',
+                    borderRadius: '15px',
+                    cursor: interactionCooldowns.groom > 0 ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <span className="wheel-icon">🧼</span>
                   <span className="wheel-label">Groom</span>
@@ -440,7 +593,17 @@ export default function PetView() {
     
           {/* Error message display */}
           {errorMessage && (
-            <div className="pet-error-message">
+            <div className="pet-error-message" style={{
+              position: 'fixed',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(255,0,0,0.7)',
+              color: 'white',
+              padding: '10px',
+              borderRadius: '5px',
+              zIndex: 1000
+            }}>
               {errorMessage}
             </div>
           )}

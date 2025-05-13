@@ -130,11 +130,6 @@
   color: #F44336;
 }
 
-/* Animation classes */
-.idle {
-  /* Default state - no special animation */
-}
-
 .eating {
   animation: bounce 0.5s infinite alternate;
 }
