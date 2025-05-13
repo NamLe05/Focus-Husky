@@ -43,7 +43,7 @@ describe('PetModel', () => {
     // How do the stats change after a minute?
     pet.updateStats(60000);
     expect(pet.getHappiness()).toBe(pet.getHappiness());
-    expect(pet.getEnergy()).toBe(pet.getHappiness());
-    expect(pet.getCleanliness()).toBe(pet.getHappiness());
+    expect(pet.getEnergy()).toBe(pet.getEnergy());
+    expect(pet.getCleanliness()).toBe(pet.getCleanliness());
   });
 });
