@@ -1,7 +1,17 @@
+@font-face {
+  font-family: 'Jersey 10';
+  src: url('./Static/fonts/Jersey10-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
   margin: auto;
   max-width: 38rem;
   padding: 2rem;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
 }
