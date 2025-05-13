@@ -1,5 +1,6 @@
 import {v4 as uuid} from 'uuid';
 import {mapSubmissionToStatus} from './helpers';
+import {CourseId} from './course';
 
 export const CANVAS_BASE_URL = 'https://canvas.uw.edu/';
 
@@ -16,7 +17,7 @@ export type TaskState = {
   title: string;
   description: string;
   status: TaskStatus;
-  course: string;
+  course: CourseId;
   deadline: Date;
   link?: URL;
 };
@@ -28,7 +29,7 @@ export class TaskModel {
   public constructor(
     title: string,
     description: string,
-    course: string,
+    course: CourseId,
     deadline: Date,
     link?: URL,
     status?: TaskStatus,
@@ -87,7 +88,7 @@ export type CanvasSubmission = {
 
 export type CanvasTask = {
   context_type?: 'Course';
-  course_id?: number;
+  course_id?: CourseId;
   plannable_id: number;
   planner_override: CanvasTaskOverride;
   submissions: false | CanvasSubmission;
@@ -105,7 +106,7 @@ export class CanvasTaskModel extends TaskModel {
     super(
       canvas_data.plannable.title,
       'Assignment imported from Canvas',
-      canvas_data.course_id.toString(),
+      canvas_data.course_id,
       new Date(canvas_data.plannable_date),
       new URL(CANVAS_BASE_URL + canvas_data.html_url),
       mapSubmissionToStatus(canvas_data.submissions),

@@ -1,13 +1,14 @@
 import {useState, useEffect, useRef, ChangeEvent, FormEvent} from 'react';
 
 import {TaskController} from './controller';
-import {TaskState} from './model';
+import {TaskId, TaskState} from './model';
 
 type TaskCardProps = {
+  id: TaskId;
   task: TaskState;
 };
 
-function TaskCard({task}: TaskCardProps) {
+function TaskCard({id, task}: TaskCardProps) {
   return (
     <div className="taskCard">
       <h2>{task.title}</h2>
@@ -19,11 +20,14 @@ function TaskCard({task}: TaskCardProps) {
 
 export default function PetView() {
   // Store the active pet and state
-  const [tasks, setTasks] = useState<TaskState[] | undefined>(undefined);
+  const [tasks, setTasks] = useState<[TaskId, TaskState][] | undefined>(
+    undefined,
+  );
   const [token, setToken] = useState<string>('');
+  const [tokenValidated, setTokenValidated] = useState<boolean>(false);
 
   // Respond to any callback from the controller
-  const viewUpdateCallback = (tasks: TaskState[]) => {
+  const viewUpdateCallback = (tasks: [TaskId, TaskState][]) => {
     setTasks(tasks);
   };
 
@@ -39,12 +43,7 @@ export default function PetView() {
     dueToday.setMinutes(59);
     dueToday.setSeconds(0);
     dueToday.setMilliseconds(0);
-    controller.current.handleCreateTask(
-      'Test',
-      'sample task',
-      'CSE 403',
-      dueToday,
-    );
+    controller.current.handleCreateTask('Test', 'sample task', 0, dueToday);
   }, []);
 
   // Event for token field update
@@ -55,6 +54,12 @@ export default function PetView() {
   const onTokenFieldSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     controller.current.handleTokenUpdate(token);
+    setToken('');
+    setTokenValidated(true);
+  };
+
+  const triggerCanvasSync = async () => {
+    await controller.current.syncCanvas();
   };
 
   // If no tasks are loaded, show a loading sign.
@@ -66,20 +71,28 @@ export default function PetView() {
   return (
     <div id="taskFrame">
       <h1>Your Tasks</h1>
-      <p>
-        To sync tasks with Canvas, please enter your personal token (this is
-        only for testing):{' '}
-        <form onSubmit={onTokenFieldSubmit}>
-          <input
-            placeholder="Personal token"
-            value={token}
-            onChange={onTokenFieldUpdate}
-          />
-          <button type="submit">Submit</button>
-        </form>
-      </p>
-      {tasks.map((task: TaskState) => (
-        <TaskCard task={task} />
+      {!tokenValidated ? (
+        <>
+          <p>
+            To sync tasks with Canvas, please enter your personal token (this is
+            only for testing):
+          </p>
+          <form onSubmit={onTokenFieldSubmit}>
+            <input
+              placeholder="Personal token"
+              value={token}
+              onChange={onTokenFieldUpdate}
+            />
+            <button type="submit">Submit</button>
+          </form>
+        </>
+      ) : (
+        <p>
+          <button onClick={triggerCanvasSync}>Sync with Canvas</button>
+        </p>
+      )}
+      {tasks.map(([id, task]) => (
+        <TaskCard key={id} id={id} task={task} />
       ))}
     </div>
   );
