@@ -1,25 +1,25 @@
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react';
 import './styles.css';
-import { handlePetClick, store } from './controller';
+import { handlePetClick, handleItemPurchase, store } from './controller';
 import { v4 as uuidv4 } from 'uuid';
 import HuskyImage from '../Static/Husky.png';
 import FrogImage from '../Static/Frog.png';
 import DuckImage from '../Static/Duck.png';
 import TigerImage from '../Static/Tiger.png';
 import StarImage from '../Static/Star.png';
-import CheckListImage from '../Static/checklist.png'
-import HatImage from '../Static/hat.png'
-import CollarImage from '../Static/collar.png'
-import LeashImage from '../Static/leash.png'
-import ClassicTimerImage from '../Static/classic-timer.png'
-import PomodoroImage from '../Static/pomodoro.png'
-import StopWatchImage from '../Static/stopwatch.png'
-import BellImage from '../Static/bell.png'
-import ChimeImage from '../Static/chime.png'
-import AlertImage from '../Static/alert.png'
-import HomeworkImage from '../Static/homework.png'
-import CalendarImage from '../Static/calendar.png'
+import CheckListImage from '../Static/checklist.png';
+import HatImage from '../Static/hat.png';
+import CollarImage from '../Static/collar.png';
+import LeashImage from '../Static/leash.png';
+import ClassicTimerImage from '../Static/classic-timer.png';
+import PomodoroImage from '../Static/pomodoro.png';
+import StopWatchImage from '../Static/stopwatch.png';
+import BellImage from '../Static/bell.png';
+import ChimeImage from '../Static/chime.png';
+import AlertImage from '../Static/alert.png';
+import HomeworkImage from '../Static/homework.png';
+import CalendarImage from '../Static/calendar.png';
 import { Pet } from './model';
 
 // Tab type and item interface
@@ -70,28 +70,32 @@ const TAB_ITEMS: Record<Tab, Item[]> = {
 };
 
 export default function MarketView() {
-
-  //State to track active tab
   const [activeTab, setActiveTab] = useState<Tab>('pets');
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
 
   const items = TAB_ITEMS[activeTab];
 
-  // Handler for purchasing pets
-  const onPetClick = (pet: Pet) => {
-    const currentPoints = store.getTotalPoints();
-    if (pet.owned) {
-      setPopUpMessage(`${pet.name} is already owned!`);
+  const onItemClick = (item: Item) => {
+    const totalPoints = store.getTotalPoints();
+    if (totalPoints < item.price) {
+      setPopUpMessage(`Sorry, you don't have enough points for ${item.name}.`);
       return;
     }
-    if (currentPoints < pet.price) {
-      setPopUpMessage(`Sorry, you don't have enough points for ${pet.name}.`);
-      return;
+
+    if (activeTab === 'pets') {
+      handlePetClick({
+        ID:    uuidv4(),
+        name:  item.name,
+        price: item.price,
+        owned: false,
+      } as Pet);
+    } else {
+      handleItemPurchase(item.name, item.price);
     }
-    handlePetClick(pet);
+
     setPoints(store.getTotalPoints());
-    setPopUpMessage(`Congrats! You successfully purchased ${pet.name}!`);
+    setPopUpMessage(`Congrats! You purchased ${item.name}!`);
   };
 
   return (
@@ -115,7 +119,7 @@ export default function MarketView() {
 
         <div className="marketplace-container">
           <div className="category-nav">
-            {(['pets', 'accessories', 'timer', 'sounds', 'tasks'] as Tab[]).map(tab => (
+            {(Object.keys(TAB_ITEMS) as Tab[]).map(tab => (
               <div
                 key={tab}
                 className={`category-item ${activeTab === tab ? 'active' : ''}`}
@@ -126,23 +130,13 @@ export default function MarketView() {
             ))}
           </div>
 
-          {/* ←– Updated tab-content: */}
           <div className="tab-content">
             <div className="pet-grid">
               {items.map(item => (
                 <div
                   key={item.name}
                   className="pet-card"
-                  onClick={() => {
-                    if (activeTab === 'pets') {
-                      onPetClick({
-                        ID: uuidv4(),
-                        name:  item.name,
-                        price: item.price,
-                        owned: false,
-                      });
-                    }
-                  }}
+                  onClick={() => onItemClick(item)}
                 >
                   <div className="pet-image-container">
                     <img src={item.img} alt={item.name} className="pet-image" />
@@ -156,7 +150,6 @@ export default function MarketView() {
               ))}
             </div>
           </div>
-          {/* –→ End updated section */}
 
           <div className="star-counter">
             <div className="star-background">{/* SVG omitted for brevity */}</div>
