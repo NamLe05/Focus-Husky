@@ -54,6 +54,7 @@ body {
   padding: 20px;
   box-sizing: border-box;
   background-color: #b4a4bf;
+  overflow: hidden;
 }
 
 /* Category Navigation */
@@ -96,9 +97,13 @@ body {
 .tab-content {
   width: 100%;
   max-width: 1200px;
+  flex: 1; 
+  display: flex; 
+  flex-direction: column;
 }
 
 .tab-pane {
+  flex: 1;
   display: none;
   width: 100%;
 }
