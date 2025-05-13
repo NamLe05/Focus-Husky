@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef } from 'react';
 import petImg from '../Static/pet.png';
 
 import {PetController} from './controller';
@@ -15,14 +15,101 @@ export default function PetView() {
     setPetState({...state});
   };
 
+  // Track interaction cooldowns
+  const [interactionCooldowns, setInteractionCooldowns] = useState<{
+    [key: string]: number;
+  }>({
+    feed: 0,
+    play: 0,
+    groom: 0
+  });
+
   // Create new instance of controller
-  // TODO: Controller should have a singleton instance.
-  const controller = new PetController(viewUpdateCallback);
+  // Done: Controller should have a singleton instance.
+  // Use ref to maintain a single controller instance across renders
+  const controllerRef = useRef<PetController | null>(null);
 
   // For now, we will manually create a pet every time, but this should be loaded automatically.
-  useEffect(() => {
-    controller.handleCreatePet('Dubs', 'husky');
+  useEffect(() => { 
+    // Create controller with callback for state updates
+    const handlePetUpdate = (updatedPetId: PetId, state: PetState) => {
+      setPetId(updatedPetId);
+      setPetState({...state});
+    };
+    
+    // Create controller instance if it doesn't exist
+    if (!controllerRef.current) {
+      controllerRef.current = new PetController(handlePetUpdate);
+    }
+    
+    // Try to load existing pets
+    controllerRef.current.loadPetsFromDatabase();
+    
+    // If no pets were loaded, create a default one
+    setTimeout(() => {
+      if (!petId && controllerRef.current) {
+        controllerRef.current.handleCreatePet('Dubs', 'husky');
+      }
+    }, 500);
+    
+    // Clean up controller on unmount
+    return () => {
+      if (controllerRef.current) {
+        controllerRef.current.destroy();
+        controllerRef.current = null;
+      }
+    };
   }, []);
+
+  // Handle pet interactions
+  const handleInteraction = (type: 'feed' | 'play' | 'groom') => {
+    if (!controllerRef.current || !petId || interactionCooldowns[type] > 0) return;
+    
+    // Call appropriate controller method
+    switch (type) {
+      case 'feed':
+        controllerRef.current.handleFeedPet(petId);
+        break;
+      case 'play':
+        controllerRef.current.handlePlayWithPet(petId);
+        break;
+      case 'groom':
+        controllerRef.current.handleGroomPet(petId);
+        break;
+    }
+    
+    // Set cooldown
+    const cooldownTime = {
+      feed: 30 * 60 * 1000, // 30 minutes
+      play: 10 * 60 * 1000, // 10 minutes
+      groom: 60 * 60 * 1000  // 1 hour
+    }[type];
+    
+    setInteractionCooldowns(prev => ({
+      ...prev,
+      [type]: cooldownTime
+    }));
+  };
+
+  // Handle the pet sprite being clicked
+  const handlePetClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleInteraction('play');
+  };
+  
+  // Simulate completing a Pomodoro session
+  const handleCompletePomo = () => {
+    if (controllerRef.current && petId) {
+      controllerRef.current.handlePomodoroCompleted(petId);
+    }
+  };
+  
+  // Simulate completing a task
+  const handleCompleteTask = () => {
+    if (controllerRef.current && petId) {
+      controllerRef.current.handleTaskCompleted(petId);
+    }
+  };
 
   // If no pet is loaded, show a loading sign.
   if (petId === undefined && petState === undefined) {
