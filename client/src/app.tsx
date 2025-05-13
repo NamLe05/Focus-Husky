@@ -1,11 +1,11 @@
 import {createRoot} from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Link } from "react-router";
+import {HashRouter, Routes, Route, Link} from "react-router";
 import PetView from './pet/view';
 import PomodoroView from './pomodoro/view';
 
 const root = createRoot(document.body);
 root.render(
-<BrowserRouter>
+<HashRouter>
   <nav>
     <Link to="/view">View</Link>
     <Link to="/petView">Pet View</Link>
@@ -17,4 +17,4 @@ root.render(
       <Route path="/pomodoroView" element={<PomodoroView />} />
       {/* <Route path="/marketView" element={<MarketView />} /> */}
   </Routes>
-</BrowserRouter>);
+</HashRouter>);
