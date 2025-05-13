@@ -70,6 +70,8 @@ const TAB_ITEMS: Record<Tab, Item[]> = {
 };
 
 export default function MarketView() {
+
+  //State to track active tab
   const [activeTab, setActiveTab] = useState<Tab>('pets');
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
