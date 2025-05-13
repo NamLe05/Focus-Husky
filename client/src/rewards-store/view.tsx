@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react';
-import React, { useState } from 'react';
 import './styles.css';
 import {handlePetClick, store} from './controller';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,7 +10,59 @@ import TigerImage from '../Static/Tiger.png';
 import StarImage from '../Static/Star.png';
 import {RewardsStore, Pet} from './model';
 
+type Tab = 'pets' | 'accessories' | 'timer' | 'sounds' | 'tasks';
+interface Item { name: string; price: number; img: string; }
+
+
+// Sidebar Component (same file)
+const Sidebar: React.FC = () => (
+  <aside className="sidebar">
+    <ul className="sidebar-nav">
+      <li className="sidebar-item active">Dashboard</li>
+      <li className="sidebar-item">MarketPlace</li>
+      <li className="sidebar-item">Schedules</li>
+      <li className="sidebar-item">Pomodoro Timer</li>
+      <li className="sidebar-item">Settings</li>
+    </ul>
+  </aside>
+);
+
+//Data for each tab
+const TAB_ITEMS: Record<Tab, Item[]> = {
+  pets: [
+    { name: 'Frog', price: 200, img: './Static/frog.jpg' },
+    { name: 'Tiger', price: 200, img: './Static/tiger.jpg' },
+    { name: 'Duck', price: 200, img: './Static/duck.jpg' },
+    { name: 'Husky', price: 200, img: './Static/husky.jpg' },
+  ],
+  accessories: [
+    { name: 'Collar', price: 50, img: './Static/collar.jpg' },
+    { name: 'Hat', price: 75, img: './Static/hat.jpg' },
+    { name: 'Leash', price: 40, img: './Static/leash.jpg' },
+  ],
+  timer: [
+    { name: 'Classic Timer', price: 0, img: './Static/classic-timer.jpg' },
+    { name: 'Pomodoro', price: 0, img: './Static/pomodoro.jpg' },
+    { name: 'Stopwatch', price: 0, img: './Static/stopwatch.jpg' },
+  ],
+  sounds: [
+    { name: 'Bell', price: 20, img: './Static/bell.jpg' },
+    { name: 'Chime', price: 30, img: './Static/chime.jpg' },
+    { name: 'Alert', price: 25, img: './Static/alert.jpg' },
+  ],
+  tasks: [
+    { name: 'Checklist', price: 0, img: './Static/checklist.jpg' },
+    { name: 'Homework', price: 0, img: './Static/homework.jpg' },
+    { name: 'Calendar', price: 0, img: './Static/calendar.jpg' },
+  ],
+};
+
 export default function MarketView() {
+
+    //State to track active tab
+  const [activeTab, setActiveTab] = useState<Tab>('pets');
+  //Items to display for the current tab
+  const items = TAB_ITEMS[activeTab];
 
   const [points, setPoints] = useState(store.getTotalPoints());
   const [selectedPet, setSelectedPet] = useState<Pet|null>(null);
