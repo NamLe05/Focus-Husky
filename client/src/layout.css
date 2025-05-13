@@ -1,0 +1,65 @@
+/* Layout container */
+.layout-container {
+  display: flex;
+  height: 100vh;
+  background-color: #B4A4BF;
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 200px;
+  background-color: #E9E9E9;
+  color: black;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  text-align: center;
+}
+
+.sidebar nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar nav ul li {
+  margin: 10px 0;
+}
+
+.sidebar nav ul li a {
+  color: black;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.sidebar nav ul li a:hover {
+  color: #dcaeee;
+}
+
+/* Main content styles */
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+/* Header styles */
+.header {
+  background-color: #DED2E5;
+  color: black;
+  padding: 20px;
+  text-align: center;
+  font-size: 24px;
+}
+
+.user-info {
+  text-align: right;
+}
+
+/* Content area styles */
+.content-area {
+  padding: 20px;
+  flex-grow: 1;
+  background-color: #B4A4BF;
+}
