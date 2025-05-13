@@ -1,0 +1,139 @@
+
+
+.root {
+    background-color: #B4A4BF;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%
+}
+
+.noPadding {
+    padding: 0;
+}
+
+.dateCard {
+    height: 200px;
+    padding-top: 50px;
+    padding-left: 20px;
+}
+
+.todayTxt h1 {
+    margin-left: 70px;
+    font-size: 55px;
+}
+
+.dateTxt h1 {
+    margin-left: 70px;
+    font-size: 30px;
+}
+
+.pomodoroTimer {
+    display: flex;
+    background-color: white;
+    border-radius: 25px;
+    width: 75%;
+    height: 75%;
+    margin-top: 25px;
+    margin-left: 100px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pomodoroTxt h1 {
+    margin-left: 40px;
+    padding-top: 56px;
+    font-size: 30px;
+}
+
+.pomodoroTimerButton {
+    width: 20%;
+    height: 75%;
+    margin-top: 20px;
+    margin-left: 60px;
+    border-radius: 25px;
+    background-color: #FABB18;
+    border: none;
+    color: #333; /* good contrast on yellow */
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease-in-out;
+}
+
+.pomodoroTimerButton:hover {
+    background-color: #ffc933;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.pomodoroTimerButton:active {
+    background-color: #e5a900;
+    transform: scale(0.9);
+}
+
+.pomodoroTimerButton i {
+  font-size: 70px;
+}
+
+.statsCard {
+    background-color: white;
+    width: 85%;
+    height: 250px;
+    margin-left: 40px;
+    margin-top: 30px;
+    border-radius: 25px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+.statsCard h1 {
+    text-align: left;
+    font-size: 30px;
+    padding-top: 20px;
+    padding-left: 50px;
+}
+
+.statsCardContent {
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 50px;
+}
+
+.statsCard h2 {
+    font-size: 50px;
+    padding-top: 45px;
+    font-weight: bold;
+    padding-left: 0px;
+    margin: 0;
+}
+
+.statsCard i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background-color: #FABB1830;
+    font-size: 82px;
+    color: #e5a900;
+    margin-top: 40px;
+    border-radius: 50%;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+.activeCard {
+    background-color: white;
+    width: 90%;
+    height: 350px;
+    margin-left: 40px;
+    margin-top: 50px;
+    border-radius: 25px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+.activeCard h1 {
+    text-align: left;
+    font-size: 35px;
+    padding-top: 30px;
+    padding-left: 50px;
+}
