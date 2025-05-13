@@ -252,7 +252,7 @@ export default function PetView() {
   useEffect(() => {
     if (!autoCareEnabled) return;
     
-    // Automatically take care of pet every 30 minutes
+    // Automatically take care of pet every 5 minutes
     const autoInterval = setInterval(() => {
       if (!petId || !petState) return;
       
@@ -266,7 +266,7 @@ export default function PetView() {
       if (petState.cleanliness < 50) {
         queueInteraction('groom');
       }
-    }, 30 * 60 * 1000);
+    }, 5 * 60 * 1000);
     
     return () => clearInterval(autoInterval);
   }, [autoCareEnabled, petId, petState]);

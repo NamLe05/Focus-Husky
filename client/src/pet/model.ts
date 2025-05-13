@@ -211,6 +211,11 @@ export class PetModel {
     this.updateLastInteraction();
     this.updateMood();
 
+    // Auto-reset animation after eating
+    setTimeout(() => {
+      this.setAnimation('idle');
+    }, 6000);
+
     // Return current state for view updates
     return this.getState();
   }
@@ -226,6 +231,11 @@ export class PetModel {
     this.updateLastInteraction();
     this.updateMood();
 
+    // Auto-reset animation after playing
+    setTimeout(() => {
+      this.setAnimation('idle');
+    }, 6000);
+
     // Return current state for view updates
     return this.getState();
   }
@@ -239,6 +249,11 @@ export class PetModel {
     this.setHappiness(this.state.happiness + 5);
     this.updateLastInteraction();
     this.updateMood();
+
+    // Auto-reset animation after grooming
+    setTimeout(() => {
+      this.setAnimation('idle');
+    }, 6000);
 
     // Return current state for view updates
     return this.getState();
@@ -370,9 +385,9 @@ export class PetModel {
     const initialAnimation = this.state.animation;
 
     // Decrease stats over time
-    this.setHappiness(this.state.happiness - 0.5 * minutes);
-    this.setEnergy(this.state.energy - 0.3 * minutes);
-    this.setCleanliness(this.state.cleanliness - 0.2 * minutes);
+    this.setHappiness(this.state.happiness - 2.5 * minutes);
+    this.setEnergy(this.state.energy - 1.5 * minutes);
+    this.setCleanliness(this.state.cleanliness - 1.0 * minutes);
 
     // Update mood based on new stats
     this.updateMood();
