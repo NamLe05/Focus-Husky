@@ -65,8 +65,8 @@ const createPomodoroWindow = (): void => {
   }
 
   pomodoroWindow = new BrowserWindow({
-    width: 300,
-    height: 400,
+    width: 335,
+    height: 210,
     title: 'Pomodoro Timer',
     frame: false,         // No OS chrome
     transparent: true,    // See-through background
