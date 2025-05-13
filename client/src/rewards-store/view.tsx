@@ -61,6 +61,11 @@ export default function MarketView() {
 
   //State to track active tab
   const [activeTab, setActiveTab] = useState<Tab>('pets');
+
+  // const handleTabClick = (Tab) => {
+  //   setActiveTab(Tab);
+  // }
+
   //Items to display for the current tab
   const items = TAB_ITEMS[activeTab];
 
@@ -111,7 +116,9 @@ export default function MarketView() {
   />
   <link rel="stylesheet" href="./marketplace.css" />
   <div className="marketplace-container">
+    {/*TAB HEADERS*/}
     <div className="category-nav">
+
       <div className="category-item active" data-tab="pets">
         Pets
       </div>
@@ -131,6 +138,8 @@ export default function MarketView() {
     <div className="tab-content">
       <div className="tab-pane active" id="pets-tab">
         <div className="pet-grid">
+
+          {/*FROG PET CARD*/}
           <div className="pet-card"
             onClick={() => onPetClick({ID: uuidv4(), name: 'Frog', price: 200, owned: false})}
             >
@@ -143,6 +152,8 @@ export default function MarketView() {
               <span>200</span>
             </div>
           </div>
+
+          {/*TIGER PET CARD*/}
           <div className="pet-card"
           onClick={() => onPetClick({ID: uuidv4(), name: 'Tiger', price: 200, owned: false})}
             >
@@ -155,6 +166,8 @@ export default function MarketView() {
               <span>200</span>
             </div>
           </div>
+
+          {/*DUCK PET CARD*/}
           <div className="pet-card"
           onClick={() => onPetClick({ID: uuidv4(), name: 'Duck', price: 200, owned: false})}
             >
@@ -167,6 +180,8 @@ export default function MarketView() {
               <span>200</span>
             </div>
           </div>
+
+          {/*hUSKY PET CARD*/}
           <div className="pet-card"
           onClick={() => onPetClick({ID: uuidv4(), name: 'Husky', price: 200, owned: true})}
             >
@@ -194,7 +209,7 @@ export default function MarketView() {
           </div>
         )}
       </div>
-      <div className="tab-pane" id="accessories-tab">
+      {/* <div className="tab-pane" id="accessories-tab">
         <div className="coming-soon">
           <h2>Accessories Coming Soon</h2>
           <p>This section will be available in a future update.</p>
@@ -217,8 +232,10 @@ export default function MarketView() {
           <h2>Tasks Coming Soon</h2>
           <p>This section will be available in a future update.</p>
         </div>
-      </div>
+      </div> */}
     </div>
+
+    {/*STAR COUNTER*/}
     <div className="star-counter">
       <div className="star-background">
         <svg
