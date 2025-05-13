@@ -24,7 +24,7 @@ import { Pet } from './model';
 
 // Tab type and item interface
 type Tab = 'pets' | 'accessories' | 'timer' | 'sounds' | 'tasks';
-interface Item { name: string; price: number; img: string; }
+interface Item { name: string; price: number; img: string; owned: boolean }
 
 // Sidebar Component
 const Sidebar: React.FC = () => (
@@ -42,30 +42,30 @@ const Sidebar: React.FC = () => (
 // Data for each tab
 const TAB_ITEMS: Record<Tab, Item[]> = {
   pets: [
-    { name: 'Frog', price: 200, img: FrogImage },
-    { name: 'Tiger', price: 200, img: TigerImage },
-    { name: 'Duck', price: 200, img: DuckImage },
-    { name: 'Husky', price: 200, img: HuskyImage },
+    { name: 'Frog', price: 200, img: FrogImage, owned: false},
+    { name: 'Tiger', price: 200, img: TigerImage, owned: false},
+    { name: 'Duck', price: 200, img: DuckImage, owned: false},
+    { name: 'Husky', price: 200, img: HuskyImage, owned: true},
   ],
   accessories: [
-    { name: 'Collar', price: 50, img: CollarImage },
-    { name: 'Hat', price: 75, img: HatImage },
-    { name: 'Leash', price: 40, img: LeashImage },
+    { name: 'Collar', price: 50, img: CollarImage, owned: false },
+    { name: 'Hat', price: 75, img: HatImage, owned: false },
+    { name: 'Leash', price: 40, img: LeashImage, owned: false },
   ],
   timer: [
-    { name: 'Classic Timer', price: 30, img: ClassicTimerImage },
-    { name: 'Pomodoro', price: 25, img: PomodoroImage },
-    { name: 'Stopwatch', price: 15, img: StopWatchImage },
+    { name: 'Classic Timer', price: 30, img: ClassicTimerImage, owned: false },
+    { name: 'Pomodoro', price: 25, img: PomodoroImage, owned: false },
+    { name: 'Stopwatch', price: 15, img: StopWatchImage, owned: false },
   ],
   sounds: [
-    { name: 'Bell', price: 20, img: BellImage },
-    { name: 'Chime', price: 30, img: ChimeImage },
-    { name: 'Alert', price: 25, img: AlertImage },
+    { name: 'Bell', price: 20, img: BellImage, owned: false },
+    { name: 'Chime', price: 30, img: ChimeImage, owned: false },
+    { name: 'Alert', price: 25, img: AlertImage, owned: false },
   ],
   tasks: [
-    { name: 'Checklist', price: 40, img: CheckListImage },
-    { name: 'Homework', price: 45, img: HomeworkImage },
-    { name: 'Calendar', price: 50, img: CalendarImage },
+    { name: 'Checklist', price: 40, img: CheckListImage, owned: false },
+    { name: 'Homework', price: 45, img: HomeworkImage, owned: false },
+    { name: 'Calendar', price: 50, img: CalendarImage, owned: false },
   ],
 };
 
@@ -78,6 +78,11 @@ export default function MarketView() {
 
   const onItemClick = (item: Item) => {
     const totalPoints = store.getTotalPoints();
+
+    if(item.owned === true){
+      setPopUpMessage(`You already own ${item.name}!`);
+      return;
+    }
     if (totalPoints < item.price) {
       setPopUpMessage(`Sorry, you don't have enough points for ${item.name}.`);
       return;
