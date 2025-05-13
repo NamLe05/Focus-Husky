@@ -120,6 +120,15 @@ export class RewardsStore {
     public updatePoints(newPoints: number): void {
         this.points = newPoints;
     }
+
+    public purchaseItem(itemName: string, price: number): void {
+    if (!this.canAfford(price)) {
+      throw new Error(`Not enough points to purchase ${itemName}`)
+    }
+    this.points -= price
+  }
+
+
 }
 
 

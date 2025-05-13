@@ -1,5 +1,4 @@
-import React from "react";
-
+import React from 'react';
 
 const View = () => {
   return <div>Hello World</div>;
