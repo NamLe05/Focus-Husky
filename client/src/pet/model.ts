@@ -44,7 +44,7 @@ export class PetModel {
       mood: 'neutral',
       animation: 'idle',
       position: {x: 300, y: 300},
-      happiness: 70,
+      happiness: 10,
       energy: 60,
       cleanliness: 50,
       lastInteraction: new Date(),
