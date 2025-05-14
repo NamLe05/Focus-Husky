@@ -16,6 +16,7 @@
     "test": "vitest"
   },
   "keywords": [],
+  "author": "Focus Husky",
   "contributors": [
     {
       "name": "Tony",

@@ -137,7 +137,7 @@ function App() {
                 route.navText !== undefined && route.navIcon !== undefined,
             )
             .map(([path, route]) => (
-              <li className="nav-item">
+              <li key={path} className="nav-item">
                 <NavLink
                   to={path}
                   className={({isActive}) =>

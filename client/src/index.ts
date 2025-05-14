@@ -37,8 +37,8 @@ const createWindow = (): void => {
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY); // eslint-disable-line
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // Maximize the screen
+  mainWindow.maximize();
 };
 
 // This method will be called when Electron has finished
