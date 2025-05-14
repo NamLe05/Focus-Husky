@@ -129,3 +129,40 @@ ipcMain.handle('getCanvasAssignments', async (e, userToken) => {
     throw new Error(`Failed to fetch assignments: ${error.message}`);
   }
 });
+
+
+declare const POMODORO_WINDOW_WEBPACK_ENTRY: string;
+declare const POMODORO_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
+let pomodoroWindow: BrowserWindow | null = null;
+
+const createPomodoroWindow = (): void => {
+  if (pomodoroWindow) {
+    pomodoroWindow.focus();
+    return;
+  }
+
+  pomodoroWindow = new BrowserWindow({
+    width: 350,
+    height: 220,
+    title: 'Pomodoro Timer',
+    frame: false,         // No OS chrome
+    transparent: true,    // See-through background
+    resizable: false,     // Optional: prevent resize
+    hasShadow: false, 
+    alwaysOnTop: true,
+    titleBarStyle: 'hidden',
+    webPreferences: {
+      preload: POMODORO_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    },
+  });
+
+  pomodoroWindow.loadURL(POMODORO_WINDOW_WEBPACK_ENTRY);
+  pomodoroWindow.on('closed', () => {
+    pomodoroWindow = null;
+  });
+};
+
+ipcMain.on('open-pomodoro-window', () => {
+  createPomodoroWindow();
+});

@@ -10,3 +10,7 @@ contextBridge.exposeInMainWorld('electron', {
     },
   },
 });
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  openPomodoroWindow: () => ipcRenderer.send('open-pomodoro-window'),
+});
