@@ -1,139 +1,133 @@
-
-
 .root {
     background-color: #B4A4BF;
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 100%
-}
-
-.noPadding {
-    padding: 0;
+    width: 100vw;
+    height: 100vh;
 }
 
 .dateCard {
-    height: 200px;
-    padding-top: 50px;
-    padding-left: 20px;
+    height: 18vh;
+    padding-top: 2vh;
+    padding-left: 1.5vw;
 }
 
 .todayTxt h1 {
-    margin-left: 70px;
-    font-size: 55px;
+    margin-left: 3vw;
+    font-size: 3.2vw;
 }
 
 .dateTxt h1 {
-    margin-left: 70px;
-    font-size: 30px;
+    margin-left: 3vw;
+    font-size: 1.6vw;
 }
 
 .pomodoroTimer {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     background-color: white;
-    border-radius: 25px;
-    width: 75%;
-    height: 75%;
-    margin-top: 25px;
-    margin-left: 100px;
+    border-radius: 20px;
+    width: 70%;
+    height: 65%;
+    margin: 2.5vh auto 0 auto;
+    padding: 1.5vh 2.5vw;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .pomodoroTxt h1 {
-    margin-left: 40px;
-    padding-top: 56px;
-    font-size: 30px;
+    font-size: 1.2vw;
+    margin: 0;
 }
 
 .pomodoroTimerButton {
-    width: 20%;
-    height: 75%;
-    margin-top: 20px;
-    margin-left: 60px;
-    border-radius: 25px;
+    width: 5vw;
+    height: 8vh;
+    margin-top: 0vh;
+    margin-left: 2vw;
+    border-radius: 15px;
     background-color: #FABB18;
     border: none;
-    color: #333; /* good contrast on yellow */
+    color: #333;
     font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .pomodoroTimerButton:hover {
     background-color: #ffc933;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
 }
 
 .pomodoroTimerButton:active {
     background-color: #e5a900;
-    transform: scale(0.9);
+    transform: scale(0.95);
 }
 
 .pomodoroTimerButton i {
-  font-size: 70px;
+    font-size: 34px;
 }
 
 .statsCard {
     background-color: white;
     width: 85%;
-    height: 250px;
-    margin-left: 40px;
-    margin-top: 30px;
-    border-radius: 25px;
+    height: 26vh;
+    margin: 2.5vh auto;
+    border-radius: 20px;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
 .statsCard h1 {
     text-align: left;
-    font-size: 30px;
-    padding-top: 20px;
-    padding-left: 50px;
+    font-size: 1.4vw;
+    padding-top: 1.8vh;
+    padding-left: 2.5vw;
 }
 
 .statsCardContent {
     display: flex;
     justify-content: space-between;
-    padding: 0px 50px;
+    padding: 0 2.5vw;
 }
 
 .statsCard h2 {
-    font-size: 50px;
-    padding-top: 45px;
-    font-weight: bold;
-    padding-left: 0px;
+    font-size: 2.5vw;
+    padding-top: 3vh;
     margin: 0;
 }
 
 .statsCard i {
+    width: 4.2vw;
+    height: 4.2vw;
+    font-size: 3.4vw;
+    margin-top: 3.2vh;
+    border-radius: 50%;
+    background-color: #FABB1830;
+    color: #e5a900;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 80px;
-    height: 80px;
-    background-color: #FABB1830;
-    font-size: 82px;
-    color: #e5a900;
-    margin-top: 40px;
-    border-radius: 50%;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
 .activeCard {
     background-color: white;
-    width: 90%;
-    height: 350px;
-    margin-left: 40px;
-    margin-top: 50px;
-    border-radius: 25px;
+    width: 85%;
+    height: 34vh;
+    margin: 4vh auto;
+    border-radius: 20px;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
 .activeCard h1 {
     text-align: left;
-    font-size: 35px;
-    padding-top: 30px;
-    padding-left: 50px;
+    font-size: 2vw;
+    padding-top: 2.5vh;
+    padding-left: 2.5vw;
 }

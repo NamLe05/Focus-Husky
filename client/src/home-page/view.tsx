@@ -3,6 +3,9 @@ import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+const handleOpenPomodoro = () => {
+    window.electronAPI?.openPomodoroWindow();
+  };
 
 const View = () => {
   return <>
@@ -16,7 +19,7 @@ const View = () => {
         <Col>
           <div className='pomodoroTimer'>
             <div className='pomodoroTxt'><h1>Start Pomodoro Timer</h1></div>
-            <button className='pomodoroTimerButton'><i className="bi bi-play-fill"></i></button>
+            <button className='pomodoroTimerButton' onClick={handleOpenPomodoro}><i className="bi bi-play-fill"></i></button>
           </div>
         </Col>
       </Row>
