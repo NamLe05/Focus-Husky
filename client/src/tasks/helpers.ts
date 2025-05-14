@@ -14,3 +14,13 @@ export function mapSubmissionToStatus(
   }
   return 'not started';
 }
+
+export function isTodo(status: TaskStatus) {
+  return status === 'not started' || status === 'in progress';
+}
+
+export function isComplete(status: TaskStatus) {
+  return (
+    status === 'submitted' || status === 'completed' || status === 'evaluated'
+  );
+}
