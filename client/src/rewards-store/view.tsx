@@ -26,19 +26,6 @@ import { Pet } from './model';
 type Tab = 'pets' | 'accessories' | 'timer' | 'sounds' | 'tasks';
 interface Item { name: string; price: number; img: string; owned: boolean }
 
-// Sidebar Component
-// const Sidebar: React.FC = () => (
-//   <aside className="sidebar">
-//     <ul className="sidebar-nav">
-//       <li className="sidebar-item active">Dashboard</li>
-//       <li className="sidebar-item">Marketplace</li>
-//       <li className="sidebar-item">Schedules</li>
-//       <li className="sidebar-item">Pomodoro Timer</li>
-//       <li className="sidebar-item">Settings</li>
-//     </ul>
-//   </aside>
-// );
-
 // Data for each tab
 const TAB_ITEMS: Record<Tab, Item[]> = {
   pets: [
