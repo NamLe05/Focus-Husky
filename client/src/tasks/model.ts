@@ -19,6 +19,7 @@ export type TaskState = {
   status: TaskStatus;
   course: CourseId;
   deadline: Date;
+  imported: boolean;
   link?: URL;
 };
 
@@ -31,12 +32,22 @@ export class TaskModel {
     description: string,
     course: CourseId,
     deadline: Date,
+    id?: TaskId,
     link?: URL,
     status?: TaskStatus,
   ) {
-    this.id = uuid();
+    this.id = id === undefined ? uuid() : id;
     if (status === undefined) status = 'not started';
-    this.state = {title, description, course, deadline, link, status};
+    // Task if imported if an ID is specified by the constructor
+    this.state = {
+      title,
+      description,
+      course,
+      deadline,
+      link,
+      imported: id !== undefined,
+      status,
+    };
   }
 
   public getId(): TaskId {
@@ -67,7 +78,7 @@ export type CanvasTaskOverride = {
   plannable_id: number;
   user_id: number;
   workflow_state: string;
-  marked_completed: boolean;
+  marked_complete: boolean;
   dismissed: boolean;
   deleted_at: string | null;
   created_at: string | null;
@@ -108,9 +119,14 @@ export class CanvasTaskModel extends TaskModel {
       'Assignment imported from Canvas',
       canvas_data.course_id,
       new Date(canvas_data.plannable_date),
+      canvas_data.plannable_id.toString(),
       new URL(CANVAS_BASE_URL + canvas_data.html_url),
-      mapSubmissionToStatus(canvas_data.submissions),
+      canvas_data.planner_override !== null &&
+        canvas_data.planner_override.marked_complete
+        ? 'completed'
+        : mapSubmissionToStatus(canvas_data.submissions),
     );
+    console.log(canvas_data.planner_override);
     this.canvas_data = canvas_data;
   }
 
@@ -118,3 +134,5 @@ export class CanvasTaskModel extends TaskModel {
     return this.canvas_data;
   }
 }
+
+export type TaskAction = 'delete' | 'edit' | 'complete-imported';

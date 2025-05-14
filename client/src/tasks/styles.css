@@ -1,0 +1,32 @@
+#taskFrame {
+  padding: 40px;
+}
+
+.taskCard {
+  margin-bottom: 20px;
+}
+
+.taskCard .cardMenu i {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.taskCard .cardMenu i:hover {
+  color: #9C27B0;
+}
+
+.allgood {
+  text-align: center;
+  width: 100%;
+}
+
+.allgood i.lg-congratulations {
+  font-size: 48px;
+  color: rgb(139, 195, 74);
+}
+
+#tasks-tabs {
+  width: 100%;
+  max-width: 720px;
+  position: relative;
+}

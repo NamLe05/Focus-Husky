@@ -4,6 +4,7 @@ import {
   TaskId,
   TaskStatus,
   CanvasTaskModel,
+  TaskAction,
 } from './model';
 import {CourseId, Course} from './course';
 
@@ -19,15 +20,27 @@ export class TaskController {
   // Send latest list of tasks to the client
   private viewUpdateCallback: (tasks: [TaskId, TaskState][]) => void;
 
+  // Action callback
+  // Send an action to the view to process
+  private actionCallback: (action: TaskAction) => void;
+
+  // Task with action being taken on
+  private activeTask?: TaskId;
+
   /**
    * Create a new task controller instance
    * @param viewUpdateCallback Callback to notify view of updates
    */
-  constructor(viewUpdateCallback: (tasks: [TaskId, TaskState][]) => void) {
+  constructor(
+    viewUpdateCallback: (tasks: [TaskId, TaskState][]) => void,
+    actionCallback: (action: TaskAction) => void,
+  ) {
     this.tasks = new Map();
     this.courses = new Map();
     this.viewUpdateCallback = viewUpdateCallback;
+    this.actionCallback = actionCallback;
     this.userToken = undefined;
+    this.activeTask = undefined;
     this.courses.set(0, {
       id: 0,
       name: 'Personal',
@@ -57,6 +70,7 @@ export class TaskController {
       description,
       course,
       deadline,
+      undefined,
       link,
     );
     // Get task ID
@@ -85,9 +99,52 @@ export class TaskController {
       course,
       deadline,
       link,
+      imported: taskToUpdate.getState().imported,
       status,
     });
     this.viewUpdateCallback(this.getTaskList());
+  }
+
+  public markComplete(id?: TaskId) {
+    let taskToUpdate: TaskModel;
+    if (id === undefined && this.activeTask !== undefined) {
+      // Delete active task
+      taskToUpdate = this.tasks.get(this.activeTask);
+    } else if (id !== undefined) {
+      // Delete specified task
+      taskToUpdate = this.tasks.get(id);
+    } else {
+      throw new Error('Attempted to delete an active task that is undefined.');
+    }
+    taskToUpdate.setState({
+      title: taskToUpdate.getState().title,
+      description: taskToUpdate.getState().description,
+      course: taskToUpdate.getState().course,
+      deadline: taskToUpdate.getState().deadline,
+      link: taskToUpdate.getState().link,
+      imported: taskToUpdate.getState().imported,
+      status: 'completed',
+    });
+    this.viewUpdateCallback(this.getTaskList());
+  }
+
+  public deleteTask(id?: TaskId) {
+    if (id === undefined && this.activeTask !== undefined) {
+      // Delete active task
+      this.tasks.delete(this.activeTask);
+    } else if (id !== undefined) {
+      // Delete specified task
+      this.tasks.delete(id);
+    } else {
+      throw new Error('Attempted to delete an active task that is undefined.');
+    }
+    // Update the view
+    this.viewUpdateCallback(this.getTaskList());
+  }
+
+  public triggerAction(action: TaskAction, id: TaskId) {
+    this.activeTask = id;
+    this.actionCallback(action);
   }
 
   // Transform models into UI friendly state
