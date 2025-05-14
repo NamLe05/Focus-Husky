@@ -43,10 +43,10 @@ export class PetModel {
       accessories: new Set(),
       mood: 'neutral',
       animation: 'idle',
-      position: {x: 0, y: 0},
+      position: {x: 600, y: 700},
       happiness: 70,
-      energy: 100,
-      cleanliness: 100,
+      energy: 60,
+      cleanliness: 50,
       lastInteraction: new Date(),
     };
   }
@@ -206,10 +206,15 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public feed(): PetState {
-    this.setEnergy(this.state.energy + 30);
+    this.setEnergy(this.state.energy + 80);
     this.setAnimation('eating');
     this.updateLastInteraction();
     this.updateMood();
+
+    // Auto-reset animation after eating
+    setTimeout(() => {
+      this.setAnimation('idle');
+    }, 6000);
 
     // Return current state for view updates
     return this.getState();
@@ -220,11 +225,16 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public play(): PetState {
-    this.setHappiness(this.state.happiness + 15);
+    this.setHappiness(this.state.happiness + 25);
     this.setEnergy(this.state.energy - 10);
     this.setAnimation('walking');
     this.updateLastInteraction();
     this.updateMood();
+
+    // Auto-reset animation after playing
+    setTimeout(() => {
+      this.setAnimation('idle');
+    }, 6000);
 
     // Return current state for view updates
     return this.getState();
@@ -235,10 +245,15 @@ export class PetModel {
    * @returns Updated pet state information
    */
   public groom(): PetState {
-    this.setCleanliness(100);
-    this.setHappiness(this.state.happiness + 5);
+    this.setCleanliness(this.state.cleanliness + 10);
+    this.setHappiness(this.state.happiness + 10);
     this.updateLastInteraction();
     this.updateMood();
+
+    // Auto-reset animation after grooming
+    setTimeout(() => {
+      this.setAnimation('idle');
+    }, 6000);
 
     // Return current state for view updates
     return this.getState();
@@ -370,9 +385,9 @@ export class PetModel {
     const initialAnimation = this.state.animation;
 
     // Decrease stats over time
-    this.setHappiness(this.state.happiness - 0.5 * minutes);
-    this.setEnergy(this.state.energy - 0.3 * minutes);
-    this.setCleanliness(this.state.cleanliness - 0.2 * minutes);
+    this.setHappiness(this.state.happiness - 10 * minutes);
+    this.setEnergy(this.state.energy - 5 * minutes);
+    this.setCleanliness(this.state.cleanliness - 2.5 * minutes);
 
     // Update mood based on new stats
     this.updateMood();
