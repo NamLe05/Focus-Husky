@@ -130,13 +130,12 @@ ipcMain.handle('getCanvasAssignments', async (e, userToken) => {
   }
 });
 
-
 declare const POMODORO_WINDOW_WEBPACK_ENTRY: string;
 declare const POMODORO_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 let pomodoroWindow: BrowserWindow | null = null;
 
-const createPomodoroWindow = (): void => {
+const createPomodoroWindow = async (): Promise<void> => {
   if (pomodoroWindow) {
     pomodoroWindow.focus();
     return;
@@ -146,10 +145,10 @@ const createPomodoroWindow = (): void => {
     width: 350,
     height: 220,
     title: 'Pomodoro Timer',
-    frame: false,         // No OS chrome
-    transparent: true,    // See-through background
-    resizable: false,     // Optional: prevent resize
-    hasShadow: false, 
+    frame: false, // No OS chrome
+    transparent: true, // See-through background
+    resizable: false, // Optional: prevent resize
+    hasShadow: false,
     alwaysOnTop: true,
     titleBarStyle: 'hidden',
     webPreferences: {
@@ -157,12 +156,12 @@ const createPomodoroWindow = (): void => {
     },
   });
 
-  pomodoroWindow.loadURL(POMODORO_WINDOW_WEBPACK_ENTRY);
+  await pomodoroWindow.loadURL(POMODORO_WINDOW_WEBPACK_ENTRY);
   pomodoroWindow.on('closed', () => {
     pomodoroWindow = null;
   });
 };
 
-ipcMain.on('open-pomodoro-window', () => {
-  createPomodoroWindow();
+ipcMain.on('open-pomodoro-window', async () => {
+  await createPomodoroWindow();
 });
