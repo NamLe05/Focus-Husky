@@ -12,8 +12,8 @@ const View = () => {
     <Container fluid className='root'>
       <Row className='noPadding'>
         <Col className='dateCard'>
-          <div className='todayTxt'><h1>Today</h1></div>
-          <div className='dateTxt'><h1>THU 4, 24, 2025 | 10:00 AM</h1></div>
+          <div className='todayTxt'><h1>Tuesday</h1></div>
+          <div className='dateTxt'><h1>5/13/2025 | 10:00 AM</h1></div>
         </Col>
         
         <Col>
