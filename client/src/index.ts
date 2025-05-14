@@ -28,7 +28,7 @@ const createWindow = (): void => {
       callback({
         responseHeaders: {
           ...details.responseHeaders,
-          'Content-Security-Policy': [''],
+          'Content-Security-Policy': '',
         },
       });
     },
