@@ -43,7 +43,7 @@ export class PetModel {
       accessories: new Set(),
       mood: 'neutral',
       animation: 'idle',
-      position: {x: 600, y: 700},
+      position: {x: 300, y: 300},
       happiness: 70,
       energy: 60,
       cleanliness: 50,

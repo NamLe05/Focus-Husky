@@ -92,90 +92,73 @@ export default function MarketView() {
   };
 
   return (
-    <div className="app-container">
+    <div id="marketplace">
+      <div className="marketplace-container">
+        <div className="category-nav">
+          {(Object.keys(TAB_ITEMS) as Tab[]).map(tab => (
+            <div
+              key={tab}
+              className={`category-item ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </div>
+          ))}
+        </div>
 
-      <div className="marketplace-wrapper">
-        {/* Meta tags (optional) */}
-        <meta charSet="UTF-8" />
-        <meta
-          httpEquiv="Content-Security-Policy"
-          content="default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data:"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Marketplace - Desktop Application</title>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap"
-          rel="stylesheet"
-        />
-        <link rel="stylesheet" href="./marketplace.css" />
-
-        <div className="marketplace-container">
-          <div className="category-nav">
-            {(Object.keys(TAB_ITEMS) as Tab[]).map(tab => (
+        <div className="tab-content">
+          <div className="pet-grid">
+            {items.map(item => (
               <div
-                key={tab}
-                className={`category-item ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
+                key={item.name}
+                className="pet-card"
+                onClick={() => onItemClick(item)}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                <div className="pet-image-container">
+                  <img src={item.img} alt={item.name} className="pet-image" />
+                </div>
+                <div className="pet-name">{item.name}</div>
+                <div className="pet-stars">
+                  <img src={StarImage} alt="Star" className="star-icon" />
+                  <span>{item.price}</span>
+                </div>
               </div>
             ))}
           </div>
-
-          <div className="tab-content">
-            <div className="pet-grid">
-              {items.map(item => (
-                <div
-                  key={item.name}
-                  className="pet-card"
-                  onClick={() => onItemClick(item)}
-                >
-                  <div className="pet-image-container">
-                    <img src={item.img} alt={item.name} className="pet-image" />
-                  </div>
-                  <div className="pet-name">{item.name}</div>
-                  <div className="pet-stars">
-                    <img src={StarImage} alt="Star" className="star-icon" />
-                    <span>{item.price}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="star-counter">
-            <div className="star-background">{/* SVG omitted for brevity */}</div>
-            <img src={StarImage} alt="Star" className="star-icon-large" />
-            <div className="total-stars">{points}</div>
-          </div>
-          {/*POP UP MESSAGE*/}
-          <Modal
-            show={!!popUpMessage}
-            onHide={() => setPopUpMessage(null)}
-            centered
-            backdrop="static"
-            keyboard={false}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>Notification</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>{popUpMessage}</Modal.Body>
-            <Modal.Footer>
-              <Button variant="primary" onClick={() => setPopUpMessage(null)}>
-                Close
-              </Button>
-            </Modal.Footer>
-          </Modal>
-
-          {/* {popUpMessage && (
-            <div className="modal-overlay">
-              <div className="modal">
-                <p>{popUpMessage}</p>
-                <button onClick={() => setPopUpMessage(null)}>Close</button>
-              </div>
-            </div>
-          )} */}
         </div>
+
+        <div className="star-counter">
+          <div className="star-background">{/* SVG omitted for brevity */}</div>
+          <img src={StarImage} alt="Star" className="star-icon-large" />
+          <div className="total-stars">{points}</div>
+        </div>
+        {/*POP UP MESSAGE*/}
+        <Modal
+          show={!!popUpMessage}
+          onHide={() => setPopUpMessage(null)}
+          centered
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Notification</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{popUpMessage}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={() => setPopUpMessage(null)}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/* {popUpMessage && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <p>{popUpMessage}</p>
+              <button onClick={() => setPopUpMessage(null)}>Close</button>
+            </div>
+          </div>
+        )} */}
       </div>
     </div>
   );
