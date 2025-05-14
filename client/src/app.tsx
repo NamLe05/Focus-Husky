@@ -1,10 +1,12 @@
 import React from 'react';
+/* eslint-disable prettier/prettier */
 import {createRoot} from 'react-dom/client';
 import {HashRouter, Routes, Route, Link, NavLink} from 'react-router';
 import {useLocation} from 'react-router-dom';
 import HomeView from './home-page/view';
 import PetView from './pet/view';
 import PomodoroView from './pomodoro/view';
+import MarketView from './rewards-store/view';
 import TaskView from './tasks/view';
 // eslint-disable-next-line n/no-extraneous-import
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -54,6 +56,12 @@ const routes: {[path: string]: Route} = {
     title: 'Pomodoro Sessions',
     navText: 'Pomodoro Sessions',
     navIcon: 'stopwatch-fill',
+  },
+  '/marketView': {
+    component: MarketView,
+    title: 'Market Place',
+    navText: 'Market Place',
+    navIcon: 'bi bi-star-fill',
   },
 };
 
@@ -155,7 +163,7 @@ function App() {
           <Route path="/pet" element={<PetView />} />
           <Route path="/pomodoro" element={<PomodoroView />} />
           <Route path="/tasks" element={<TaskView />} />
-          {/* <Route path="/marketView" element={<MarketView />} /> */}
+          <Route path="/marketView" element={<MarketView />} />
         </Routes>
       </main>
     </>
