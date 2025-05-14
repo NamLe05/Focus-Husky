@@ -21,6 +21,7 @@ import AlertImage from '../Static/alert.png';
 import HomeworkImage from '../Static/homework.png';
 import CalendarImage from '../Static/calendar.png';
 import { Pet } from './model';
+import { Modal, Button } from 'react-bootstrap';
 
 // Tab type and item interface
 type Tab = 'pets' | 'accessories' | 'timer' | 'sounds' | 'tasks';
@@ -147,15 +148,33 @@ export default function MarketView() {
             <img src={StarImage} alt="Star" className="star-icon-large" />
             <div className="total-stars">{points}</div>
           </div>
+          {/*POP UP MESSAGE*/}
+          <Modal
+            show={!!popUpMessage}
+            onHide={() => setPopUpMessage(null)}
+            centered
+            backdrop="static"
+            keyboard={false}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Notification</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{popUpMessage}</Modal.Body>
+            <Modal.Footer>
+              <Button variant="primary" onClick={() => setPopUpMessage(null)}>
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal>
 
-          {popUpMessage && (
+          {/* {popUpMessage && (
             <div className="modal-overlay">
               <div className="modal">
                 <p>{popUpMessage}</p>
                 <button onClick={() => setPopUpMessage(null)}>Close</button>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

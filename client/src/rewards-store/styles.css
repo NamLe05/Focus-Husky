@@ -9,20 +9,24 @@
    background: rgba(97, 57, 161, 0.5); /* Dark background */
   display: flex;
   justify-content: center;
+  text-align: center;
   align-items: center;
-  z-index: 1000; 
+  z-index: 9999; 
 }
 
 .modal {
-  background: white;
+  background: rgb(77, 49, 115);
   padding: 20px;
   border-radius: 8px;
   width: 300px;
+  max-width: 100%;
   text-align: center;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex; 
+  z-index: 100000;
 }
 
-button {
+.modal button {
   margin-top: 10px;
   padding: 8px 15px;
   border: none;
