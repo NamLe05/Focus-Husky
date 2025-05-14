@@ -247,6 +247,7 @@ export class PetModel {
   public groom(): PetState {
     this.setCleanliness(this.state.cleanliness + 10);
     this.setHappiness(this.state.happiness + 10);
+    this.setAnimation('sleeping');
     this.updateLastInteraction();
     this.updateMood();
 

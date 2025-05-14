@@ -351,9 +351,9 @@ export default function PetView() {
 
     // Set cooldown
     const cooldownTime = {
-      feed: 0.5 * 60 * 1000, // 30 seconds
-      play: 0.5 * 60 * 1000, // 30 seconds
-      groom: 0.5 * 60 * 1000, // 30 seconds
+      feed: 0.1 * 60 * 1000, // 6 seconds
+      play: 0.1 * 60 * 1000, // 6 seconds
+      groom: 0.1 * 60 * 1000, // 6 seconds
     }[type];
 
     setInteractionCooldowns(prev => ({
@@ -561,12 +561,13 @@ export default function PetView() {
             className="pet-wheel-menu"
             style={{
               position: 'absolute',
-              top: '-120px',
+              top: '70px',
               left: '50%',
               transform: 'translateX(-50%)',
               display: 'flex',
               flexDirection: 'column',
               gap: '5px',
+              zIndex: 1001,
             }}
           >
             <button
