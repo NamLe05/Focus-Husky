@@ -29,8 +29,17 @@ main {
   overflow-y: auto;
 }
 
-h1 {
-  font-family: "Poppins", sans-serif;
+h1, h2, h3, .poppins-dark {
+  font-family: "Poppins", sans-serif!important;
+  font-weight: 700;
+}
+
+p, span, a {
+  font-family: "ABeeZee", sans-serif!important;
+}
+
+button, input {
+  font-family: "Poppins", sans-serif!important;
 }
 
 #sidebar {

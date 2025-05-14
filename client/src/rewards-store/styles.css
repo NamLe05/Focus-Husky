@@ -36,37 +36,38 @@
   border-radius: 5px;
 }
 
-button:hover {
+#marketplace button:hover {
   background-color: #381563;
 }
 
-body {
-  margin: 0;
-  padding: 0;
+#marketplace {
   font-family: "Jersey 10", sans-serif;
+  width: 100%;
+  background-color: #b4a4bf;
+  position: relative;
 }
 
 .marketplace-container {
-  max-width: none;
   margin-left: auto;
   margin-right: auto;
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   align-items: center;
   width: 100%;
   height: 100vh;
   padding: 20px;
   box-sizing: border-box;
-  background-color: #b4a4bf;
+  max-width: 1200px;
   overflow: hidden;
 }
 
 /* Category Navigation */
 .category-nav {
   display: flex;
+  flex-shrink: 0;
   justify-content: space-between;
   width: 100%;
-  max-width: 1200px;
   margin-bottom: 20px;
 }
 
@@ -323,7 +324,7 @@ body {
   }
   
 }
-.app-container {
+#marketplace {
   display: flex;
 }
 

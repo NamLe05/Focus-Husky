@@ -51,12 +51,6 @@ const routes: {[path: string]: Route} = {
     navText: 'My Tasks',
     navIcon: 'card-checklist',
   },
-  '/pomodoro': {
-    component: PomodoroView,
-    title: 'Pomodoro Sessions',
-    navText: 'Pomodoro Sessions',
-    navIcon: 'stopwatch-fill',
-  },
   '/marketView': {
     component: MarketView,
     title: 'Market Place',
@@ -84,7 +78,7 @@ function App() {
               className="justify-content-left"
               style={{width: '150px'}}
             >
-              <Navbar.Brand>Focus Husky</Navbar.Brand>
+              <Navbar.Brand className="poppins-dark">Focus Husky</Navbar.Brand>
             </Navbar.Collapse>
             <Navbar.Collapse className="justify-content-center">
               <Form>
