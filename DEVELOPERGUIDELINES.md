@@ -56,7 +56,6 @@ When adding new tests, follow these guidelines:
 - Test one concept per test case
 - Use `beforeEach`/`afterEach` for setup and teardown
 - Mock external dependencies using `vi.mock`/`vi.fn`
-- For UI components, consider adding separate tests using React Testing Library
 
 ### Example Test Structure:
 
