@@ -378,6 +378,9 @@ export default function PetView() {
   const handlePetMouseDown = (e: React.MouseEvent) => {
     if (!petElementRef.current || !petState) return;
 
+    // Prevent default broswer behavior (Added to prevent text selection)
+    e.preventDefault();
+
     // Calculate offset from cursor to pet center
     const rect = petElementRef.current.getBoundingClientRect();
     const offsetX = e.clientX - (petState.position.x + rect.width / 2);
@@ -389,8 +392,13 @@ export default function PetView() {
 
   // Handle mouse move for dragging
   useEffect(() => {
+    let globalSelectStartHandler: ((e: Event) => void) | null = null;
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging || !controllerRef.current || !petId) return;
+
+      // Prevent default broswer behavior (Added to prevent text selection)
+      e.preventDefault();
 
       // Calculate new position
       const newX = e.clientX - dragOffset.x;
@@ -410,6 +418,13 @@ export default function PetView() {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+
+      // Add global selectstart prevention while dragging
+      globalSelectStartHandler = (e: Event) => e.preventDefault();
+      document.addEventListener('selectstart', globalSelectStartHandler);
+
+      // Add user-select none to body while dragging
+      document.body.style.userSelect = 'none';
     }
 
     return () => {
