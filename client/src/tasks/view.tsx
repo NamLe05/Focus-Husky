@@ -1,6 +1,6 @@
 import {useState, useEffect, useRef, ChangeEvent, FormEvent} from 'react';
 
-import {TaskController} from './controller';
+import {TaskController, TaskError} from './controller';
 import {TaskAction, TaskId, TaskState} from './model';
 
 import {isTodo, isComplete} from './helpers';
@@ -17,6 +17,7 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Modal from 'react-bootstrap/Modal';
 import './styles.css';
+import {ErrorLoader, ErrorLoaderRef} from '../components/ErrorLoader';
 
 type TaskCardProps = {
   id: TaskId;
@@ -132,7 +133,7 @@ function TaskCard({id, task, controller}: TaskCardProps) {
   );
 }
 
-export default function PetView() {
+export default function TaskView() {
   // Store the active pet and state
   const [tasks, setTasks] = useState<[TaskId, TaskState][] | undefined>(
     undefined,
@@ -185,9 +186,25 @@ export default function PetView() {
     }
   };
 
+  const errorRef = useRef<ErrorLoaderRef>(undefined);
+  const [tokenError, setTokenError] = useState<boolean>(false);
+
+  const errorCallback = (error: TaskError, msg: string) => {
+    // Handle errors first (no error handling yet)
+    if (error === 'syncError') {
+      setTokenValidated(false);
+      setTokenError(true);
+    }
+
+    // Push notification
+    if (errorRef !== undefined) {
+      errorRef.current.pushError(msg);
+    }
+  };
+
   // Create new instance of controller
   const controller = useRef<TaskController>(
-    new TaskController(viewUpdateCallback, actionCallback),
+    new TaskController(viewUpdateCallback, actionCallback, errorCallback),
   );
 
   // On mount, add a sample task
@@ -263,6 +280,19 @@ export default function PetView() {
               </Col>
             </Row>
           </Form>
+          {tokenError && (
+            <p
+              style={{
+                color: '#f44436',
+                fontSize: '12px',
+                marginTop: 0,
+                marginBottom: '30px',
+              }}
+            >
+              <strong>Error:</strong> Failed to sign in to Canvas. Please check
+              your token, or try again later.
+            </p>
+          )}
         </>
       ) : (
         <p>
@@ -312,6 +342,7 @@ export default function PetView() {
           </Tab>
         </Tabs>
       </div>
+      <ErrorLoader ref={errorRef} />
     </div>
   );
 }

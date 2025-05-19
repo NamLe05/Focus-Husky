@@ -8,6 +8,8 @@ import {
 } from './model';
 import {CourseId, Course} from './course';
 
+export type TaskError = 'deleteError' | 'completeError' | 'syncError';
+
 export class TaskController {
   // Collection of all user tasks
   private tasks: Map<TaskId, TaskModel>;
@@ -24,6 +26,10 @@ export class TaskController {
   // Send an action to the view to process
   private actionCallback: (action: TaskAction) => void;
 
+  // Error callback
+  // Send an error to the view to process
+  private errorCallback: (error: TaskError, msg: string) => void;
+
   // Task with action being taken on
   private activeTask?: TaskId;
 
@@ -34,11 +40,13 @@ export class TaskController {
   constructor(
     viewUpdateCallback: (tasks: [TaskId, TaskState][]) => void,
     actionCallback: (action: TaskAction) => void,
+    errorCallback: (error: TaskError, msg: string) => void,
   ) {
     this.tasks = new Map();
     this.courses = new Map();
     this.viewUpdateCallback = viewUpdateCallback;
     this.actionCallback = actionCallback;
+    this.errorCallback = errorCallback;
     this.userToken = undefined;
     this.activeTask = undefined;
     this.courses.set(0, {
@@ -114,7 +122,10 @@ export class TaskController {
       // Delete specified task
       taskToUpdate = this.tasks.get(id);
     } else {
-      throw new Error('Attempted to delete an active task that is undefined.');
+      this.errorCallback(
+        'completeError',
+        'Failed to mark task as completed. Please try again.',
+      );
     }
     taskToUpdate.setState({
       title: taskToUpdate.getState().title,
@@ -136,7 +147,10 @@ export class TaskController {
       // Delete specified task
       this.tasks.delete(id);
     } else {
-      throw new Error('Attempted to delete an active task that is undefined.');
+      this.errorCallback(
+        'deleteError',
+        'Failed to delete task. Please try again.',
+      );
     }
     // Update the view
     this.viewUpdateCallback(this.getTaskList());
@@ -180,20 +194,27 @@ export class TaskController {
     if (this.userToken === undefined) return;
     // Call the IPC
     console.log('calling the IPC');
-    const [courses, assignments] = await window.electron.api.invoke(
-      'getCanvasAssignments',
-      this.userToken,
-    );
-    console.log(assignments);
-    for (const course of courses) {
-      this.courses.set(course.id, course);
+    try {
+      const [courses, assignments] = await window.electron.api.invoke(
+        'getCanvasAssignments',
+        this.userToken,
+      );
+      console.log(assignments);
+      for (const course of courses) {
+        this.courses.set(course.id, course);
+      }
+      for (const assignment of assignments) {
+        const newTask = new CanvasTaskModel(assignment);
+        this.tasks.set(newTask.getId(), newTask);
+      }
+      // After the sync is complete, update the view.
+      this.viewUpdateCallback(this.getTaskList());
+    } catch (e) {
+      this.errorCallback(
+        'syncError',
+        'Canvas sync failed. Check your token and please try again.',
+      );
     }
-    for (const assignment of assignments) {
-      const newTask = new CanvasTaskModel(assignment);
-      this.tasks.set(newTask.getId(), newTask);
-    }
-    // After the sync is complete, update the view.
-    this.viewUpdateCallback(this.getTaskList());
   }
 
   public handleTokenUpdate(token: string) {
