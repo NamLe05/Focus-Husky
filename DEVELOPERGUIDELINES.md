@@ -89,3 +89,13 @@ describe('PetModel', () => {
 ```
 
 ## How To Build A Release of The Software
+
+To build a distributable release of FocusHusky:
+
+```bash
+# Navigate to the client directory
+cd client
+
+# Create distributable packages
+npm run make
+```
