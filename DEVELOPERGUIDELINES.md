@@ -30,7 +30,26 @@ Focuspet/
      
 ## How To Build The Software
 
+To build a distributable app for FocusHusky:
+
+```bash
+# Navigate to the client directory
+cd client
+
+# Create distributable packages
+npm run make
+```
+
 ## How To Test The software
+To run tests for FocusHusky:
+
+```bash
+# Navigate to the client directory
+cd client
+
+# Run the tests
+npm run test
+```
 
 ## How To Add New Tests
 ### Test Structure:
@@ -56,6 +75,7 @@ When adding new tests, follow these guidelines:
 - Test one concept per test case
 - Use `beforeEach`/`afterEach` for setup and teardown
 - Mock external dependencies using `vi.mock`/`vi.fn`
+- Utilize clear box and black box testing heuristics
 
 ### Example Test Structure:
 
@@ -90,12 +110,14 @@ describe('PetModel', () => {
 
 ## How To Build A Release of The Software
 
-To build a distributable release of FocusHusky:
+First, build a .exe distributable for the software. See the "build" section for details.
 
-```bash
-# Navigate to the client directory
-cd client
+Then, go into GitHub and create a new "release/tag" for the build.
 
-# Create distributable packages
-npm run make
-```
+Enter in the following details:
+1. A descriptive title for the release (e.g. "Beta Release" or "Final Release")
+2. A tag for the release (follow versioning format listed in the instructions, such as v.1.0.0-beta or v.0.1.0)
+3. A clear markdown description of the release (features, operational use cases, major changes, etc.)
+4. Upload a single asset: the distributable build .exe file for Focus Husky.
+
+GitHub will automatically publish the asset under this release tag, and also add a .zip/.tar of the open source code.
