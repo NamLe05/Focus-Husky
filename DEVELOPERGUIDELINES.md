@@ -8,6 +8,7 @@ the source code for the view, model, and controller files.
 
 ## Directory Structure
 
+```text
 Focuspet/
 ├── README.md                     # Documentation
 ├── client/
@@ -25,7 +26,7 @@ Focuspet/
      ├── tsconfig.json
      ├── webpack.main.config.ts
      └── webpack.renderer.config.ts
-
+```
      
 ## How To Build The Software
 
