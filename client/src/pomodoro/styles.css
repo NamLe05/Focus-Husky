@@ -5,6 +5,15 @@
   font-style: normal;
 }
 
+html, body {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
+
 .pomodoroRoot {
     display: flex;
     margin-top: 50px;
