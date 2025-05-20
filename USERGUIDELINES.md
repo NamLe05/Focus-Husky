@@ -5,6 +5,7 @@ Focus Husky is a desktop productivity app designed to help users stay focused an
 
 The application includes the following navigation pages:
 
+
 ### 📊 Dashboard: The main home page and will display...
 - A percentage of your weekly activity level
 - Total hours worked for the week
@@ -36,7 +37,7 @@ Once launched, the widget displays:
       <img src=client/src/Static/calendar.png alt="Calendar Button" width="30"/>
     </td>
     <td>
-      <p><strong>Settings:</strong> Navigates to the application dashboard where you can restart your Pomodoro timer.<br>
+      <p><strong>Calendar:</strong> Navigates to the application dashboard where you can restart your Pomodoro timer.<br>
       <code>~ Work in Progress</code></p>
     </td>
   <tr>
@@ -44,13 +45,14 @@ Once launched, the widget displays:
       <img src=client/src/Static/notes.png alt="Tasks Button" width="30"/>
     </td>
     <td>
-      <p><strong>Settings:</strong> Navigates to the application dashboard where you can restart your Pomodoro timer.<br>
+      <p><strong>Tasks:</strong> Navigates to the application dashboard where you can restart your Pomodoro timer.<br>
       <code>~ Work in Progress</code></p>
     </td>
   </tr>
 </table>
 
-### 🐶 My Pet
+---
+### 🐶 My Pet:
 On the pet navigation page, you can see your pet's current statistics, including:
 
 - **Mood**
@@ -69,16 +71,26 @@ You can **feed**, **play with**, or **groom** your pet, and the animation will r
 
 Additionally, there is a **Productivity Actions** category to complete a timer, and a **Settings** category that allows auto-care for your pet while studying to minimize distractions.
 
+---
+
+### ✅ My Tasks:
+On the tasks navigation page, you can sync your tasks with Canvas by entering your personal token.  
+*(~~~ Currently only for testing; integration with Google Calendar is in progress.)*
+
+After logging in, you'll see a **to-do list** displaying all your uncompleted tasks. You can:
+
+- Edit tasks  
+- Delete tasks  
+- Mark tasks as completed
+
+There is also a separate tab where you can view **completed tasks**.
+
+Additionally, there is an **Activity** tab available.  
+*(~~~ In progress)*
 
 ---
 
-### ✅ My Tasks
-
-
-
----
-
-### 🛒 Marketplace
+### 🛒 Marketplace:
 
 
 
