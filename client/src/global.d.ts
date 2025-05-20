@@ -4,6 +4,7 @@ declare global {
   interface Window {
     electronAPI?: {
       openPomodoroWindow: () => void;
+      openPetWindow: () => void;
     };
     electron: ElectronAPI;
   }

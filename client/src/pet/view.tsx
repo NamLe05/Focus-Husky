@@ -485,6 +485,10 @@ export default function PetView({ showInfoPanel = true, draggable = true, locked
     console.warn('Error getting pet sprite:', e);
   }
 
+  const handleOpenPet = () => {
+    window.electronAPI?.openPetWindow();
+  };
+
   // Otherwise, render the pet...
   return (
     <div className="pet-container">
@@ -784,6 +788,9 @@ export default function PetView({ showInfoPanel = true, draggable = true, locked
             </button>
           </div>
         )}
+        <div className="pet-window">
+        <button className="pet-window-button" onClick={handleOpenPet}>Create Pet Window</button>
+        </div>
       </div>
       )}
     </div>
