@@ -4,6 +4,7 @@ import petImg from '../Static/pet.png';
 import {PetController} from './controller';
 import {PetId, PetState} from './model';
 import {getPetSpritePath, getAccessorySpritePath} from './helpers';
+import {useSoundEffects, createSoundEffects} from './soundEffects';
 
 // FIXED: Import all the sprite images directly
 import huskyNeutralIdle from '../Static/pets/neutral_idle.png';
@@ -113,20 +114,16 @@ interface QueuedInteraction {
   timestamp: number;
 }
 
-// Sound effects
-// Currently set to only printing message because audio not recognized
-const SOUND_EFFECTS = {
-  feed: {play: () => console.log('Feed sound played')},
-  play: {play: () => console.log('Play sound played')},
-  groom: {play: () => console.log('Groom sound played')},
-  error: {play: () => console.log('Error sound played')},
-};
 
 export default function PetView() {
   // Store the active pet and state
   const [petId, setPetId] = useState<PetId | undefined>(cachedPetId || undefined);
   const [petState, setPetState] = useState<PetState | undefined>(cachedPetState || undefined);
   const [isLoading, setIsLoading] = useState<boolean>(!cachedPetState);
+
+  // Initialize sound effects
+  useSoundEffects(); // Preload all sounds
+  const SOUND_EFFECTS = useRef(createSoundEffects()).current;
 
   // Maintain reference to controller
   const controllerRef = useRef<PetController | null>(null);
