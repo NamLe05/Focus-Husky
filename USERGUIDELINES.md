@@ -77,7 +77,7 @@ Additionally, there is a **Productivity Actions** category to complete a timer, 
 
 ### ✅ My Tasks:
 On the tasks navigation page, you can sync your tasks with Canvas by entering your personal token.  
-*(~~~ Currently only for testing; integration with Google Calendar is in progress.)*
+*( ⚠️Currently only for testing; integration with Google Calendar is in progress.)*
 
 After logging in, you'll see a **to-do list** displaying all your uncompleted tasks. You can:
 
@@ -88,16 +88,35 @@ After logging in, you'll see a **to-do list** displaying all your uncompleted ta
 There is also a separate tab where you can view **completed tasks**.
 
 Additionally, there is an **Activity** tab available.  
-*(~~~ In progress)*
+*(⚠️ In progress)*
 
 ---
 
 ### 🛒 Marketplace:
 
+The marketplace allows you to customize your experience by spending stars on pets, accessories, timers, sounds, and task templates.
 
+- You will start with **200 stars** by default when you first use the application.
+- Stars can be earned by completing **Pomodoro timer sessions** and **tasks** *(⚠️ In progress)*.
+- You **cannot** purchase items you already own, and stars are **non-refundable** once spent.
+
+#### 🐶 Pets
+- You will start with a **Husky** as your default pet.
+- After purchasing new pets, you can **equip** the pet of your choice from the marketplace. *(⚠️ In progress)*
+
+#### 🎀 Accessories
+- Purchased accessories will become available for your pet to wear. *(⚠️ In progress)*
+
+#### ⏱️ Timers
+- Customize your Pomodoro timer by purchasing **new colors** and **templates**. *(⚠️ In progress)*
+
+#### 🔊 Sounds
+- Buy unique sounds to play when your Pomodoro timer ends. *(⚠️ In progress)*
+
+#### ✅ Task Templates
+- You can also purchase **pre-built task templates** to quickly add common tasks. *(⚠️ In progress)*
 
 ---
-
 
 # Why Use Focus Husky?
 - Boost your productivity with the proven Pomodoro method.
