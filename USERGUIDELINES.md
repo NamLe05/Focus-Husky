@@ -154,6 +154,7 @@ To install the software you first need to have VS code downloaded. Once you have
 . To start the application:
    - First ensure you are in client:
       ```bash
+     #first ensure you are in the client directory
      cd client/
      ```
       ```bash
