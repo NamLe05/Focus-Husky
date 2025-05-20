@@ -10,6 +10,7 @@ Focus Husky is a desktop productivity app designed to help users stay focused an
 - Stay motivated by with a gamified experience and visual rewards.
 
 # How to install the software
+To install the software you first need to have VS code downloaded. Once you have it installed you need to click clone git repository. Now you need to go to out git repository, click the green code button, copy the HTTPS link, and then past it into VS code. Once that is done you can run our application in the terminal. 
 
 # How to run the software
 To run Focus Husky: 
