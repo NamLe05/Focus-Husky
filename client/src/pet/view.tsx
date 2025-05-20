@@ -77,6 +77,36 @@ const spriteMap = {
   },
 };
 
+// Create a singleton instance of the controller
+// This will persist even when components unmount and remount
+let controllerInstance: PetController | null = null;
+let isInitialized = false;
+
+// Keep a cached copy of the last known pet state to prevent loading flicker
+let cachedPetId: PetId | null = null;
+let cachedPetState: PetState | null = null;
+
+// Function to get or create the controller instance
+const getControllerInstance = (callback: (petId: PetId, state: PetState) => void): PetController => {
+  if (!controllerInstance) {
+    console.log('Creating new PetController instance (singleton)');
+    controllerInstance = new PetController(callback);
+  } else {
+    console.log('Reusing existing PetController instance');
+    // Update the callback in the existing controller
+    controllerInstance.updateCallback(callback);
+    
+    // If we have cached state, immediately apply it
+    if (cachedPetId && cachedPetState) {
+      // Use setTimeout to ensure this happens after state initialization
+      setTimeout(() => {
+        callback(cachedPetId as PetId, cachedPetState as PetState);
+      }, 0);
+    }
+  }
+  return controllerInstance;
+};
+
 // Type for interaction queue
 interface QueuedInteraction {
   type: 'feed' | 'play' | 'groom';
@@ -94,17 +124,12 @@ const SOUND_EFFECTS = {
 
 export default function PetView() {
   // Store the active pet and state
-  const [petId, setPetId] = useState<PetId | undefined>(undefined);
-  const [petState, setPetState] = useState<PetState | undefined>(undefined);
+  const [petId, setPetId] = useState<PetId | undefined>(cachedPetId || undefined);
+  const [petState, setPetState] = useState<PetState | undefined>(cachedPetState || undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(!cachedPetState);
 
-  // Track if component has initialized
-  const hasInitializedRef = useRef(false);
-
-  // Respond to any callback from the controller
-  const viewUpdateCallback = (petId: PetId, state: PetState) => {
-    setPetId(petId);
-    setPetState({...state});
-  };
+  // Maintain reference to controller
+  const controllerRef = useRef<PetController | null>(null);
 
   // Track interaction cooldowns
   const [interactionCooldowns, setInteractionCooldowns] = useState<{
@@ -154,58 +179,81 @@ export default function PetView() {
     handleInteraction(nextInteraction.type, true);
   }, [interactionQueue]);
 
-  // Create new instance of controller
-  // Done: Controller should have a singleton instance.
-  // Use ref to maintain a single controller instance across renders
-  const controllerRef = useRef<PetController | null>(null);
+  // Create a state update handler that also caches the state
+  const handlePetUpdate = useCallback((updatedPetId: PetId, state: PetState) => {
+    // Update component state
+    setPetId(updatedPetId);
+    setPetState({...state});
+    setIsLoading(false);
 
-  // FIXED: Split the useEffect for initialization and state updates
-  // Initialize controller and pet once on component mount
-  useEffect(() => {
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
+    // Cache the state for smooth transitions between tabs
+    cachedPetId = updatedPetId;
+    cachedPetState = {...state};
 
-    // Create controller with callback for state updates
-    const handlePetUpdate = (updatedPetId: PetId, state: PetState) => {
-      setPetId(updatedPetId);
-      setPetState({...state});
+    // Check if pet was previously busy but now idle
+    if (isBusyRef.current && state.animation === 'idle') {
+      isBusyRef.current = false;
 
-      // Check if pet was previously busy but now idle
-      if (isBusyRef.current && state.animation === 'idle') {
-        isBusyRef.current = false;
-
-        // Process any queued interactions
-        processNextQueuedInteraction();
-      }
-
-      // Update busy status based on animation
-      if (state.animation !== 'idle') {
-        isBusyRef.current = true;
-      }
-    };
-
-    // Create controller instance if it doesn't exist
-    if (!controllerRef.current) {
-      controllerRef.current = new PetController(handlePetUpdate);
-      // Try to load existing pets
-      controllerRef.current.loadPetsFromDatabase();
+      // Process any queued interactions
+      processNextQueuedInteraction();
     }
 
-    // If no pets were loaded, create a default one
-    setTimeout(() => {
-      if (!petId && controllerRef.current) {
-        controllerRef.current.handleCreatePet('Dubs', 'husky');
-      }
-    }, 500);
+    // Update busy status based on animation
+    if (state.animation !== 'idle') {
+      isBusyRef.current = true;
+    }
+  }, [processNextQueuedInteraction]);
 
-    // Clean up controller on unmount
-    return () => {
-      if (controllerRef.current) {
-        controllerRef.current.destroy();
-        controllerRef.current = null;
+
+  // Initialize controller and pet once on component mount
+  useEffect(() => {
+    console.log('PetView mounted, initializing...');
+    
+    // Get or create controller instance using the singleton pattern
+    controllerRef.current = getControllerInstance(handlePetUpdate);
+    
+    // Initialize pets only once globally
+    if (!isInitialized) {
+      console.log('First initialization, loading pets...');
+      isInitialized = true;
+      
+      // Try to load existing pets
+      controllerRef.current.loadPetsFromDatabase();
+      
+      // If no pets were loaded, create a default one after a short delay
+      setTimeout(() => {
+        if (controllerRef.current && !cachedPetId) {
+          console.log('No pets found, creating default pet...');
+          controllerRef.current.handleCreatePet('Dubs', 'husky');
+        }
+      }, 500);
+    } else {
+      console.log('Reusing existing pets from controller...');
+      
+      // If we don't have cached state yet, force an update to get current state
+      if (!cachedPetState) {
+        const pets = controllerRef.current.getAllPets();
+        if (pets.length > 0) {
+          const firstPet = pets[0];
+          const firstPetState = firstPet.getState();
+          // Set the cached state
+          cachedPetId = firstPet.getId();
+          cachedPetState = {...firstPetState};
+          // Update component state
+          setPetId(cachedPetId);
+          setPetState(cachedPetState);
+          setIsLoading(false);
+        }
       }
+    }
+
+    // Clean up function doesn't actually destroy the controller
+    // since it's a singleton, but we still need to handle component-specific cleanup
+    return () => {
+      console.log('PetView unmounting, performing cleanup...');
+      // We don't destroy the controller instance here, just clean up component-specific resources
     };
-  }, []); // FIXED: Empty dependency array - only run once on mount
+  }, [handlePetUpdate]);
 
   // Update cooldowns
   useEffect(() => {

@@ -240,4 +240,18 @@ export class PetController {
       this.lastUpdateTime = currentTime;
     }, 1000);
   }
+
+  /**
+   * Update the view callback function
+   * This allows reusing the controller instance with a new view component
+   * @param viewUpdateCallback New callback function
+   */
+  public updateCallback(viewUpdateCallback: (petId: PetId, state: PetState) => void): void {
+    this.viewUpdateCallback = viewUpdateCallback;
+    
+    // Notify the new callback about all existing pets
+    this.pets.forEach((pet, petId) => {
+      this.notifyViewUpdate(petId, pet.getState());
+    });
+  }
 }
