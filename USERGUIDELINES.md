@@ -6,7 +6,9 @@ Focus Husky is a desktop productivity app designed to help users stay focused an
 The application includes the following navigation pages:
 
 
-### 📊 Dashboard: The main home page and will display...
+### 📊 Dashboard: 
+The main home page where you can view:
+
 - A percentage of your weekly activity level
 - Total hours worked for the week
 - Number of tasks completed
