@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import './styles.css';
 import { PomodoroController } from './controller';
 import { PomodoroState } from "./model";
+import PetView from "../pet/view";
 
 import settingImg from '../Static/settings.png';
 import calendarImg from '../Static/calendar.png';
@@ -43,8 +44,7 @@ export default function PomodoroView() {
   return (
     <>
     <div className="pomodoroRoot">
-      <div className="petModel" style={{ backgroundImage: `url(${petImg})` }}></div>
-
+      <PetView showInfoPanel={false} draggable={false} lockedPosition={{ x: 30, y: 55 }}/>
       <div className="pomodoroTimerRoot">
         <div className="navBar">
           <button className="settings" style={{ backgroundImage: `url(${settingImg})` }}></button>

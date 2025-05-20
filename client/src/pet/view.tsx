@@ -92,7 +92,8 @@ const SOUND_EFFECTS = {
   error: {play: () => console.log('Error sound played')},
 };
 
-export default function PetView() {
+export default function PetView({ showInfoPanel = true, draggable = true, lockedPosition }: 
+  { showInfoPanel?: boolean, draggable?: boolean, lockedPosition?: { x: number, y:number }}) {
   // Store the active pet and state
   const [petId, setPetId] = useState<PetId | undefined>(undefined);
   const [petState, setPetState] = useState<PetState | undefined>(undefined);
@@ -376,7 +377,7 @@ export default function PetView() {
 
   // Handle pet mouse down for dragging
   const handlePetMouseDown = (e: React.MouseEvent) => {
-    if (!petElementRef.current || !petState) return;
+    if (!draggable || !petElementRef.current || !petState) return;
 
     // Calculate offset from cursor to pet center
     const rect = petElementRef.current.getBoundingClientRect();
@@ -407,7 +408,7 @@ export default function PetView() {
       }
     };
 
-    if (isDragging) {
+    if (isDragging && draggable) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     }
@@ -490,11 +491,13 @@ export default function PetView() {
       {/* Pet sprite that can be positioned anywhere */}
       <div
         ref={petElementRef}
-        className={`pet-sprite mood-${petState.mood} ${petState.animation} ${isDragging ? 'dragging' : ''}`}
+        className={`pet-sprite mood-${petState.mood} ${petState.animation} no-drag ${isDragging && draggable ? 'dragging' : ''}`}
         style={{
           position: 'absolute' /* FIXED: Added absolute positioning */,
-          left: `${petState.position.x}px` /* FIXED: Use left/top instead of transform */,
-          top: `${petState.position.y}px`,
+          // left: `${petState.position.x -270}px` /* FIXED: Use left/top instead of transform */,
+          // top: `${petState.position.y - 230}px`,
+          left: `${lockedPosition?.x ?? petState.position.x}px`,
+          top: `${lockedPosition?.y ?? petState.position.y}px`,
           backgroundImage: `url(${spritePath})`,
           width: '64px' /* FIXED: Added explicit width and height */,
           height: '64px',
@@ -652,6 +655,7 @@ export default function PetView() {
       )}
 
       {/* Info panel with pet stats and controls */}
+      {showInfoPanel && (
       <div className="pet-info-panel">
         <h3>{petState.name}</h3>
         <div className="pet-mood">
@@ -781,6 +785,7 @@ export default function PetView() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
