@@ -5,7 +5,7 @@ Focus Husky is a desktop productivity app designed to help users stay focused an
 
 The application includes the following navigation pages:
 
-
+# Features: 
 ### 📊 Dashboard: 
 The main home page where you can view:
 
@@ -119,24 +119,46 @@ The marketplace allows you to customize your experience by spending stars on pet
 ---
 
 # Why Use Focus Husky?
-- Boost your productivity with the proven Pomodoro method.
-- Track your tasks and progress in a fun, rewarding way.
-- Customize your experience by collecting pets and accessories.
-- Stay motivated by with a gamified experience and visual rewards.
+- Boost your productivity with the proven **Pomodoro technique**.
+- Track your **tasks and study progress** in an engaging, visual way.
+- Stay motivated with **gamified elements** like a virtual pet that reacts to your focus.
+- Earn stars for completing tasks and use them to **collect pets, accessories, sounds, and more**.
+- Customize your experience and watch your pet thrive as you stay on track.
 
 # How to install the software
 To install the software you first need to have VS code downloaded. Once you have it installed you need to click clone git repository. Now you need to go to out git repository, click the green code button, copy the HTTPS link, and then past it into VS code. Once that is done you can run our application in the terminal. 
 
-# How to run the software
-To run Focus Husky: 
-
-```bash
-# Navigate to the client directory
-cd client
-
-# Run the application
-npm start
-```
+1. Install the following prerequisites if you don't have them already
+   
+   - Visual Studio Code: https://code.visualstudio.com/
+   - Node.js & npm: https://nodejs.org/
+   - Git: https://git-scm.com/
+3. Clone the repository
+   
+   - Open VS Code and then run:
+   ```bash
+   git clone https://github.com/NamLe05/Focus-Husky.git
+   ```
+   - Or click the green "Code" button on the GitHub repo and copy the HTTPS link
+4. Navigate to the project folder on VS code using the following command
+   
+   ```bash
+   cd Focus-Husky/
+   ```
+5. Install dependencies
+   
+    ```bash
+   npm install
+    ```
+# How to run the software?
+. To start the application:
+   - First ensure you are in client:
+      ```bash
+     cd client/
+     ```
+      ```bash
+     npm start
+      ```
 
 # How to report a bug
 
