@@ -8,12 +8,13 @@
 .pomodoroRoot {
     display: flex;
     margin-top: 50px;
-    /* -webkit-app-region: drag; */
+    -webkit-app-region: drag;
     font-family: 'Jersey 10', sans-serif;
     font-style: normal;
     letter-spacing: 3px;
     font-size: 22px;
     box-sizing: border-box;
+    -webkit-app-region: no-drag;
 }
 
 .petModel {

@@ -44,7 +44,7 @@ export default function PomodoroView() {
   return (
     <>
     <div className="pomodoroRoot">
-      <PetView showInfoPanel={false} draggable={false} lockedPosition={{ x: 30, y: 55 }}/>
+      <PetView showInfoPanel={false} draggable={false} lockedPosition={{ x: 30, y: 50 }} dragLayer={false}/>
       <div className="pomodoroTimerRoot">
         <div className="navBar">
           <button className="settings" style={{ backgroundImage: `url(${settingImg})` }}></button>

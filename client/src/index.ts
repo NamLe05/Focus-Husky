@@ -174,8 +174,8 @@ const createPetWindow = async (): Promise<void> => {
   }
 
   petWindow = new BrowserWindow ({
-    width: 100,
-    height: 250,
+    width: 120,
+    height: 350,
     title: "Pet Interaction",
     frame: false,
     transparent: true,
