@@ -1,6 +1,6 @@
 import {useState, useEffect, useRef, ChangeEvent, FormEvent} from 'react';
 
-import {TaskController, TaskError} from './controller';
+import taskControllerInstance, {TaskController, TaskError} from './controller';
 import {TaskAction, TaskId, TaskModel, TaskState} from './model';
 
 import {
@@ -388,17 +388,13 @@ export default function TaskView() {
   };
 
   // Create new instance of controller
-  const controller = useRef<TaskController>(
-    new TaskController(viewUpdateCallback, actionCallback, errorCallback),
-  );
-
-  // On mount, add a sample task
+  const controller = useRef<TaskController>(taskControllerInstance);
+  // On mount, configure the callbacks
   useEffect(() => {
-    controller.current.handleCreateTask(
-      'Test',
-      'sample task',
-      0,
-      getTodayMidnight(),
+    controller.current.setCallbacks(
+      viewUpdateCallback,
+      actionCallback,
+      errorCallback,
     );
   }, []);
 
