@@ -21,10 +21,12 @@ const createWindow = (): void => {
   const mainWindow = new BrowserWindow({
     height: 1920,
     width: 1080,
+    show: false,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   });
+
   mainWindow.webContents.session.webRequest.onHeadersReceived(
     (details, callback) => {
       callback({
@@ -45,7 +47,10 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY); // eslint-disable-line
 
   // Maximize the screen
-  mainWindow.maximize();
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    mainWindow.maximize();
+  })
 };
 
 // This method will be called when Electron has finished
