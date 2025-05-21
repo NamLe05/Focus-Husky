@@ -150,6 +150,27 @@ To install the software you first need to have VS code downloaded. Once you have
     ```bash
    npm install
     ```
+
+---
+
+
+If you don’t want to run the app using code, you can simply download and launch the pre-built version of Focus Husky from GitHub.
+
+✅ Steps:
+
+Click this link to go to our GitHub Releases page:👉 (https://github.com/NamLe05/Focus-Husky/releases/tag/v.1.0.0-beta)
+
+- Scroll down to the “Assets” section of the latest release.
+
+- Download the .exe file
+
+- Drag the downloaded file or folder to your local computer (like your Desktop or Downloads folder).
+
+- Double-click the file you just moved:
+
+- The app should open in a new window using Electron — you're now ready to start focusing with Focus Husky!
+
+
 # How to run the software?
 . To start the application:
    - First ensure you are in client:
