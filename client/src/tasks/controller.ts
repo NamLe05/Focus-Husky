@@ -96,6 +96,7 @@ export class TaskController {
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
     }
+    return createdTaskId;
   }
 
   public handleTaskUpdate(id: TaskId, task: TaskState) {
@@ -114,11 +115,14 @@ export class TaskController {
     } else if (id !== undefined) {
       // Delete specified task
       taskToUpdate = this.tasks.get(id);
-    } else if (this.errorCallback !== undefined) {
-      this.errorCallback(
-        'completeError',
-        'Failed to mark task as completed. Please try again.',
-      );
+    } else {
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'completeError',
+          'Failed to mark task as completed. Please try again.',
+        );
+      }
+      return;
     }
     taskToUpdate.setState({
       title: taskToUpdate.getState().title,
@@ -141,11 +145,14 @@ export class TaskController {
     } else if (id !== undefined) {
       // Delete specified task
       this.tasks.delete(id);
-    } else if (this.errorCallback !== undefined) {
-      this.errorCallback(
-        'deleteError',
-        'Failed to delete task. Please try again.',
-      );
+    } else {
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'deleteError',
+          'Failed to delete task. Please try again.',
+        );
+      }
+      return;
     }
     // Update the view
     if (this.viewUpdateCallback !== undefined) {
