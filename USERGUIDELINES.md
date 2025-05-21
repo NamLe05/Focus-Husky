@@ -187,7 +187,8 @@ If you find a bug or issue while using Focus Husky, you can report it on Github
 
 ✅ Steps:
 
-Go to the Issues tab on our GitHub repository:👉 https://github.com/NamLe05/Focus-Husky/issues
+Go to the Issues tab on our GitHub repository:
+👉 https://github.com/NamLe05/Focus-Husky/issues
 
 - Click "New Issue" to create a bug report.
 
@@ -198,9 +199,9 @@ In the issue:
 
 - What the bug is
 
-- Where it happens
+- Where the bug occurs
 
-- Steps to reproduce it
+- Steps to potientially take to fix the bug
 
 - Label the issue as a "bug" using the "Labels" tab on the right side.
 
