@@ -1,101 +1,66 @@
 /* eslint-disable prettier/prettier */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './styles.css';
-import { handlePetClick, handleItemPurchase, store } from './controller';
+import {handleItemPurchase, store} from './controller';
 import { v4 as uuidv4 } from 'uuid';
-import HuskyImage from '../Static/Husky.png';
-import FrogImage from '../Static/Frog.png';
-import DuckImage from '../Static/Duck.png';
-import TigerImage from '../Static/Tiger.png';
 import StarImage from '../Static/Star.png';
-import CheckListImage from '../Static/checklist.png';
-import HatImage from '../Static/hat.png';
-import CollarImage from '../Static/collar.png';
-import LeashImage from '../Static/leash.png';
-import ClassicTimerImage from '../Static/classic-timer.png';
-import PomodoroImage from '../Static/pomodoro.png';
-import StopWatchImage from '../Static/stopwatch.png';
-import BellImage from '../Static/bell.png';
-import ChimeImage from '../Static/chime.png';
-import AlertImage from '../Static/alert.png';
-import HomeworkImage from '../Static/homework.png';
-import CalendarImage from '../Static/calendar.png';
-import { Pet } from './model';
+
+import {RewardsStore, marketPlaceItem} from './model';
 import { Modal, Button } from 'react-bootstrap';
 
 // Tab type and item interface
-type Tab = 'pets' | 'accessories' | 'timer' | 'sounds' | 'tasks';
-interface Item { name: string; price: number; img: string; owned: boolean }
 
-// Data for each tab
-const TAB_ITEMS: Record<Tab, Item[]> = {
-  pets: [
-    { name: 'Frog', price: 200, img: FrogImage, owned: false},
-    { name: 'Tiger', price: 200, img: TigerImage, owned: false},
-    { name: 'Duck', price: 200, img: DuckImage, owned: false},
-    { name: 'Husky', price: 200, img: HuskyImage, owned: true},
-  ],
-  accessories: [
-    { name: 'Collar', price: 50, img: CollarImage, owned: false },
-    { name: 'Hat', price: 75, img: HatImage, owned: false },
-    { name: 'Leash', price: 40, img: LeashImage, owned: false },
-  ],
-  timer: [
-    { name: 'Classic Timer', price: 30, img: ClassicTimerImage, owned: false },
-    { name: 'Pomodoro', price: 25, img: PomodoroImage, owned: false },
-    { name: 'Stopwatch', price: 15, img: StopWatchImage, owned: false },
-  ],
-  sounds: [
-    { name: 'Bell', price: 20, img: BellImage, owned: false },
-    { name: 'Chime', price: 30, img: ChimeImage, owned: false },
-    { name: 'Alert', price: 25, img: AlertImage, owned: false },
-  ],
-  tasks: [
-    { name: 'Checklist', price: 40, img: CheckListImage, owned: false },
-    { name: 'Homework', price: 45, img: HomeworkImage, owned: false },
-    { name: 'Calendar', price: 50, img: CalendarImage, owned: false },
-  ],
-};
+export type Tab = keyof typeof store.marketItems;
+
 
 export default function MarketView() {
   const [activeTab, setActiveTab] = useState<Tab>('pets');
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
 
-  const items = TAB_ITEMS[activeTab];
+  const [items, setItems] = useState(store.marketItems[activeTab]);
 
-  const onItemClick = (item: Item) => {
-    const totalPoints = store.getTotalPoints();
+  useEffect(() => {
+    setItems(store.marketItems[activeTab]);
+  }, [activeTab]);
 
-    if(item.owned === true){
+  const onItemClick = (item: marketPlaceItem) => {
+
+    const points = store?.getTotalPoints?.();
+
+     if (!item) {
+      console.error('Item is undefined');
+      return;
+    }
+
+    if(item.owned){
       setPopUpMessage(`You already own ${item.name}!`);
       return;
     }
-    if (totalPoints < item.price) {
-      setPopUpMessage(`Sorry, you don't have enough points for ${item.name}.`);
-      return;
+
+    if (item.price > points) {
+      setPopUpMessage(`Not enough points to purchase ${item.name}`);
+      return false;
     }
 
-    if (activeTab === 'pets') {
-      handlePetClick({
-        ID:    uuidv4(),
-        name:  item.name,
-        price: item.price,
-        owned: false,
-      } as Pet);
+    const success = handleItemPurchase(item, activeTab);
+
+
+    if(success){
+      setPoints(store.getTotalPoints());
+      setItems(store.marketItems[activeTab])
+      setPopUpMessage(`Congrats! You purchased ${item.name}!`);
     } else {
-      handleItemPurchase(item.name, item.price);
+      setPopUpMessage(`Could not purchase ${item.name}, try again!`);
     }
-
-    setPoints(store.getTotalPoints());
-    setPopUpMessage(`Congrats! You purchased ${item.name}!`);
   };
+
 
   return (
     <div id="marketplace">
       <div className="marketplace-container">
         <div className="category-nav">
-          {(Object.keys(TAB_ITEMS) as Tab[]).map(tab => (
+          {(Object.keys(store.marketItems) as Tab[]).map(tab => (
             <div
               key={tab}
               className={`category-item ${activeTab === tab ? 'active' : ''}`}
@@ -110,18 +75,19 @@ export default function MarketView() {
           <div className="pet-grid">
             {items.map(item => (
               <div
-                key={item.name}
+                key={item.ID}
                 className="pet-card"
                 onClick={() => onItemClick(item)}
               >
                 <div className="pet-image-container">
-                  <img src={item.img} alt={item.name} className="pet-image" />
+                  <img src={item.image} alt={item.name} className="pet-image" />
                 </div>
                 <div className="pet-name">{item.name}</div>
                 <div className="pet-stars">
                   <img src={StarImage} alt="Star" className="star-icon" />
                   <span>{item.price}</span>
                 </div>
+                {item.owned && <div className="owned-badge">Owned</div>}
               </div>
             ))}
           </div>

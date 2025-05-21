@@ -1,11 +1,25 @@
 /* eslint-disable prettier/prettier */
 import { v4 as uuidv4 } from 'uuid';
-//PET PAGE:
+import HuskyImage from '../Static/Husky.png';
+import FrogImage from '../Static/Frog.png';
+import DuckImage from '../Static/Duck.png';
+import TigerImage from '../Static/Tiger.png';
 
+import HatImage from '../Static/hat.png';
+import CollarImage from '../Static/collar.png';
+import LeashImage from '../Static/leash.png';
 
-//all the pets:
+import ClassicTimerImage from '../Static/classic-timer.png';
+import PomodoroImage from '../Static/pomodoro.png';
+import StopWatchImage from '../Static/stopwatch.png';
 
+import BellImage from '../Static/bell.png';
+import ChimeImage from '../Static/chime.png';
+import AlertImage from '../Static/alert.png';
 
+import CheckListImage from '../Static/checklist.png';
+import HomeworkImage from '../Static/homework.png';
+import CalendarImage from '../Static/calendar.png';
 
 export interface Pet {
     ID: string,
@@ -14,42 +28,121 @@ export interface Pet {
     owned: boolean,
 }
 
+export interface marketPlaceItem {
+    ID: string,
+    name: string,
+    price: number,
+    owned: boolean,
+    image: string
+}
+
 export interface equippedItems {
-    pet: Pet,
+    pet: marketPlaceItem,
+    accessory: marketPlaceItem,
+    timer: marketPlaceItem,
+    sound: marketPlaceItem,
+    image: marketPlaceItem
 }
 
 export class RewardsStore {
 
-    private pets: Pet[] = [];
+    marketItems:{
+        pets: marketPlaceItem[];
+        accessories: marketPlaceItem[];
+        timers: marketPlaceItem[];
+        sounds: marketPlaceItem[];
+        tasks: marketPlaceItem[];
+    };
     private points: number;
     private equipped: equippedItems;
 
 
     constructor() {
-        this.pets = [
-            {ID: uuidv4(), name: 'Husky', price: 200, owned: true},
-            {ID: uuidv4(), name: 'Tiger', price: 200, owned: false},
-            {ID: uuidv4(), name: 'Duck', price: 200, owned: false},
-            {ID: uuidv4(), name: 'Frog', price: 200, owned: false}
-        ]
-
-        this.points = 200;
-
-        const id: string = this.getPetID('Husky');
-        this.equipped = {
-            pet: this.getPet(id)
+        this.marketItems = {
+            pets: [
+                {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
+                {ID: uuidv4(), name: 'Tiger', price: 200, owned: false, image: TigerImage},
+                {ID: uuidv4(), name: 'Duck', price: 200, owned: false, image: DuckImage},
+                {ID: uuidv4(), name: 'Frog', price: 200, owned: false, image: FrogImage}
+            ],
+            accessories: [
+                {ID: uuidv4(), name: 'Hat', price: 50, owned: false, image: HatImage},
+                {ID: uuidv4(), name: 'Collar', price: 75, owned: false, image: CollarImage},
+                {ID: uuidv4(), name: 'Leash', price: 40, owned: false, image: LeashImage},
+            ],
+            timers: [
+                { ID: uuidv4(), name: 'Classic Timer', price: 30, owned: false, image: ClassicTimerImage},
+                { ID: uuidv4(), name: 'Pomodoro', price: 25, owned: false, image: PomodoroImage},
+                { ID: uuidv4(), name: 'Stopwatch', price: 15, owned: false, image: StopWatchImage},
+            ],
+            sounds: [
+                { ID: uuidv4(), name: 'Bell', price: 30, owned: false, image: BellImage},
+                { ID: uuidv4(), name: 'Chime', price: 25, owned: false, image: ChimeImage},
+                { ID: uuidv4(), name: 'Alert', price: 15, owned: false, image: AlertImage}
+            ],
+            tasks: [
+                { ID: uuidv4(), name: 'Checklist', price: 40, owned: false, image: CheckListImage},
+                { ID: uuidv4(), name: 'Homework', price: 45, owned: false, image: HomeworkImage},
+                { ID: uuidv4(), name: 'Calendar', price: 55, owned: false, image: CalendarImage}
+            ]
         }
+        this.points = 200;
 
     }
 
-    public getPetID(name: string): string {
-        for (const pet of this.pets){
-            if (pet.name === name){
-                return pet.ID;
+    public deductPoints(amount: number){
+        this.points = this.points - amount;
+    }
+
+    //Get item ID number through name
+    public getItemID(name: string): string {
+
+        for (const category in this.marketItems){
+            const items = this.marketItems[category as keyof typeof this.marketItems];
+            for (const item of items){
+                if (item.name === name){
+                    return item.ID;
+                }
             }
         }
 
         throw new Error ('Invalid pet ID');
+    }
+
+    public purchaseItem(category: keyof typeof this.marketItems, itemId: string): boolean {
+        const items = this.marketItems[category];
+        const item = items.find(i => i.ID === itemId);
+        if (!item) {
+            console.log(`Item with ID ${itemId} not found in category ${category}`);
+            return false;
+        }
+        if (item.owned) {
+            console.log(`User already owns ${item.name}`);
+            return false;
+        }
+        if (item.price > this.points) {
+            console.log(`Not enough points to purchase ${item.name}`);
+            return false;
+        }
+        this.deductPoints(item.price);
+        item.owned = true;
+        return true;
+    }
+
+    // gets the specific item based on item ID
+    // returns exception if pet with give name is not in list of available pets
+    public getItem(id: string): marketPlaceItem {
+
+        for (const category in this.marketItems){
+            const items = this.marketItems[category as keyof typeof this.marketItems];
+            for (const item of items){
+                if (item.ID === id){
+                    return item;
+
+                }
+            }
+        }
+        throw new Error(`Pet with name ${id} not found`);
     }
 
     // returns users' current list of points available to spend
@@ -57,115 +150,33 @@ export class RewardsStore {
         return this.points;
     }
 
-    public getOwnedPets() {
-        return this.pets.filter(pet => pet.owned);
-    }
-
     // checks if user has enough points to spend on an item
-    public canAfford(amount: number): boolean {
-        if (amount > this.points){
+    public canAfford(item: marketPlaceItem): boolean {
+        if (item.price > this.points){
             return false;
         } else {
             return true;
         }
     }
 
-    // get method returns list of all pets in the store
-    public getListOfPets(): Pet[] {
-        return this.pets;
-    }
-
-    // checking to see if a pet purchase is successful or not
-    public purchasePet(name: string): void {
-
-        const wantedPet = this.getPet(name);
-
-        if(wantedPet && wantedPet.owned === false){
-            if (this.canAfford(wantedPet.price)){
-                wantedPet.owned = true;
-                this.points -= wantedPet.price;
-                //return true;
-            }
-        }
-        //return false;
-    }
-
-
-    // gets the specific pet based on pet name
-    // returns exception if pet with give name is not in list of available pets
-    public getPet(petID: string): Pet {
-
-        for (let i = 0; i < this.pets.length; i++){
-
-            if(this.pets[i].ID === petID){
-                return this.pets[i];
-            }
-        }
-
-        throw new Error(`Pet with name ${petID} not found`);
-    }
-
-    // equipping pet:
-    public equipPet(petID: string): boolean {
-
-        const pet = this.getPet(petID);
-
-        if(pet && pet.owned){
-            this.equipped.pet = pet;
-            return true;
-        }
-        return false;
-    }
     //updates the users new points
     public updatePoints(newPoints: number): void {
         this.points = newPoints;
     }
 
-    public purchaseItem(itemName: string, price: number): void {
-    if (!this.canAfford(price)) {
-      throw new Error(`Not enough points to purchase ${itemName}`)
+    //return a list of all the owned items
+    public getOwnedItems() {
+
+        const owned_items: marketPlaceItem[] = [];
+
+        for (const category in this.marketItems){
+            const items = this.marketItems[category as keyof typeof this.marketItems];
+            for (const item of items){
+                if (item.owned === true){
+                    owned_items.push(item);
+                }
+            }
+        }
+        return owned_items;
     }
-    this.points -= price
-  }
-
-
 }
-
-
-
-const store = new RewardsStore();
-//get all the pets:
-store.getListOfPets();
-
-
-
-//get the available pets for purchase:
-
-store.getListOfPets();
-
-//get the users' points
-store.getTotalPoints();
-
-
-//check if the pet can be purchased eg. if they have
-//enough points to purchase
-// const pet = store.getPet('Tiger');
-//     if (store.canAfford(pet.price)) {
-//         console.log('You can afford this pet');
-//     } else {
-//         console.log('Not enough points');
-//     }
-
-
-//purchase pet
-
-
-
-//update the points
-
-
-
-//get owned pets.
-store.getOwnedPets();
-
-
