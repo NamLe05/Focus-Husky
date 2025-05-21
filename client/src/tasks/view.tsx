@@ -1,9 +1,15 @@
 import {useState, useEffect, useRef, ChangeEvent, FormEvent} from 'react';
 
-import {TaskController} from './controller';
-import {TaskAction, TaskId, TaskState} from './model';
+import taskControllerInstance, {TaskController, TaskError} from './controller';
+import {TaskAction, TaskId, TaskModel, TaskState} from './model';
 
-import {isTodo, isComplete} from './helpers';
+import {
+  isTodo,
+  isComplete,
+  dateToHtmlInputString,
+  htmlInputStringToDate,
+  getTodayMidnight,
+} from './helpers';
 
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
@@ -17,11 +23,14 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Modal from 'react-bootstrap/Modal';
 import './styles.css';
+import {ErrorLoader, ErrorLoaderRef} from '../components/ErrorLoader';
 
 type TaskCardProps = {
   id: TaskId;
   task: TaskState;
   controller: TaskController;
+  newItem?: boolean;
+  newItemClose?: () => void;
 };
 
 type ConfirmModalProps = {
@@ -65,8 +74,89 @@ function ConfirmModal({
   );
 }
 
-function TaskCard({id, task, controller}: TaskCardProps) {
+type TaskEditableProps = {
+  editing: boolean;
+  placeholder: string;
+  // Could support more types if needed
+  type: 'string' | 'date' | 'number' | 'paragraph';
+  getter: string | number | Date | boolean;
+  setter: (value: string | number | Date | boolean) => void;
+};
+
+function TaskEditable({
+  editing,
+  placeholder,
+  type,
+  getter,
+  setter,
+}: TaskEditableProps) {
+  if (type === 'string' && typeof getter === 'string') {
+    return editing ? (
+      <div style={{marginRight: '300px'}}>
+        <Form.Control
+          size="sm"
+          placeholder={placeholder}
+          value={getter}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setter(e.target.value);
+          }}
+          required
+        />
+      </div>
+    ) : (
+      <span>{getter}</span>
+    );
+  } else if (type === 'date' && typeof getter === 'object') {
+    return editing ? (
+      <div style={{marginRight: '300px'}}>
+        <Form.Control
+          size="sm"
+          type="datetime-local"
+          placeholder={placeholder}
+          value={dateToHtmlInputString(getter)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setter(e.target.value);
+          }}
+          required
+        />
+      </div>
+    ) : (
+      <span>{getter.toLocaleString()}</span>
+    );
+  } else if (type === 'paragraph' && typeof getter === 'string') {
+    return editing ? (
+      <Form.Control
+        size="sm"
+        as="textarea"
+        placeholder={placeholder}
+        value={getter}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          setter(e.target.value);
+        }}
+        required
+      />
+    ) : (
+      <span>{getter.toLocaleString()}</span>
+    );
+  }
+  return <span>ERROR</span>;
+}
+
+function TaskCard({
+  id,
+  task,
+  controller,
+  newItem,
+  newItemClose,
+}: TaskCardProps) {
+  const [editing, setEditing] = useState<boolean>(false);
+  const [tempTask, setTempTask] = useState<TaskState>({...task});
   const [completed, setCompleted] = useState<boolean>(isComplete(task.status));
+  // If the task is update, cancel edits (todo: refine this logic)
+  useEffect(() => {
+    setEditing(false);
+    setTempTask({...task});
+  }, [task]);
   const onCompleteTask = () => {
     if (task.imported) {
       controller.triggerAction('complete-imported', id);
@@ -77,62 +167,158 @@ function TaskCard({id, task, controller}: TaskCardProps) {
       }, 100);
     }
   };
+  const onEditTask = () => {
+    setEditing(true);
+  };
   const initiateDelete = () => {
     controller.triggerAction('delete', id);
   };
+  const updateTaskTitle = (newTitle: string) => {
+    setTempTask((prevTask: TaskState) => ({...prevTask, title: newTitle}));
+  };
+  const updateTaskDescription = (newDesc: string) => {
+    setTempTask((prevTask: TaskState) => ({...prevTask, description: newDesc}));
+  };
+  const updateTaskDeadline = (newDate: string) => {
+    setTempTask((prevTask: TaskState) => ({
+      ...prevTask,
+      deadline: htmlInputStringToDate(newDate),
+    }));
+  };
+  const saveChanges = () => {
+    if (newItem !== undefined) {
+      controller.handleCreateTask(
+        tempTask.title,
+        tempTask.description,
+        tempTask.course,
+        tempTask.deadline,
+      );
+      newItemClose();
+    } else {
+      controller.handleTaskUpdate(id, tempTask);
+    }
+  };
+  const cancelChanges = () => {
+    if (newItem !== undefined) {
+      newItemClose();
+    }
+    setEditing(false);
+    setTempTask({...task});
+  };
   return (
-    <Card className="taskCard">
-      <Card.Body className="position-relative">
-        <div className="cardMenu position-absolute top-0 end-0 p-3">
-          {task.imported ? (
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip>View Assignment</Tooltip>}
-            >
-              <i className="bi bi-box-arrow-up-right px-3"></i>
-            </OverlayTrigger>
+    <Card
+      className="taskCard"
+      style={{display: newItem !== undefined && !newItem ? 'none' : 'block'}}
+    >
+      <Card.Body
+        className={`position-relative${newItem !== undefined ? ' create-shadow' : ''}`}
+      >
+        {newItem !== undefined && <h4>Create new task:</h4>}
+        <div className="position-absolute top-0 end-0 p-3">
+          {editing || newItem !== undefined ? (
+            <>
+              <Button size="sm" onClick={saveChanges} className="mx-1">
+                <i className="bi bi-floppy-fill"></i> Save
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                className="mx-1"
+                onClick={cancelChanges}
+              >
+                <i className="bi bi-x-circle-fill"></i> Cancel
+              </Button>
+            </>
           ) : (
-            <OverlayTrigger placement="top" overlay={<Tooltip>Edit</Tooltip>}>
-              <i className="bi bi-pencil-square px-3"></i>
-            </OverlayTrigger>
+            <div className="cardMenu">
+              {task.imported ? (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>View Assignment</Tooltip>}
+                >
+                  <i className="bi bi-box-arrow-up-right px-3"></i>
+                </OverlayTrigger>
+              ) : (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Edit</Tooltip>}
+                >
+                  <i
+                    onClick={onEditTask}
+                    className="bi bi-pencil-square px-3"
+                  ></i>
+                </OverlayTrigger>
+              )}
+              {task.imported ? (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Archive</Tooltip>}
+                >
+                  <i className="bi bi-archive-fill px-3"></i>
+                </OverlayTrigger>
+              ) : (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Delete</Tooltip>}
+                >
+                  <i
+                    className="bi bi-trash-fill px-3"
+                    onClick={initiateDelete}
+                  ></i>
+                </OverlayTrigger>
+              )}
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip>Complete</Tooltip>}
+              >
+                {completed ? (
+                  <i
+                    className="bi bi-check-circle-fill px-3"
+                    style={{color: '#4CAF50'}}
+                  ></i>
+                ) : (
+                  <i
+                    onClick={onCompleteTask}
+                    className="bi bi-check-circle px-3"
+                  ></i>
+                )}
+              </OverlayTrigger>
+            </div>
           )}
-          {task.imported ? (
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip>Archive</Tooltip>}
-            >
-              <i className="bi bi-archive-fill px-3"></i>
-            </OverlayTrigger>
-          ) : (
-            <OverlayTrigger placement="top" overlay={<Tooltip>Delete</Tooltip>}>
-              <i className="bi bi-trash-fill px-3" onClick={initiateDelete}></i>
-            </OverlayTrigger>
-          )}
-          <OverlayTrigger placement="top" overlay={<Tooltip>Complete</Tooltip>}>
-            {completed ? (
-              <i
-                className="bi bi-check-circle-fill px-3"
-                style={{color: '#4CAF50'}}
-              ></i>
-            ) : (
-              <i
-                onClick={onCompleteTask}
-                className="bi bi-check-circle px-3"
-              ></i>
-            )}
-          </OverlayTrigger>
         </div>
-        <Card.Title className="poppins-dark">{task.title}</Card.Title>
+        <Card.Title className="poppins-dark">
+          <TaskEditable
+            placeholder="Enter title"
+            editing={editing || newItem !== undefined}
+            type="string"
+            getter={tempTask.title}
+            setter={updateTaskTitle}
+          />
+        </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">
-          {task.deadline.toLocaleString()}
+          <TaskEditable
+            placeholder="Enter deadline"
+            editing={editing || newItem !== undefined}
+            type="date"
+            getter={tempTask.deadline}
+            setter={updateTaskDeadline}
+          />
         </Card.Subtitle>
-        <Card.Text>{task.description}</Card.Text>
+        <Card.Text>
+          <TaskEditable
+            placeholder="Enter description"
+            editing={editing || newItem !== undefined}
+            type="paragraph"
+            getter={tempTask.description}
+            setter={updateTaskDescription}
+          />
+        </Card.Text>
       </Card.Body>
     </Card>
   );
 }
 
-export default function PetView() {
+export default function TaskView() {
   // Store the active pet and state
   const [tasks, setTasks] = useState<[TaskId, TaskState][] | undefined>(
     undefined,
@@ -185,19 +371,31 @@ export default function PetView() {
     }
   };
 
-  // Create new instance of controller
-  const controller = useRef<TaskController>(
-    new TaskController(viewUpdateCallback, actionCallback),
-  );
+  const errorRef = useRef<ErrorLoaderRef>(undefined);
+  const [tokenError, setTokenError] = useState<boolean>(false);
 
-  // On mount, add a sample task
+  const errorCallback = (error: TaskError, msg: string) => {
+    // Handle errors first (no error handling yet)
+    if (error === 'syncError') {
+      setTokenValidated(false);
+      setTokenError(true);
+    }
+
+    // Push notification
+    if (errorRef !== undefined) {
+      errorRef.current.pushError(msg);
+    }
+  };
+
+  // Create new instance of controller
+  const controller = useRef<TaskController>(taskControllerInstance);
+  // On mount, configure the callbacks
   useEffect(() => {
-    const dueToday = new Date();
-    dueToday.setHours(23);
-    dueToday.setMinutes(59);
-    dueToday.setSeconds(0);
-    dueToday.setMilliseconds(0);
-    controller.current.handleCreateTask('Test', 'sample task', 0, dueToday);
+    controller.current.setCallbacks(
+      viewUpdateCallback,
+      actionCallback,
+      errorCallback,
+    );
   }, []);
 
   // Event for token field update
@@ -216,6 +414,23 @@ export default function PetView() {
     setSyncing(true);
     await controller.current.syncCanvas();
     setSyncing(false);
+  };
+
+  const [canvasInstructionsVisible, setCanvasInstructionsVisible] =
+    useState<boolean>(false);
+  const openCanvasInstructions = () => {
+    setCanvasInstructionsVisible(true);
+  };
+  const closeCanvasInstructions = () => {
+    setCanvasInstructionsVisible(false);
+  };
+
+  const [newTaskActive, setNewTaskActive] = useState<boolean>(false);
+  const onCreateNewTask = () => {
+    setNewTaskActive(true);
+  };
+  const endNewTaskCreation = () => {
+    setNewTaskActive(false);
   };
 
   // If no tasks are loaded, show a loading sign.
@@ -247,6 +462,16 @@ export default function PetView() {
             To sync tasks with Canvas, please enter your personal token (this is
             only for testing):
           </p>
+          <p>
+            <a
+              className="link-underline-primary"
+              role="button"
+              onClick={openCanvasInstructions}
+            >
+              Click here for instructions{' '}
+              <i className="bi bi-question-circle-fill"></i>
+            </a>
+          </p>
           <Form onSubmit={onTokenFieldSubmit} style={{marginBottom: '20px'}}>
             <Row>
               <Col xs="auto">
@@ -263,6 +488,19 @@ export default function PetView() {
               </Col>
             </Row>
           </Form>
+          {tokenError && (
+            <p
+              style={{
+                color: '#f44436',
+                fontSize: '12px',
+                marginTop: 0,
+                marginBottom: '30px',
+              }}
+            >
+              <strong>Error:</strong> Failed to sign in to Canvas. Please check
+              your token, or try again later.
+            </p>
+          )}
         </>
       ) : (
         <p>
@@ -280,6 +518,26 @@ export default function PetView() {
       <div id="tasks-tabs">
         <Tabs defaultActiveKey="todo" className="mb-3">
           <Tab eventKey="todo" title="To-do">
+            {!newTaskActive && (
+              <div className="d-grid gap-2 mb-3">
+                <Button variant="outline-success" onClick={onCreateNewTask}>
+                  <i className="bi bi-plus-circle-fill"></i> Create new task
+                </Button>
+              </div>
+            )}
+            <TaskCard
+              id="newTask"
+              task={new TaskModel(
+                '',
+                '',
+                0,
+                getTodayMidnight(),
+                undefined,
+              ).getState()}
+              controller={controller.current}
+              newItem={newTaskActive}
+              newItemClose={endNewTaskCreation}
+            />
             {tasks.length === 0 ? (
               <AllGood />
             ) : (
@@ -312,6 +570,54 @@ export default function PetView() {
           </Tab>
         </Tabs>
       </div>
+      <ErrorLoader ref={errorRef} />
+      <Modal
+        show={canvasInstructionsVisible}
+        onHide={closeCanvasInstructions}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Instructions for Canvas Sync</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            Without UW IT approval, we cannot use the Canvas API through direct
+            authentication. For testing, you can sync your tasks with Canvas
+            using a personal token.
+          </p>
+          <p>
+            To generate a personal token, navigate to{' '}
+            <a
+              href="https://canvas.uw.edu/profile/settings#access_tokens_holder"
+              target="_blank"
+            >
+              Canvas settings
+            </a>
+            .
+          </p>
+          <p>
+            Scroll down to the &quot;<b>Approved Integrations:</b>&quot;
+            section.
+          </p>
+          <p>
+            Click on the new &quot;<b>+ New Access Token</b>&quot; button to
+            generate your token.
+          </p>
+          <p>Copy the token and use it to log in to our service!</p>
+          <p style={{color: '#f44436'}}>
+            <b>
+              Please note that we do not save your personal tokens for security
+              reasons. You must re-enter the token every time you launch the
+              app. Please save your token!
+            </b>
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeCanvasInstructions}>Got it!</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

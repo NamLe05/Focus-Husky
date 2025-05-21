@@ -24,3 +24,22 @@ export function isComplete(status: TaskStatus) {
     status === 'submitted' || status === 'completed' || status === 'evaluated'
   );
 }
+
+export function dateToHtmlInputString(date: Date) {
+  const dateCopy = new Date(date);
+  dateCopy.setMinutes(dateCopy.getMinutes() - dateCopy.getTimezoneOffset());
+  return dateCopy.toISOString().slice(0, 16);
+}
+
+export function htmlInputStringToDate(str: string) {
+  return new Date(str);
+}
+
+export function getTodayMidnight() {
+  const dueToday = new Date();
+  dueToday.setHours(23);
+  dueToday.setMinutes(59);
+  dueToday.setSeconds(0);
+  dueToday.setMilliseconds(0);
+  return dueToday;
+}

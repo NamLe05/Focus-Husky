@@ -2,11 +2,13 @@ import {
   TaskModel,
   TaskState,
   TaskId,
-  TaskStatus,
   CanvasTaskModel,
   TaskAction,
 } from './model';
 import {CourseId, Course} from './course';
+import {getTodayMidnight} from './helpers';
+
+export type TaskError = 'deleteError' | 'completeError' | 'syncError';
 
 export class TaskController {
   // Collection of all user tasks
@@ -18,27 +20,27 @@ export class TaskController {
 
   // View update callback
   // Send latest list of tasks to the client
-  private viewUpdateCallback: (tasks: [TaskId, TaskState][]) => void;
+  private viewUpdateCallback?: (tasks: [TaskId, TaskState][]) => void;
 
   // Action callback
   // Send an action to the view to process
-  private actionCallback: (action: TaskAction) => void;
+  private actionCallback?: (action: TaskAction) => void;
+
+  // Error callback
+  // Send an error to the view to process
+  private errorCallback?: (error: TaskError, msg: string) => void;
 
   // Task with action being taken on
   private activeTask?: TaskId;
 
+  // Singleton instance of controller
+
   /**
    * Create a new task controller instance
-   * @param viewUpdateCallback Callback to notify view of updates
    */
-  constructor(
-    viewUpdateCallback: (tasks: [TaskId, TaskState][]) => void,
-    actionCallback: (action: TaskAction) => void,
-  ) {
+  constructor() {
     this.tasks = new Map();
     this.courses = new Map();
-    this.viewUpdateCallback = viewUpdateCallback;
-    this.actionCallback = actionCallback;
     this.userToken = undefined;
     this.activeTask = undefined;
     this.courses.set(0, {
@@ -52,6 +54,17 @@ export class TaskController {
     // TODO: Load existing tasks from database.
 
     // Query new tasks from Canvas.
+  }
+
+  public setCallbacks(
+    viewUpdateCallback: (tasks: [TaskId, TaskState][]) => void,
+    actionCallback: (action: TaskAction) => void,
+    errorCallback: (error: TaskError, msg: string) => void,
+  ) {
+    this.viewUpdateCallback = viewUpdateCallback;
+    this.actionCallback = actionCallback;
+    this.errorCallback = errorCallback;
+    this.viewUpdateCallback(this.getTaskList());
   }
 
   /**
@@ -80,29 +93,18 @@ export class TaskController {
     // Save task to database
     this.saveTaskToDatabase(createdTaskId);
     // Update the view
-    this.viewUpdateCallback(this.getTaskList());
+    if (this.viewUpdateCallback !== undefined) {
+      this.viewUpdateCallback(this.getTaskList());
+    }
+    return createdTaskId;
   }
 
-  public handleTaskUpdate(
-    id: TaskId,
-    title: string,
-    description: string,
-    course: CourseId,
-    deadline: Date,
-    link?: URL,
-    status?: TaskStatus,
-  ) {
+  public handleTaskUpdate(id: TaskId, task: TaskState) {
     const taskToUpdate = this.tasks.get(id);
-    taskToUpdate.setState({
-      title,
-      description,
-      course,
-      deadline,
-      link,
-      imported: taskToUpdate.getState().imported,
-      status,
-    });
-    this.viewUpdateCallback(this.getTaskList());
+    taskToUpdate.setState(task);
+    if (this.viewUpdateCallback !== undefined) {
+      this.viewUpdateCallback(this.getTaskList());
+    }
   }
 
   public markComplete(id?: TaskId) {
@@ -114,7 +116,13 @@ export class TaskController {
       // Delete specified task
       taskToUpdate = this.tasks.get(id);
     } else {
-      throw new Error('Attempted to delete an active task that is undefined.');
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'completeError',
+          'Failed to mark task as completed. Please try again.',
+        );
+      }
+      return;
     }
     taskToUpdate.setState({
       title: taskToUpdate.getState().title,
@@ -125,7 +133,9 @@ export class TaskController {
       imported: taskToUpdate.getState().imported,
       status: 'completed',
     });
-    this.viewUpdateCallback(this.getTaskList());
+    if (this.viewUpdateCallback !== undefined) {
+      this.viewUpdateCallback(this.getTaskList());
+    }
   }
 
   public deleteTask(id?: TaskId) {
@@ -136,15 +146,25 @@ export class TaskController {
       // Delete specified task
       this.tasks.delete(id);
     } else {
-      throw new Error('Attempted to delete an active task that is undefined.');
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'deleteError',
+          'Failed to delete task. Please try again.',
+        );
+      }
+      return;
     }
     // Update the view
-    this.viewUpdateCallback(this.getTaskList());
+    if (this.viewUpdateCallback !== undefined) {
+      this.viewUpdateCallback(this.getTaskList());
+    }
   }
 
   public triggerAction(action: TaskAction, id: TaskId) {
     this.activeTask = id;
-    this.actionCallback(action);
+    if (this.actionCallback !== undefined) {
+      this.actionCallback(action);
+    }
   }
 
   // Transform models into UI friendly state
@@ -180,20 +200,31 @@ export class TaskController {
     if (this.userToken === undefined) return;
     // Call the IPC
     console.log('calling the IPC');
-    const [courses, assignments] = await window.electron.api.invoke(
-      'getCanvasAssignments',
-      this.userToken,
-    );
-    console.log(assignments);
-    for (const course of courses) {
-      this.courses.set(course.id, course);
+    try {
+      const [courses, assignments] = await window.electron.api.invoke(
+        'getCanvasAssignments',
+        this.userToken,
+      );
+      console.log(assignments);
+      for (const course of courses) {
+        this.courses.set(course.id, course);
+      }
+      for (const assignment of assignments) {
+        const newTask = new CanvasTaskModel(assignment);
+        this.tasks.set(newTask.getId(), newTask);
+      }
+      // After the sync is complete, update the view.
+      if (this.viewUpdateCallback !== undefined) {
+        this.viewUpdateCallback(this.getTaskList());
+      }
+    } catch (e) {
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'syncError',
+          'Canvas sync failed. Check your token and please try again.',
+        );
+      }
     }
-    for (const assignment of assignments) {
-      const newTask = new CanvasTaskModel(assignment);
-      this.tasks.set(newTask.getId(), newTask);
-    }
-    // After the sync is complete, update the view.
-    this.viewUpdateCallback(this.getTaskList());
   }
 
   public handleTokenUpdate(token: string) {
@@ -204,3 +235,14 @@ export class TaskController {
     return this.userToken !== undefined;
   }
 }
+
+const taskControllerInstance: TaskController = new TaskController();
+
+taskControllerInstance.handleCreateTask(
+  'Test',
+  'sample task',
+  0,
+  getTodayMidnight(),
+);
+
+export default taskControllerInstance;
