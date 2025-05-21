@@ -158,6 +158,8 @@ const createPomodoroWindow = async (): Promise<void> => {
     hasShadow: false,
     alwaysOnTop: true,
     titleBarStyle: 'hidden',
+    autoHideMenuBar: true,
+    kiosk: false,
     webPreferences: {
       preload: POMODORO_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
