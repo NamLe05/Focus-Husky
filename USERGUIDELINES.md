@@ -183,5 +183,27 @@ Click this link to go to our GitHub Releases page:👉 (https://github.com/NamLe
       ```
 
 # How to report a bug
+If you find a bug or issue while using Focus Husky, you can report it on Github
+
+✅ Steps:
+
+Go to the Issues tab on our GitHub repository:👉 https://github.com/NamLe05/Focus-Husky/issues
+
+- Click "New Issue" to create a bug report.
+
+In the issue:
+- Give it a clear title that summarizes the bug.
+
+- Describe the bug in detail:
+
+- What the bug is
+
+- Where it happens
+
+- Steps to reproduce it
+
+- Label the issue as a "bug" using the "Labels" tab on the right side.
+
+- Assign the issue to yourself or someone else on the team, so it's tracked and resolved.
 
 # Known bugs
