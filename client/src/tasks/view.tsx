@@ -235,6 +235,15 @@ export default function TaskView() {
     setSyncing(false);
   };
 
+  const [canvasInstructionsVisible, setCanvasInstructionsVisible] =
+    useState<boolean>(false);
+  const openCanvasInstructions = () => {
+    setCanvasInstructionsVisible(true);
+  };
+  const closeCanvasInstructions = () => {
+    setCanvasInstructionsVisible(false);
+  };
+
   // If no tasks are loaded, show a loading sign.
   if (tasks === undefined) {
     return <p>Loading tasks...</p>;
@@ -263,6 +272,16 @@ export default function TaskView() {
           <p>
             To sync tasks with Canvas, please enter your personal token (this is
             only for testing):
+          </p>
+          <p>
+            <a
+              className="link-underline-primary"
+              role="button"
+              onClick={openCanvasInstructions}
+            >
+              Click here for instructions{' '}
+              <i className="bi bi-question-circle-fill"></i>
+            </a>
           </p>
           <Form onSubmit={onTokenFieldSubmit} style={{marginBottom: '20px'}}>
             <Row>
@@ -343,6 +362,46 @@ export default function TaskView() {
         </Tabs>
       </div>
       <ErrorLoader ref={errorRef} />
+      <Modal
+        show={canvasInstructionsVisible}
+        onHide={closeCanvasInstructions}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Instructions for Canvas Sync</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            Without UW IT approval, we cannot use the Canvas API through direct
+            authentication. For testing, you can sync your tasks with Canvas
+            using a personal token.
+          </p>
+          <p>
+            To generate a personal token, navigate to{' '}
+            <a
+              href="https://canvas.uw.edu/profile/settings#access_tokens_holder"
+              target="_blank"
+            >
+              Canvas settings
+            </a>
+            .
+          </p>
+          <p>
+            Scroll down to the &quot;<b>Approved Integrations:</b>&quot;
+            section.
+          </p>
+          <p>
+            Click on the new &quot;<b>+ New Access Token</b>&quot; button to
+            generate your token.
+          </p>
+          <p>Copy the token and use it to log in to our service!</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeCanvasInstructions}>Got it!</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

@@ -9,6 +9,8 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 const axios = require('axios');
 const CANVAS_BASE_URL = 'https://canvas.uw.edu';
 
+const shell = require('electron').shell;
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -33,6 +35,11 @@ const createWindow = (): void => {
       });
     },
   );
+
+  mainWindow.webContents.setWindowOpenHandler(edata => {
+    shell.openExternal(edata.url);
+    return {action: 'deny'};
+  });
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY); // eslint-disable-line
