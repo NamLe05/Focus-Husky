@@ -211,3 +211,4 @@ In the issue:
 
 - Pomodoro timer is not completely transparent 
 - Still need to link the Pet's metrics based on the pomodoro sessions and tasks
+- Need to have accessories show up on the pet when users purchase items in the marketplace
