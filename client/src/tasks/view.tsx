@@ -1,13 +1,14 @@
 import {useState, useEffect, useRef, ChangeEvent, FormEvent} from 'react';
 
 import {TaskController, TaskError} from './controller';
-import {TaskAction, TaskId, TaskState} from './model';
+import {TaskAction, TaskId, TaskModel, TaskState} from './model';
 
 import {
   isTodo,
   isComplete,
   dateToHtmlInputString,
   htmlInputStringToDate,
+  getTodayMidnight,
 } from './helpers';
 
 import Card from 'react-bootstrap/Card';
@@ -28,6 +29,8 @@ type TaskCardProps = {
   id: TaskId;
   task: TaskState;
   controller: TaskController;
+  newItem?: boolean;
+  newItemClose?: () => void;
 };
 
 type ConfirmModalProps = {
@@ -139,7 +142,13 @@ function TaskEditable({
   return <span>ERROR</span>;
 }
 
-function TaskCard({id, task, controller}: TaskCardProps) {
+function TaskCard({
+  id,
+  task,
+  controller,
+  newItem,
+  newItemClose,
+}: TaskCardProps) {
   const [editing, setEditing] = useState<boolean>(false);
   const [tempTask, setTempTask] = useState<TaskState>({...task});
   const [completed, setCompleted] = useState<boolean>(isComplete(task.status));
@@ -177,17 +186,36 @@ function TaskCard({id, task, controller}: TaskCardProps) {
     }));
   };
   const saveChanges = () => {
-    controller.handleTaskUpdate(id, tempTask);
+    if (newItem !== undefined) {
+      controller.handleCreateTask(
+        tempTask.title,
+        tempTask.description,
+        tempTask.course,
+        tempTask.deadline,
+      );
+      newItemClose();
+    } else {
+      controller.handleTaskUpdate(id, tempTask);
+    }
   };
   const cancelChanges = () => {
+    if (newItem !== undefined) {
+      newItemClose();
+    }
     setEditing(false);
     setTempTask({...task});
   };
   return (
-    <Card className="taskCard">
-      <Card.Body className="position-relative">
+    <Card
+      className="taskCard"
+      style={{display: newItem !== undefined && !newItem ? 'none' : 'block'}}
+    >
+      <Card.Body
+        className={`position-relative${newItem !== undefined ? ' create-shadow' : ''}`}
+      >
+        {newItem !== undefined && <h4>Create new task:</h4>}
         <div className="position-absolute top-0 end-0 p-3">
-          {editing ? (
+          {editing || newItem !== undefined ? (
             <>
               <Button size="sm" onClick={saveChanges} className="mx-1">
                 <i className="bi bi-floppy-fill"></i> Save
@@ -261,7 +289,7 @@ function TaskCard({id, task, controller}: TaskCardProps) {
         <Card.Title className="poppins-dark">
           <TaskEditable
             placeholder="Enter title"
-            editing={editing}
+            editing={editing || newItem !== undefined}
             type="string"
             getter={tempTask.title}
             setter={updateTaskTitle}
@@ -270,7 +298,7 @@ function TaskCard({id, task, controller}: TaskCardProps) {
         <Card.Subtitle className="mb-2 text-muted">
           <TaskEditable
             placeholder="Enter deadline"
-            editing={editing}
+            editing={editing || newItem !== undefined}
             type="date"
             getter={tempTask.deadline}
             setter={updateTaskDeadline}
@@ -279,7 +307,7 @@ function TaskCard({id, task, controller}: TaskCardProps) {
         <Card.Text>
           <TaskEditable
             placeholder="Enter description"
-            editing={editing}
+            editing={editing || newItem !== undefined}
             type="paragraph"
             getter={tempTask.description}
             setter={updateTaskDescription}
@@ -366,12 +394,12 @@ export default function TaskView() {
 
   // On mount, add a sample task
   useEffect(() => {
-    const dueToday = new Date();
-    dueToday.setHours(23);
-    dueToday.setMinutes(59);
-    dueToday.setSeconds(0);
-    dueToday.setMilliseconds(0);
-    controller.current.handleCreateTask('Test', 'sample task', 0, dueToday);
+    controller.current.handleCreateTask(
+      'Test',
+      'sample task',
+      0,
+      getTodayMidnight(),
+    );
   }, []);
 
   // Event for token field update
@@ -399,6 +427,14 @@ export default function TaskView() {
   };
   const closeCanvasInstructions = () => {
     setCanvasInstructionsVisible(false);
+  };
+
+  const [newTaskActive, setNewTaskActive] = useState<boolean>(false);
+  const onCreateNewTask = () => {
+    setNewTaskActive(true);
+  };
+  const endNewTaskCreation = () => {
+    setNewTaskActive(false);
   };
 
   // If no tasks are loaded, show a loading sign.
@@ -486,6 +522,26 @@ export default function TaskView() {
       <div id="tasks-tabs">
         <Tabs defaultActiveKey="todo" className="mb-3">
           <Tab eventKey="todo" title="To-do">
+            {!newTaskActive && (
+              <div className="d-grid gap-2 mb-3">
+                <Button variant="outline-success" onClick={onCreateNewTask}>
+                  <i className="bi bi-plus-circle-fill"></i> Create new task
+                </Button>
+              </div>
+            )}
+            <TaskCard
+              id="newTask"
+              task={new TaskModel(
+                '',
+                '',
+                0,
+                getTodayMidnight(),
+                undefined,
+              ).getState()}
+              controller={controller.current}
+              newItem={newTaskActive}
+              newItemClose={endNewTaskCreation}
+            />
             {tasks.length === 0 ? (
               <AllGood />
             ) : (

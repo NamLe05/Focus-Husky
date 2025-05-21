@@ -34,3 +34,12 @@ export function dateToHtmlInputString(date: Date) {
 export function htmlInputStringToDate(str: string) {
   return new Date(str);
 }
+
+export function getTodayMidnight() {
+  const dueToday = new Date();
+  dueToday.setHours(23);
+  dueToday.setMinutes(59);
+  dueToday.setSeconds(0);
+  dueToday.setMilliseconds(0);
+  return dueToday;
+}
