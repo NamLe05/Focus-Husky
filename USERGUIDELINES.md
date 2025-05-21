@@ -208,3 +208,6 @@ In the issue:
 - Assign the issue to yourself or someone else on the team, so it's tracked and resolved.
 
 # Known bugs
+
+- Pomodoro timer is not completely transparent 
+- Still need to link the Pet's metrics based on the pomodoro sessions and tasks
