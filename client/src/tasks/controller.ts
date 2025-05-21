@@ -2,7 +2,6 @@ import {
   TaskModel,
   TaskState,
   TaskId,
-  TaskStatus,
   CanvasTaskModel,
   TaskAction,
 } from './model';
@@ -91,25 +90,9 @@ export class TaskController {
     this.viewUpdateCallback(this.getTaskList());
   }
 
-  public handleTaskUpdate(
-    id: TaskId,
-    title: string,
-    description: string,
-    course: CourseId,
-    deadline: Date,
-    link?: URL,
-    status?: TaskStatus,
-  ) {
+  public handleTaskUpdate(id: TaskId, task: TaskState) {
     const taskToUpdate = this.tasks.get(id);
-    taskToUpdate.setState({
-      title,
-      description,
-      course,
-      deadline,
-      link,
-      imported: taskToUpdate.getState().imported,
-      status,
-    });
+    taskToUpdate.setState(task);
     this.viewUpdateCallback(this.getTaskList());
   }
 

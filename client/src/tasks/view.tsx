@@ -3,7 +3,12 @@ import {useState, useEffect, useRef, ChangeEvent, FormEvent} from 'react';
 import {TaskController, TaskError} from './controller';
 import {TaskAction, TaskId, TaskState} from './model';
 
-import {isTodo, isComplete} from './helpers';
+import {
+  isTodo,
+  isComplete,
+  dateToHtmlInputString,
+  htmlInputStringToDate,
+} from './helpers';
 
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
@@ -66,8 +71,83 @@ function ConfirmModal({
   );
 }
 
+type TaskEditableProps = {
+  editing: boolean;
+  placeholder: string;
+  // Could support more types if needed
+  type: 'string' | 'date' | 'number' | 'paragraph';
+  getter: string | number | Date | boolean;
+  setter: (value: string | number | Date | boolean) => void;
+};
+
+function TaskEditable({
+  editing,
+  placeholder,
+  type,
+  getter,
+  setter,
+}: TaskEditableProps) {
+  if (type === 'string' && typeof getter === 'string') {
+    return editing ? (
+      <div style={{marginRight: '300px'}}>
+        <Form.Control
+          size="sm"
+          placeholder={placeholder}
+          value={getter}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setter(e.target.value);
+          }}
+          required
+        />
+      </div>
+    ) : (
+      <span>{getter}</span>
+    );
+  } else if (type === 'date' && typeof getter === 'object') {
+    return editing ? (
+      <div style={{marginRight: '300px'}}>
+        <Form.Control
+          size="sm"
+          type="datetime-local"
+          placeholder={placeholder}
+          value={dateToHtmlInputString(getter)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setter(e.target.value);
+          }}
+          required
+        />
+      </div>
+    ) : (
+      <span>{getter.toLocaleString()}</span>
+    );
+  } else if (type === 'paragraph' && typeof getter === 'string') {
+    return editing ? (
+      <Form.Control
+        size="sm"
+        as="textarea"
+        placeholder={placeholder}
+        value={getter}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          setter(e.target.value);
+        }}
+        required
+      />
+    ) : (
+      <span>{getter.toLocaleString()}</span>
+    );
+  }
+  return <span>ERROR</span>;
+}
+
 function TaskCard({id, task, controller}: TaskCardProps) {
+  const [editing, setEditing] = useState<boolean>(false);
+  const [tempTask, setTempTask] = useState<TaskState>({...task});
   const [completed, setCompleted] = useState<boolean>(isComplete(task.status));
+  // If the task is update, cancel edits (todo: refine this logic)
+  useEffect(() => {
+    setEditing(false);
+    setTempTask({...task});
+  }, [task]);
   const onCompleteTask = () => {
     if (task.imported) {
       controller.triggerAction('complete-imported', id);
@@ -78,56 +158,133 @@ function TaskCard({id, task, controller}: TaskCardProps) {
       }, 100);
     }
   };
+  const onEditTask = () => {
+    setEditing(true);
+  };
   const initiateDelete = () => {
     controller.triggerAction('delete', id);
+  };
+  const updateTaskTitle = (newTitle: string) => {
+    setTempTask((prevTask: TaskState) => ({...prevTask, title: newTitle}));
+  };
+  const updateTaskDescription = (newDesc: string) => {
+    setTempTask((prevTask: TaskState) => ({...prevTask, description: newDesc}));
+  };
+  const updateTaskDeadline = (newDate: string) => {
+    setTempTask((prevTask: TaskState) => ({
+      ...prevTask,
+      deadline: htmlInputStringToDate(newDate),
+    }));
+  };
+  const saveChanges = () => {
+    controller.handleTaskUpdate(id, tempTask);
+  };
+  const cancelChanges = () => {
+    setEditing(false);
+    setTempTask({...task});
   };
   return (
     <Card className="taskCard">
       <Card.Body className="position-relative">
-        <div className="cardMenu position-absolute top-0 end-0 p-3">
-          {task.imported ? (
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip>View Assignment</Tooltip>}
-            >
-              <i className="bi bi-box-arrow-up-right px-3"></i>
-            </OverlayTrigger>
+        <div className="position-absolute top-0 end-0 p-3">
+          {editing ? (
+            <>
+              <Button size="sm" onClick={saveChanges} className="mx-1">
+                <i className="bi bi-floppy-fill"></i> Save
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                className="mx-1"
+                onClick={cancelChanges}
+              >
+                <i className="bi bi-x-circle-fill"></i> Cancel
+              </Button>
+            </>
           ) : (
-            <OverlayTrigger placement="top" overlay={<Tooltip>Edit</Tooltip>}>
-              <i className="bi bi-pencil-square px-3"></i>
-            </OverlayTrigger>
+            <div className="cardMenu">
+              {task.imported ? (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>View Assignment</Tooltip>}
+                >
+                  <i className="bi bi-box-arrow-up-right px-3"></i>
+                </OverlayTrigger>
+              ) : (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Edit</Tooltip>}
+                >
+                  <i
+                    onClick={onEditTask}
+                    className="bi bi-pencil-square px-3"
+                  ></i>
+                </OverlayTrigger>
+              )}
+              {task.imported ? (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Archive</Tooltip>}
+                >
+                  <i className="bi bi-archive-fill px-3"></i>
+                </OverlayTrigger>
+              ) : (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip>Delete</Tooltip>}
+                >
+                  <i
+                    className="bi bi-trash-fill px-3"
+                    onClick={initiateDelete}
+                  ></i>
+                </OverlayTrigger>
+              )}
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip>Complete</Tooltip>}
+              >
+                {completed ? (
+                  <i
+                    className="bi bi-check-circle-fill px-3"
+                    style={{color: '#4CAF50'}}
+                  ></i>
+                ) : (
+                  <i
+                    onClick={onCompleteTask}
+                    className="bi bi-check-circle px-3"
+                  ></i>
+                )}
+              </OverlayTrigger>
+            </div>
           )}
-          {task.imported ? (
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip>Archive</Tooltip>}
-            >
-              <i className="bi bi-archive-fill px-3"></i>
-            </OverlayTrigger>
-          ) : (
-            <OverlayTrigger placement="top" overlay={<Tooltip>Delete</Tooltip>}>
-              <i className="bi bi-trash-fill px-3" onClick={initiateDelete}></i>
-            </OverlayTrigger>
-          )}
-          <OverlayTrigger placement="top" overlay={<Tooltip>Complete</Tooltip>}>
-            {completed ? (
-              <i
-                className="bi bi-check-circle-fill px-3"
-                style={{color: '#4CAF50'}}
-              ></i>
-            ) : (
-              <i
-                onClick={onCompleteTask}
-                className="bi bi-check-circle px-3"
-              ></i>
-            )}
-          </OverlayTrigger>
         </div>
-        <Card.Title className="poppins-dark">{task.title}</Card.Title>
+        <Card.Title className="poppins-dark">
+          <TaskEditable
+            placeholder="Enter title"
+            editing={editing}
+            type="string"
+            getter={tempTask.title}
+            setter={updateTaskTitle}
+          />
+        </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">
-          {task.deadline.toLocaleString()}
+          <TaskEditable
+            placeholder="Enter deadline"
+            editing={editing}
+            type="date"
+            getter={tempTask.deadline}
+            setter={updateTaskDeadline}
+          />
         </Card.Subtitle>
-        <Card.Text>{task.description}</Card.Text>
+        <Card.Text>
+          <TaskEditable
+            placeholder="Enter description"
+            editing={editing}
+            type="paragraph"
+            getter={tempTask.description}
+            setter={updateTaskDescription}
+          />
+        </Card.Text>
       </Card.Body>
     </Card>
   );
@@ -397,6 +554,13 @@ export default function TaskView() {
             generate your token.
           </p>
           <p>Copy the token and use it to log in to our service!</p>
+          <p style={{color: '#f44436'}}>
+            <b>
+              Please note that we do not save your personal tokens for security
+              reasons. You must re-enter the token every time you launch the
+              app. Please save your token!
+            </b>
+          </p>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={closeCanvasInstructions}>Got it!</Button>
