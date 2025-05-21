@@ -162,6 +162,43 @@ const createPomodoroWindow = async (): Promise<void> => {
   });
 };
 
+declare const PET_WINDOW_WEBPACK_ENTRY: string;
+declare const PET_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
+let petWindow: BrowserWindow | null = null;
+
+const createPetWindow = async (): Promise<void> => {
+  if (petWindow) {
+    petWindow.focus();
+    return;
+  }
+
+  petWindow = new BrowserWindow ({
+    width: 120,
+    height: 350,
+    title: "Pet Interaction",
+    frame: false,
+    transparent: true,
+    resizable: false,
+    hasShadow: false,
+    alwaysOnTop: true,
+    movable: true,
+    titleBarStyle: 'hidden',
+    webPreferences: {
+      preload: PET_WINDOW_PRELOAD_WEBPACK_ENTRY,
+    },
+  });
+
+  await petWindow.loadURL(PET_WINDOW_WEBPACK_ENTRY);
+  petWindow.on('closed', () => {
+    petWindow = null;
+  });
+}
+
 ipcMain.on('open-pomodoro-window', async () => {
   await createPomodoroWindow();
+});
+
+ipcMain.on('open-pet-window', async () => {
+  await createPetWindow();
 });
