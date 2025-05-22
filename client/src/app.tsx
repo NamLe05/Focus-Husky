@@ -8,6 +8,7 @@ import PetView from './pet/view';
 import PomodoroView from './pomodoro/view';
 import MarketView from './rewards-store/view';
 import TaskView from './tasks/view';
+import GymView, {QuizView} from './gym/view';
 // eslint-disable-next-line n/no-extraneous-import
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './index.css';
@@ -27,7 +28,7 @@ const root = createRoot(document.body);
 
 type Route = {
   component: React.FC;
-  title: string;
+  title?: string;
   navText?: string;
   navIcon?: string;
 };
@@ -51,23 +52,33 @@ const routes: {[path: string]: Route} = {
     navText: 'My Tasks',
     navIcon: 'card-checklist',
   },
+  '/gym': {
+    component: GymView,
+    title: 'Study Gym',
+    navText: 'Study Gym',
+    navIcon: 'activity',
+  },
+  '/gym/:quizType': {
+    component: QuizView
+  },
   '/marketView': {
     component: MarketView,
     title: 'Market Place',
     navText: 'Market Place',
-    navIcon: 'bi bi-star-fill',
+    navIcon: 'star-fill',
   },
 };
 
+function NotFound() {
+  return (
+    <p>
+      Page not found <Link to="/">Return home</Link>
+    </p>
+  );
+}
+
 function App() {
   const location = useLocation();
-  if (routes[location.pathname] === undefined) {
-    return (
-      <p>
-        Page not found <Link to="/">Return home</Link>
-      </p>
-    );
-  }
   return (
     <>
       <header>
@@ -119,13 +130,6 @@ function App() {
           </Container>
         </Navbar>
       </header>
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/pet">My Pet</Link>
-        <Link to="/pomodoro">Pomodoro Sessions</Link>
-        <Link to="/tasks">My Tasks</Link>
-        <Link to="/market">Marketplace</Link>
-      </nav>
       <div
         id="sidebar"
         className="d-flex flex-column flex-shrink-0 p-3 bg-light"
@@ -158,6 +162,9 @@ function App() {
           <Route path="/pomodoro" element={<PomodoroView />} />
           <Route path="/tasks" element={<TaskView />} />
           <Route path="/marketView" element={<MarketView />} />
+          <Route path="/gym" element={<GymView />} />
+          <Route path="/gym/:quizType" element={<QuizView />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </>

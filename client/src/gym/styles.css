@@ -1,0 +1,47 @@
+#gym-container, #quiz-container {
+  padding: 40px;
+}
+
+.card-bg-crop {
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-bg-crop:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transform: scale(1.02);
+}
+
+.card-bg-crop .right-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  font-size: 64px;
+  margin-top: -50px;
+  transition: all 0.2s;
+}
+
+.card-bg-crop:hover .right-icon {
+  color: #FABB18;
+}
+
+.img-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.dark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.8);
+}
+
+#gym-container .card-body {
+  position: relative;
+  z-index: 2;
+}
