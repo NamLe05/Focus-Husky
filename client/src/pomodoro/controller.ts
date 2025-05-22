@@ -62,4 +62,10 @@ export class PomodoroController {
     this.timerModel.setBreakTime(breakTime);
     this.updateViewState();
   }
+
+  public adjustRemainingTime(deltaSeconds: number): void {
+    this.timerModel.adjustRemainingTime(deltaSeconds);
+  } 
+
+
 }

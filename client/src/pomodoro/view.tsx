@@ -13,9 +13,9 @@ export default function PomodoroView() {
   const [timerState, setTimerState] = useState<boolean>(false);
   const [pomodoroState, setPomodoroState] = useState<PomodoroState>({
     state: 'focus',
-    focusTime: 5,
+    focusTime: 1500,
     breakTime: 900,
-    remainingTime: 5,
+    remainingTime: 1500,
   });
 
   const controllerRef = useRef<PomodoroController | null>(null);
@@ -23,7 +23,7 @@ export default function PomodoroView() {
   useEffect(() => {
     // Only create the controller once
     controllerRef.current = new PomodoroController(
-      5,
+      1500,
       900,
       (state, pomodoroState) => {
         setTimerState(state);
@@ -35,14 +35,23 @@ export default function PomodoroView() {
   const handleStartStop = () => {
     controllerRef.current?.toggleTimer();
   };
-  console.log(pomodoroState.remainingTime);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-  console.log('petImg URL:', petImg);
+  
+  const handleIncreaseTime = () => {
+    controllerRef.current?.adjustRemainingTime(60); // +1 minute
+  };
+
+  const handleDecreaseTime = () => {
+    controllerRef.current?.adjustRemainingTime(-60); // -1 minute
+  };
+
+
+
   return (
     <>
       <div className="pomodoroRoot">
@@ -84,10 +93,11 @@ export default function PomodoroView() {
               </div>
             </div>
           </div>
-
+          <button className="increaseTimeButton" onClick={handleIncreaseTime}>+</button>
           <button className="timerButton" onClick={handleStartStop}>
             {timerState ? '◼' : '▶'}
           </button>
+          <button className="decreaseTimeButton" onClick={handleDecreaseTime}>−</button>
         </div>
       </div>
     </>
