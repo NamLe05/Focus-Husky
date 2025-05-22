@@ -50,7 +50,7 @@ const createWindow = (): void => {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     mainWindow.maximize();
-  })
+  });
 };
 
 // This method will be called when Electron has finished
@@ -187,10 +187,10 @@ const createPetWindow = async (): Promise<void> => {
     return;
   }
 
-  petWindow = new BrowserWindow ({
+  petWindow = new BrowserWindow({
     width: 120,
     height: 350,
-    title: "Pet Interaction",
+    title: 'Pet Interaction',
     frame: false,
     transparent: true,
     resizable: false,
@@ -207,7 +207,7 @@ const createPetWindow = async (): Promise<void> => {
   petWindow.on('closed', () => {
     petWindow = null;
   });
-}
+};
 
 ipcMain.on('open-pomodoro-window', async () => {
   await createPomodoroWindow();

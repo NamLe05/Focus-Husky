@@ -32,7 +32,7 @@ export class PomodoroTimerModel {
       }
 
       // 🔔 Notify the controller on every tick
-      this.onTick?.({ ...this.state });
+      this.onTick?.({...this.state});
     }, 1000);
   }
 
@@ -57,7 +57,7 @@ export class PomodoroTimerModel {
     }
 
     // 🔔 Trigger tick after state switch
-    this.onTick?.({ ...this.state });
+    this.onTick?.({...this.state});
   }
 
   public getState(): PomodoroState {

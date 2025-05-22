@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -14,7 +14,7 @@ type TimeInfo = {
 };
 
 const formatDateTime = (date: Date): TimeInfo => {
-  const dayString = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const dayString = date.toLocaleDateString('en-US', {weekday: 'long'});
 
   const dateString =
     date.toLocaleDateString('en-US', {
@@ -29,11 +29,11 @@ const formatDateTime = (date: Date): TimeInfo => {
       hour12: true,
     });
 
-  return { dayString, dateString };
+  return {dayString, dateString};
 };
 
 // DateCard
-const DateCard: React.FC<{ time: TimeInfo }> = ({ time }) => (
+const DateCard: React.FC<{time: TimeInfo}> = ({time}) => (
   <Col className="dateCard">
     <div className="todayTxt">
       <h1>{time.dayString}</h1>
@@ -59,7 +59,7 @@ const PomodoroTimer: React.FC = () => (
 );
 
 // StatsCard
-const StatsCard: React.FC<{ title: string; value: string; icon: string }> = ({
+const StatsCard: React.FC<{title: string; value: string; icon: string}> = ({
   title,
   value,
   icon,
@@ -75,10 +75,11 @@ const StatsCard: React.FC<{ title: string; value: string; icon: string }> = ({
   </Col>
 );
 
-
 // View
 const View: React.FC = () => {
-  const [currentTime, setCurrentTime] = useState<TimeInfo>(formatDateTime(new Date()));
+  const [currentTime, setCurrentTime] = useState<TimeInfo>(
+    formatDateTime(new Date()),
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -95,7 +96,11 @@ const View: React.FC = () => {
       </Row>
 
       <Row className="noPadding">
-        <StatsCard title="Weekly Activity" value="25%" icon="bi-lightning-charge-fill" />
+        <StatsCard
+          title="Weekly Activity"
+          value="25%"
+          icon="bi-lightning-charge-fill"
+        />
         <StatsCard title="Worked This Week" value="40:00:05" icon="bi-clock" />
         <StatsCard title="Tasks Completed" value="12" icon="bi-check2-circle" />
       </Row>

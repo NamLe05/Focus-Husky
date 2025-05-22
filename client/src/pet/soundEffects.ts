@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react';
-
+import {useEffect, useRef} from 'react';
 
 import feedSound from '../Static/sounds/feed.mp3';
 import playSound from '../Static/sounds/play.mp3';
@@ -9,7 +8,7 @@ import errorSound from '../Static/sounds/error.mp3';
 export class SoundPlayer {
   private static instance: SoundPlayer | null = null;
   private audioCache: Map<string, HTMLAudioElement> = new Map();
-  private muted: boolean = false;
+  private muted = false;
 
   // Private constructor for singleton pattern
   private constructor() {}
@@ -49,22 +48,22 @@ export class SoundPlayer {
         // Clone the audio to allow overlapping sounds
         const playSound = audio.cloneNode() as HTMLAudioElement;
         playSound.volume = 0.5; // Set default volume
-        
+
         // Add error handling
-        playSound.onerror = (e) => {
+        playSound.onerror = e => {
           console.error(`Error playing sound ${id}:`, e);
         };
-        
+
         // Play the sound
         const playPromise = playSound.play();
-        
+
         // Handle promise to catch any autoplay restrictions
         if (playPromise !== undefined) {
-          playPromise.catch((error) => {
+          playPromise.catch(error => {
             console.warn(`Browser prevented playing sound ${id}:`, error);
           });
         }
-        
+
         console.log(`Sound ${id} played`);
       } catch (error) {
         console.error(`Failed to play sound ${id}:`, error);
@@ -94,43 +93,43 @@ export class SoundPlayer {
 // React hook for using sound effects
 export function useSoundEffects() {
   const soundPlayer = useRef<SoundPlayer>(SoundPlayer.getInstance());
-  
+
   // Load all sound effects on component mount
   useEffect(() => {
     // Get the sound player instance
     const player = soundPlayer.current;
-    
+
     // Preload all pet sound effects
     player.preloadSound('feed', feedSound);
     player.preloadSound('play', playSound);
     player.preloadSound('groom', groomSound);
     player.preloadSound('error', errorSound);
-    
+
     // Return cleanup function
     return () => {
       // Nothing to clean up for audio preloading
     };
   }, []);
-  
+
   return soundPlayer.current;
 }
 
 // Updated Sound Effects for PetView
 export const createSoundEffects = () => {
   const soundPlayer = SoundPlayer.getInstance();
-  
+
   return {
     feed: {
-      play: () => soundPlayer.playSound('feed')
+      play: () => soundPlayer.playSound('feed'),
     },
     play: {
-      play: () => soundPlayer.playSound('play')
+      play: () => soundPlayer.playSound('play'),
     },
     groom: {
-      play: () => soundPlayer.playSound('groom') 
+      play: () => soundPlayer.playSound('groom'),
     },
     error: {
-      play: () => soundPlayer.playSound('error')
-    }
+      play: () => soundPlayer.playSound('error'),
+    },
   };
 };

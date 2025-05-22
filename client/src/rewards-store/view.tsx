@@ -1,17 +1,15 @@
-/* eslint-disable prettier/prettier */
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './styles.css';
 import {handleItemPurchase, store} from './controller';
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 import StarImage from '../Static/Star.png';
 
 import {RewardsStore, marketPlaceItem} from './model';
-import { Modal, Button } from 'react-bootstrap';
+import {Modal, Button} from 'react-bootstrap';
 
 // Tab type and item interface
 
 export type Tab = keyof typeof store.marketItems;
-
 
 export default function MarketView() {
   const [activeTab, setActiveTab] = useState<Tab>('pets');
@@ -25,15 +23,14 @@ export default function MarketView() {
   }, [activeTab]);
 
   const onItemClick = (item: marketPlaceItem) => {
-
     const points = store?.getTotalPoints?.();
 
-     if (!item) {
+    if (!item) {
       console.error('Item is undefined');
       return;
     }
 
-    if(item.owned){
+    if (item.owned) {
       setPopUpMessage(`You already own ${item.name}!`);
       return;
     }
@@ -45,16 +42,14 @@ export default function MarketView() {
 
     const success = handleItemPurchase(item, activeTab);
 
-
-    if(success){
+    if (success) {
       setPoints(store.getTotalPoints());
-      setItems(store.marketItems[activeTab])
+      setItems(store.marketItems[activeTab]);
       setPopUpMessage(`Congrats! You purchased ${item.name}!`);
     } else {
       setPopUpMessage(`Could not purchase ${item.name}, try again!`);
     }
   };
-
 
   return (
     <div id="marketplace">
