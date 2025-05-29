@@ -58,29 +58,33 @@ export class TaskController {
       course_format: '',
       time_zone: '',
     });
-    window.electron
-      .dbGetAll(TaskController.FILE_NAME)
-      .then((docs: Array<TaskState & {_id: string}>) => {
-        // Insert each
-        for (const doc of docs) {
-          // Create task using task model
-          const link = 'link' in doc ? doc.link : undefined;
-          const status = 'status' in doc ? doc.status : undefined;
-          const createdTask = new TaskModel(
-            doc.title,
-            doc.description,
-            doc.course,
-            doc.deadline,
-            doc._id,
-            link,
-            status,
-          );
-          // Get task ID
-          const createdTaskId = createdTask.getId();
-          // Save task in temporary state
-          this.tasks.set(createdTaskId, createdTask);
-        }
-      });
+    try {
+      window.electron
+        .dbGetAll(TaskController.FILE_NAME)
+        .then((docs: Array<TaskState & {_id: string}>) => {
+          // Insert each
+          for (const doc of docs) {
+            // Create task using task model
+            const link = 'link' in doc ? doc.link : undefined;
+            const status = 'status' in doc ? doc.status : undefined;
+            const createdTask = new TaskModel(
+              doc.title,
+              doc.description,
+              doc.course,
+              doc.deadline,
+              doc._id,
+              link,
+              status,
+            );
+            // Get task ID
+            const createdTaskId = createdTask.getId();
+            // Save task in temporary state
+            this.tasks.set(createdTaskId, createdTask);
+          }
+        });
+    } catch (err) {
+      // Ignore for now.
+    }
   }
 
   public setCallbacks(
