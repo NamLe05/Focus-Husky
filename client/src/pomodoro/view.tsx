@@ -65,6 +65,7 @@ export default function PomodoroView() {
           <div className="navBar">
             <button
               className="settings"
+              data-testid="settings-button"
               style={{backgroundImage: `url(${settingImg})`}}
               onClick={() => window.electronAPI.openOrFocusMainHome()}
             ></button>

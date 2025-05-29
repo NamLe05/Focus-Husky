@@ -70,4 +70,20 @@ describe('PomodoroView - timer control buttons', () => {
   // Assert timer never goes below zero
   expect(totalSeconds).toBeGreaterThanOrEqual(0);
 });
+
+it('calls electronAPI.openOrFocusMainHome when settings button is clicked', () => {
+  const openMainMock = vi.fn();
+
+  (window as any).electronAPI = {
+    openOrFocusMainHome: openMainMock,
+  };
+
+  render(<PomodoroView />);
+
+  const settingsButton = screen.getByTestId('settings-button');
+  fireEvent.click(settingsButton); // fires click event
+
+  expect(openMainMock).toHaveBeenCalledTimes(1);
+});
+
 });
