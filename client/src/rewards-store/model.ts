@@ -37,14 +37,25 @@ export interface marketPlaceItem {
 }
 
 export interface equippedItems {
-    pet: marketPlaceItem,
-    accessory: marketPlaceItem,
-    timer: marketPlaceItem,
-    sound: marketPlaceItem,
-    image: marketPlaceItem
+    pet: marketPlaceItem | null,
+    accessory: marketPlaceItem | null,
+    timer: marketPlaceItem | null,
+    sound: marketPlaceItem | null,
+    task: marketPlaceItem | null
 }
 
+export const categoryToEquippedKey = {
+        pets: 'pet',
+        accessories: 'accessory',
+        timers: 'timer',
+        sounds: 'sound',
+        tasks: 'task',
+    } as const;
+
+    export type CategoryKey = keyof typeof categoryToEquippedKey;
+
 export class RewardsStore {
+
 
     marketItems:{
         pets: marketPlaceItem[];
@@ -54,8 +65,7 @@ export class RewardsStore {
         tasks: marketPlaceItem[];
     };
     private points: number;
-    private equipped: equippedItems;
-
+    public equipped: equippedItems;
 
     constructor() {
         this.marketItems = {
@@ -88,6 +98,13 @@ export class RewardsStore {
         }
         this.points = 200;
 
+        this.equipped = {
+            pet: {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
+            accessory: null,
+            timer: null,
+            sound: null,
+            task: null,
+        };
     }
 
     public deductPoints(amount: number){
@@ -110,6 +127,7 @@ export class RewardsStore {
     }
 
     public purchaseItem(category: keyof typeof this.marketItems, itemId: string): boolean {
+        //console.log('Currently equipped Husky: ', this.equipped);
         const items = this.marketItems[category];
         const item = items.find(i => i.ID === itemId);
         if (!item) {
@@ -129,6 +147,17 @@ export class RewardsStore {
         return true;
     }
 
+    public setEquipped(item: marketPlaceItem, category: keyof typeof this.marketItems): void {
+        const equippedKey = categoryToEquippedKey[category];
+        if (equippedKey) {
+            this.equipped[equippedKey] = item;
+        } else {
+            console.warn(`Unknown category: ${category}`);
+        }
+
+        console.log('Currently equipped: ', this.equipped);
+    }
+
     // gets the specific item based on item ID
     // returns exception if pet with give name is not in list of available pets
     public getItem(id: string): marketPlaceItem {
@@ -142,7 +171,7 @@ export class RewardsStore {
                 }
             }
         }
-        throw new Error(`Pet with name ${id} not found`);
+        throw new Error(`Item ${id} not found`);
     }
 
     // returns users' current list of points available to spend

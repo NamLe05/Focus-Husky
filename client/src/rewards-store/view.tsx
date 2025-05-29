@@ -1,11 +1,11 @@
 /* eslint-disable prettier/prettier */
 import React, { useEffect, useState } from 'react';
 import './styles.css';
-import {handleItemPurchase, store} from './controller';
+import {handleItemPurchase, store, markItemAsEquipped} from './controller';
 import { v4 as uuidv4 } from 'uuid';
 import StarImage from '../Static/Star.png';
 
-import {RewardsStore, marketPlaceItem} from './model';
+import {RewardsStore, CategoryKey, marketPlaceItem, categoryToEquippedKey} from './model';
 import { Modal, Button } from 'react-bootstrap';
 
 // Tab type and item interface
@@ -14,6 +14,7 @@ export type Tab = keyof typeof store.marketItems;
 
 
 export default function MarketView() {
+
   const [activeTab, setActiveTab] = useState<Tab>('pets');
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
@@ -24,8 +25,9 @@ export default function MarketView() {
     setItems(store.marketItems[activeTab]);
   }, [activeTab]);
 
-  const onItemClick = (item: marketPlaceItem) => {
 
+  //Clicking on a marketplace item
+  const onItemClick = (item: marketPlaceItem) => {
     const points = store?.getTotalPoints?.();
 
      if (!item) {
@@ -45,7 +47,6 @@ export default function MarketView() {
 
     const success = handleItemPurchase(item, activeTab);
 
-
     if(success){
       setPoints(store.getTotalPoints());
       setItems(store.marketItems[activeTab])
@@ -54,6 +55,13 @@ export default function MarketView() {
       setPopUpMessage(`Could not purchase ${item.name}, try again!`);
     }
   };
+
+  //clicking on the equip button
+  const [equippedItems, setEquippedItems] = useState(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
+  const onEquipClick = (item: marketPlaceItem) => {
+    markItemAsEquipped(item, activeTab);
+    setEquippedItems(item);
+  }
 
 
   return (
@@ -87,7 +95,20 @@ export default function MarketView() {
                   <img src={StarImage} alt="Star" className="star-icon" />
                   <span>{item.price}</span>
                 </div>
-                {item.owned && <div className="owned-badge">Owned</div>}
+                {item.owned && (
+                <div className="owned-section">
+                  <div className="owned-badge">Owned</div>
+                  <button
+                    className="equip-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEquipClick(item);
+                    }}
+                  >
+                    {equippedItems?.ID === item.ID ? 'Equipped' : 'Equip'}
+                    </button>
+                    </div>
+                  )}
               </div>
             ))}
           </div>
@@ -116,15 +137,6 @@ export default function MarketView() {
             </Button>
           </Modal.Footer>
         </Modal>
-
-        {/* {popUpMessage && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <p>{popUpMessage}</p>
-              <button onClick={() => setPopUpMessage(null)}>Close</button>
-            </div>
-          </div>
-        )} */}
       </div>
     </div>
   );

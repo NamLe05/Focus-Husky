@@ -20,3 +20,7 @@ export function markItemAsOwned(itemId: string, category: Tab) {
   }
 }
 
+export function markItemAsEquipped(item: marketPlaceItem, category: Tab){
+  return store.setEquipped(item, category)
+}
+
