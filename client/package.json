@@ -86,6 +86,8 @@
     "webpack": "^5.99.8"
   },
   "dependencies": {
+    "@seald-io/nedb": "^4.1.1",
+    "@types/nedb": "^1.8.16",
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
     "bootstrap-icons": "^1.13.1",

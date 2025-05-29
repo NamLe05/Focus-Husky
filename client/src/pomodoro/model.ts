@@ -44,8 +44,10 @@ export class PomodoroTimerModel {
   }
 
   public reset(): void {
-     this.state.remainingTime =
-    this.state.state === 'focus' ? this.state.focusTime : this.state.breakTime;
+    this.state.remainingTime =
+      this.state.state === 'focus'
+        ? this.state.focusTime
+        : this.state.breakTime;
   }
 
   public switchState(): void {
@@ -89,11 +91,11 @@ export class PomodoroTimerModel {
   }
 
   public adjustRemainingTime(delta: number): void {
-  this.state.remainingTime += delta;
-  if (this.state.remainingTime <= 0) {
-    this.switchState(); // auto-switch and reset
-  } else {
-    this.onTick?.({ ...this.state });
+    this.state.remainingTime += delta;
+    if (this.state.remainingTime <= 0) {
+      this.switchState(); // auto-switch and reset
+    } else {
+      this.onTick?.({...this.state});
+    }
   }
-}
 }
