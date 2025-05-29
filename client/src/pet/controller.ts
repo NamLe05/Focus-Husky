@@ -4,7 +4,7 @@ export class PetController {
   // Collection of all pet instances managed by this controller
   private pets: Map<PetId, PetModel>;
 
-  // Multiple view update callbacks - changed from single callback to array
+  // Multiple view update callbacks
   private viewUpdateCallbacks: Array<(petId: PetId, state: PetState) => void> = [];
 
   // Update interval tracking for periodic update loop runs
@@ -14,10 +14,6 @@ export class PetController {
   // Track initialization state
   private isInitialized: boolean = false;
 
-  /**
-   * Create a new pet controller instance
-   * @param viewUpdateCallback Optional initial callback to notify view of updates
-   */
   constructor(viewUpdateCallback?: (petId: PetId, state: PetState) => void) {
     this.pets = new Map();
     if (viewUpdateCallback) {
@@ -27,9 +23,6 @@ export class PetController {
     this.startUpdateLoop();
   }
 
-  /**
-   * Initialize the controller with pets (only runs once)
-   */
   public initialize(): void {
     if (this.isInitialized) {
       console.log('PetController already initialized, skipping...');
@@ -41,21 +34,17 @@ export class PetController {
     this.loadPetsFromDatabase();
   }
 
-  /**
-   * Check if controller has been initialized
-   */
   public getInitializationStatus(): boolean {
     return this.isInitialized;
   }
 
-  /**
-   * Clean up resources when controller is destroyed
-   */
   public destroy(): void {
     if (this.updateIntervalId) {
       clearInterval(this.updateIntervalId);
       this.updateIntervalId = null;
     }
+    // Clear all callbacks
+    this.viewUpdateCallbacks = [];
   }
 
   /**
@@ -250,18 +239,24 @@ export class PetController {
    * Notify all registered views of pet updates
    */
   private notifyAllViews(petId: PetId, petState: PetState): void {
+    if (this.viewUpdateCallbacks.length === 0) {
+      // Optional: Log when there are no listeners
+      console.debug(`No view callbacks registered for pet update: ${petId}`);
+      return;
+    }
+
     // Call all registered callbacks
-    this.viewUpdateCallbacks.forEach(callback => {
+    this.viewUpdateCallbacks.forEach((callback, index) => {
       try {
         callback(petId, petState);
       } catch (error) {
-        console.error('Error in view update callback:', error);
+        console.error(`Error in view update callback ${index}:`, error);
       }
     });
   }
 
   /**
-   * Start the periodic update loop
+   * Start the periodic update loop (optimized)
    */
   private startUpdateLoop(): void {
     // Prevent multiple update loops
@@ -270,6 +265,13 @@ export class PetController {
     }
 
     this.updateIntervalId = setInterval(() => {
+      // Skip updates if no callbacks are registered (optimization)
+      if (this.viewUpdateCallbacks.length === 0) {
+        console.debug('Skipping pet updates - no views registered');
+        this.lastUpdateTime = Date.now(); // Keep time updated
+        return;
+      }
+
       const currentTime = Date.now();
       const deltaTime = currentTime - this.lastUpdateTime;
 
@@ -286,22 +288,26 @@ export class PetController {
   }
 
   /**
-   * Register a new view callback (replaces old single callback approach)
+   * Register a new view callback
    * @param viewUpdateCallback New callback function to register
    * @returns Cleanup function to unregister the callback
    */
   public registerViewCallback(
     viewUpdateCallback: (petId: PetId, state: PetState) => void,
   ): () => void {
+    console.log(`Registering view callback. Current count: ${this.viewUpdateCallbacks.length}`);
+    
     // Add the new callback
     this.viewUpdateCallbacks.push(viewUpdateCallback);
+    
+    console.log(`View callback registered. New count: ${this.viewUpdateCallbacks.length}`);
 
     // Notify the new callback about all existing pets immediately
     this.pets.forEach((pet, petId) => {
       try {
         viewUpdateCallback(petId, pet.getState());
       } catch (error) {
-        console.error('Error in new view callback:', error);
+        console.error('Error in new view callback during initial sync:', error);
       }
     });
 
@@ -316,22 +322,26 @@ export class PetController {
   public unregisterViewCallback(
     viewUpdateCallback: (petId: PetId, state: PetState) => void,
   ): void {
+    const initialCount = this.viewUpdateCallbacks.length;
     const index = this.viewUpdateCallbacks.indexOf(viewUpdateCallback);
+    
     if (index > -1) {
       this.viewUpdateCallbacks.splice(index, 1);
-      console.log('View callback unregistered');
+      console.log(`View callback unregistered. Count: ${initialCount} → ${this.viewUpdateCallbacks.length}`);
+    } else {
+      console.warn('Attempted to unregister callback that was not found');
     }
   }
 
   /**
-   * Legacy method for backward compatibility - now registers instead of replacing
+   * FIXED: Legacy method for backward compatibility
    * @deprecated Use registerViewCallback instead
    */
   public updateCallback(
     viewUpdateCallback: (petId: PetId, state: PetState) => void,
-  ): void {
+  ): () => void {
     console.warn('updateCallback is deprecated, use registerViewCallback instead');
-    this.registerViewCallback(viewUpdateCallback);
+    return this.registerViewCallback(viewUpdateCallback);
   }
 
   /**
@@ -340,10 +350,38 @@ export class PetController {
   public getCallbackCount(): number {
     return this.viewUpdateCallbacks.length;
   }
+
+  /**
+   * Get detailed debug info about registered callbacks
+   */
+  public getDebugInfo(): { 
+    callbackCount: number; 
+    petCount: number; 
+    updateLoopActive: boolean;
+    isInitialized: boolean;
+  } {
+    return {
+      callbackCount: this.viewUpdateCallbacks.length,
+      petCount: this.pets.size,
+      updateLoopActive: this.updateIntervalId !== null,
+      isInitialized: this.isInitialized
+    };
+  }
+
+  /**
+   * Force update all views (for debugging)
+   */
+  public forceUpdateAllViews(): void {
+    console.log('Force updating all views...');
+    this.pets.forEach((pet, petId) => {
+      this.notifyAllViews(petId, pet.getState());
+    });
+  }
+
 }
 
 // Create and export the singleton instance
-export const petController = new PetController();
+export const petControllerInstance = new PetController();
 
 // Initialize the controller when the module is loaded
-petController.initialize();
+petControllerInstance.initialize();

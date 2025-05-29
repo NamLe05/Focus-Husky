@@ -1,7 +1,7 @@
 import {useState, useEffect, useRef, useCallback} from 'react';
 import petImg from '../Static/pet.png';
 
-import {petController} from './controller'; // Import singleton instance
+import {petControllerInstance, PetController} from './controller'; // Import singleton instance
 import {PetId, PetState} from './model';
 import {getPetSpritePath, getAccessorySpritePath} from './helpers';
 import {useSoundEffects, createSoundEffects} from './soundEffects';
@@ -100,6 +100,8 @@ export default function PetView({
   const componentId = useRef(`PetView-${Math.random().toString(36).substr(2, 9)}`);
   const componentType = lockedPosition ? 'Timer' : 'Main';
 
+  const petController = useRef<PetController>(petControllerInstance);
+
 
   // Store the active pet and state
   const [petId, setPetId] = useState<PetId | undefined>(undefined);
@@ -193,15 +195,15 @@ export default function PetView({
   // Enhanced connection effect
   useEffect(() => {
     console.log(`[${componentId.current}] (${componentType}) Mounting and connecting...`);
-    console.log(`[${componentId.current}] Current callback count before registration:`, petController.getCallbackCount());
+    console.log(`[${componentId.current}] Current callback count before registration:`, petController.current.getCallbackCount());
 
     // Register this view's callback and get cleanup function
-    const unregisterCallback = petController.registerViewCallback(handlePetUpdate);
+    const unregisterCallback = petController.current.registerViewCallback(handlePetUpdate);
     
-    console.log(`[${componentId.current}] Callback count after registration:`, petController.getCallbackCount());
+    console.log(`[${componentId.current}] Callback count after registration:`, petController.current.getCallbackCount());
 
     // Get the first pet
-    const firstPet = petController.getFirstPet();
+    const firstPet = petController.current.getFirstPet();
     if (firstPet) {
       const petState = firstPet.getState();
       setPetId(firstPet.getId());
@@ -215,9 +217,9 @@ export default function PetView({
 
     // Cleanup function
     return () => {
-      console.log(`[${componentId.current}] (${componentType}) Unmounting, callback count before cleanup:`, petController.getCallbackCount());
+      console.log(`[${componentId.current}] (${componentType}) Unmounting, callback count before cleanup:`, petController.current.getCallbackCount());
       unregisterCallback();
-      console.log(`[${componentId.current}] Callback count after cleanup:`, petController.getCallbackCount());
+      console.log(`[${componentId.current}] Callback count after cleanup:`, petController.current.getCallbackCount());
     };
   }, [handlePetUpdate, componentType]);
 
@@ -331,7 +333,7 @@ export default function PetView({
     try {
       switch (type) {
         case 'feed':
-          petController.handleFeedPet(petId);
+          petController.current.handleFeedPet(petId);
           try {
             SOUND_EFFECTS.feed.play();
           } catch (e) {
@@ -339,7 +341,7 @@ export default function PetView({
           }
           break;
         case 'play':
-          petController.handlePlayWithPet(petId);
+          petController.current.handlePlayWithPet(petId);
           try {
             SOUND_EFFECTS.play.play();
           } catch (e) {
@@ -347,7 +349,7 @@ export default function PetView({
           }
           break;
         case 'groom':
-          petController.handleGroomPet(petId);
+          petController.current.handleGroomPet(petId);
           try {
             SOUND_EFFECTS.groom.play();
           } catch (e) {
@@ -388,7 +390,7 @@ export default function PetView({
   // Add periodic callback count logging
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log(`[${componentId.current}] Periodic check - Active callbacks:`, petController.getCallbackCount());
+      console.log(`[${componentId.current}] Periodic check - Active callbacks:`, petController.current.getCallbackCount());
     }, 10000); // Every 10 seconds
 
     return () => clearInterval(interval);
@@ -434,7 +436,7 @@ export default function PetView({
       const newY = e.clientY - dragOffset.y;
 
       // Update pet position using singleton
-      petController.handleMovePet(petId, newX, newY);
+      petController.current.handleMovePet(petId, newX, newY);
     };
 
     // Handle mouse up to stop dragging
@@ -470,14 +472,14 @@ export default function PetView({
   // Simulate completing a Pomodoro session
   const handleCompletePomo = () => {
     if (petId) {
-      petController.handlePomodoroCompleted(petId);
+      petController.current.handlePomodoroCompleted(petId);
     }
   };
 
   // Simulate completing a task
   const handleCompleteTask = () => {
     if (petId) {
-      petController.handleTaskCompleted(petId);
+      petController.current.handleTaskCompleted(petId);
     }
   };
 
