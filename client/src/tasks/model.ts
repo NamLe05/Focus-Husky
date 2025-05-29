@@ -35,6 +35,7 @@ export class TaskModel {
     id?: TaskId,
     link?: URL,
     status?: TaskStatus,
+    imported = false,
   ) {
     this.id = id === undefined ? uuid() : id;
     if (status === undefined) status = 'not started';
@@ -45,7 +46,7 @@ export class TaskModel {
       course,
       deadline,
       link,
-      imported: id !== undefined,
+      imported,
       status,
     };
   }
@@ -125,6 +126,7 @@ export class CanvasTaskModel extends TaskModel {
         canvas_data.planner_override.marked_complete
         ? 'completed'
         : mapSubmissionToStatus(canvas_data.submissions),
+      true,
     );
     console.log(canvas_data.planner_override);
     this.canvas_data = canvas_data;

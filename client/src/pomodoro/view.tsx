@@ -41,7 +41,7 @@ export default function PomodoroView() {
     const secs = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-  
+
   const handleIncreaseTime = () => {
     controllerRef.current?.adjustRemainingTime(60); // +1 minute
   };
@@ -49,8 +49,6 @@ export default function PomodoroView() {
   const handleDecreaseTime = () => {
     controllerRef.current?.adjustRemainingTime(-60); // -1 minute
   };
-
-
 
   return (
     <>
@@ -87,11 +85,15 @@ export default function PomodoroView() {
               </div>
             </div>
           </div>
-          <button className="increaseTimeButton" onClick={handleIncreaseTime}>+</button>
+          <button className="increaseTimeButton" onClick={handleIncreaseTime}>
+            +
+          </button>
           <button className="timerButton" onClick={handleStartStop}>
             {timerState ? '◼' : '▶'}
           </button>
-          <button className="decreaseTimeButton" onClick={handleDecreaseTime}>−</button>
+          <button className="decreaseTimeButton" onClick={handleDecreaseTime}>
+            −
+          </button>
         </div>
       </div>
     </>

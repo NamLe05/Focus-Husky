@@ -68,7 +68,5 @@ export class PomodoroController {
 
   public adjustRemainingTime(deltaSeconds: number): void {
     this.timerModel.adjustRemainingTime(deltaSeconds);
-  } 
-
-
+  }
 }
