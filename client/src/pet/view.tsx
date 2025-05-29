@@ -1,7 +1,7 @@
 import {useState, useEffect, useRef, useCallback} from 'react';
 import petImg from '../Static/pet.png';
 
-import {PetController} from './controller';
+import {petController} from './controller'; // Import singleton instance
 import {PetId, PetState} from './model';
 import {getPetSpritePath, getAccessorySpritePath} from './helpers';
 import {useSoundEffects, createSoundEffects} from './soundEffects';
@@ -78,38 +78,6 @@ const spriteMap = {
   },
 };
 
-// Create a singleton instance of the controller
-// This will persist even when components unmount and remount
-let controllerInstance: PetController | null = null;
-let isInitialized = false;
-
-// Keep a cached copy of the last known pet state to prevent loading flicker
-let cachedPetId: PetId | null = null;
-let cachedPetState: PetState | null = null;
-
-// Function to get or create the controller instance
-const getControllerInstance = (
-  callback: (petId: PetId, state: PetState) => void,
-): PetController => {
-  if (!controllerInstance) {
-    console.log('Creating new PetController instance (singleton)');
-    controllerInstance = new PetController(callback);
-  } else {
-    console.log('Reusing existing PetController instance');
-    // Update the callback in the existing controller
-    controllerInstance.updateCallback(callback);
-
-    // If we have cached state, immediately apply it
-    if (cachedPetId && cachedPetState) {
-      // Use setTimeout to ensure this happens after state initialization
-      setTimeout(() => {
-        callback(cachedPetId as PetId, cachedPetState as PetState);
-      }, 0);
-    }
-  }
-  return controllerInstance;
-};
-
 // Type for interaction queue
 interface QueuedInteraction {
   type: 'feed' | 'play' | 'groom';
@@ -127,21 +95,20 @@ export default function PetView({
   lockedPosition?: {x: number; y: number};
   dragLayer?: boolean;
 }) {
+
+  // Create a unique ID for this component instance
+  const componentId = useRef(`PetView-${Math.random().toString(36).substr(2, 9)}`);
+  const componentType = lockedPosition ? 'Timer' : 'Main';
+
+
   // Store the active pet and state
-  const [petId, setPetId] = useState<PetId | undefined>(
-    cachedPetId || undefined,
-  );
-  const [petState, setPetState] = useState<PetState | undefined>(
-    cachedPetState || undefined,
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(!cachedPetState);
+  const [petId, setPetId] = useState<PetId | undefined>(undefined);
+  const [petState, setPetState] = useState<PetState | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize sound effects
   useSoundEffects(); // Preload all sounds
   const SOUND_EFFECTS = useRef(createSoundEffects()).current;
-
-  // Maintain reference to controller
-  const controllerRef = useRef<PetController | null>(null);
 
   // Track interaction cooldowns
   const [interactionCooldowns, setInteractionCooldowns] = useState<{
@@ -155,7 +122,7 @@ export default function PetView({
   // Queue for interactions when pet is busy
   const [interactionQueue, setInteractionQueue] = useState<QueuedInteraction[]>(
     [],
-  ); // FIXED: Added missing closing bracket
+  );
 
   // State for pet position dragging
   const [isDragging, setIsDragging] = useState(false);
@@ -191,23 +158,27 @@ export default function PetView({
     handleInteraction(nextInteraction.type, true);
   }, [interactionQueue]);
 
-  // Create a state update handler that also caches the state
+  // Enhanced update handler with more debugging
   const handlePetUpdate = useCallback(
     (updatedPetId: PetId, state: PetState) => {
+      console.log(`[${componentId.current}] (${componentType}) Received update:`, {
+        petId: updatedPetId,
+        mood: state.mood,
+        animation: state.animation,
+        happiness: Math.round(state.happiness),
+        energy: Math.round(state.energy),
+        cleanliness: Math.round(state.cleanliness),
+        timestamp: new Date().toLocaleTimeString()
+      });
+
       // Update component state
       setPetId(updatedPetId);
       setPetState({...state});
       setIsLoading(false);
 
-      // Cache the state for smooth transitions between tabs
-      cachedPetId = updatedPetId;
-      cachedPetState = {...state};
-
       // Check if pet was previously busy but now idle
       if (isBusyRef.current && state.animation === 'idle') {
         isBusyRef.current = false;
-
-        // Process any queued interactions
         processNextQueuedInteraction();
       }
 
@@ -216,58 +187,39 @@ export default function PetView({
         isBusyRef.current = true;
       }
     },
-    [processNextQueuedInteraction],
+    [processNextQueuedInteraction, componentType],
   );
 
-  // Initialize controller and pet once on component mount
+  // Enhanced connection effect
   useEffect(() => {
-    console.log('PetView mounted, initializing...');
+    console.log(`[${componentId.current}] (${componentType}) Mounting and connecting...`);
+    console.log(`[${componentId.current}] Current callback count before registration:`, petController.getCallbackCount());
 
-    // Get or create controller instance using the singleton pattern
-    controllerRef.current = getControllerInstance(handlePetUpdate);
+    // Register this view's callback and get cleanup function
+    const unregisterCallback = petController.registerViewCallback(handlePetUpdate);
+    
+    console.log(`[${componentId.current}] Callback count after registration:`, petController.getCallbackCount());
 
-    // Initialize pets only once globally
-    if (!isInitialized) {
-      console.log('First initialization, loading pets...');
-      isInitialized = true;
-
-      // Try to load existing pets
-      controllerRef.current.loadPetsFromDatabase();
-
-      // If no pets were loaded, create a default one after a short delay
-      setTimeout(() => {
-        if (controllerRef.current && !cachedPetId) {
-          console.log('No pets found, creating default pet...');
-          controllerRef.current.handleCreatePet('Dubs', 'husky');
-        }
-      }, 500);
+    // Get the first pet
+    const firstPet = petController.getFirstPet();
+    if (firstPet) {
+      const petState = firstPet.getState();
+      setPetId(firstPet.getId());
+      setPetState(petState);
+      setIsLoading(false);
+      console.log(`[${componentId.current}] Connected to existing pet:`, firstPet.getName(), petState);
     } else {
-      console.log('Reusing existing pets from controller...');
-
-      // If we don't have cached state yet, force an update to get current state
-      if (!cachedPetState) {
-        const pets = controllerRef.current.getAllPets();
-        if (pets.length > 0) {
-          const firstPet = pets[0];
-          const firstPetState = firstPet.getState();
-          // Set the cached state
-          cachedPetId = firstPet.getId();
-          cachedPetState = {...firstPetState};
-          // Update component state
-          setPetId(cachedPetId);
-          setPetState(cachedPetState);
-          setIsLoading(false);
-        }
-      }
+      console.log(`[${componentId.current}] No pets found in controller`);
+      setIsLoading(false);
     }
 
-    // Clean up function doesn't actually destroy the controller
-    // since it's a singleton, but we still need to handle component-specific cleanup
+    // Cleanup function
     return () => {
-      console.log('PetView unmounting, performing cleanup...');
-      // We don't destroy the controller instance here, just clean up component-specific resources
+      console.log(`[${componentId.current}] (${componentType}) Unmounting, callback count before cleanup:`, petController.getCallbackCount());
+      unregisterCallback();
+      console.log(`[${componentId.current}] Callback count after cleanup:`, petController.getCallbackCount());
     };
-  }, [handlePetUpdate]);
+  }, [handlePetUpdate, componentType]);
 
   // Update cooldowns
   useEffect(() => {
@@ -347,13 +299,15 @@ export default function PetView({
     setInteractionQueue(prev => [...prev, newInteraction]);
   };
 
-  // Handle pet interactions
+  // Debug interaction handler
   const handleInteraction = (
     type: 'feed' | 'play' | 'groom',
     bypassBusyCheck = false,
   ) => {
-    if (!controllerRef.current || !petId || interactionCooldowns[type] > 0) {
-      // Play error sound if on cooldown
+    console.log(`[${componentId.current}] (${componentType}) Attempting ${type} interaction`);
+    
+    if (!petId || interactionCooldowns[type] > 0) {
+      console.log(`[${componentId.current}] Interaction blocked - no petId or on cooldown`);
       try {
         SOUND_EFFECTS.error.play();
       } catch (e) {
@@ -364,18 +318,20 @@ export default function PetView({
 
     // Check if pet is busy
     if (isBusyRef.current && !bypassBusyCheck) {
-      // Queue the interaction for later
+      console.log(`[${componentId.current}] Pet is busy, queuing interaction`);
       queueInteraction(type);
       setErrorMessage('Pet is busy! Interaction queued for later.');
       setTimeout(() => setErrorMessage(null), 3000);
       return;
     }
 
+    console.log(`[${componentId.current}] Executing ${type} interaction on pet ${petId}`);
+
     // Call appropriate controller method
     try {
       switch (type) {
         case 'feed':
-          controllerRef.current.handleFeedPet(petId);
+          petController.handleFeedPet(petId);
           try {
             SOUND_EFFECTS.feed.play();
           } catch (e) {
@@ -383,7 +339,7 @@ export default function PetView({
           }
           break;
         case 'play':
-          controllerRef.current.handlePlayWithPet(petId);
+          petController.handlePlayWithPet(petId);
           try {
             SOUND_EFFECTS.play.play();
           } catch (e) {
@@ -391,7 +347,7 @@ export default function PetView({
           }
           break;
         case 'groom':
-          controllerRef.current.handleGroomPet(petId);
+          petController.handleGroomPet(petId);
           try {
             SOUND_EFFECTS.groom.play();
           } catch (e) {
@@ -399,14 +355,16 @@ export default function PetView({
           }
           break;
       }
+      
+      console.log(`[${componentId.current}] ${type} interaction completed successfully`);
     } catch (e) {
-      console.error('Error performing interaction:', e);
+      console.error(`[${componentId.current}] Error performing interaction:`, e);
       setErrorMessage('Error performing interaction!');
       setTimeout(() => setErrorMessage(null), 3000);
       try {
         SOUND_EFFECTS.error.play();
       } catch (e) {
-        console.warn('Error playing play sound:', e);
+        console.warn('Error playing error sound:', e);
       }
       return;
     }
@@ -427,6 +385,15 @@ export default function PetView({
     setShowWheelMenu(false);
   };
 
+  // Add periodic callback count logging
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log(`[${componentId.current}] Periodic check - Active callbacks:`, petController.getCallbackCount());
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+  
   // Handle the pet sprite being clicked (open wheel menu)
   const handlePetClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -452,22 +419,22 @@ export default function PetView({
     setIsDragging(true);
   };
 
-  // Handle mouse move for dragging
+   // Handle mouse move for dragging
   useEffect(() => {
     let globalSelectStartHandler: ((e: Event) => void) | null = null;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !controllerRef.current || !petId) return;
+      if (!isDragging || !petId) return;
 
-      // Prevent default broswer behavior (Added to prevent text selection)
+      // Prevent default browser behavior (Added to prevent text selection)
       e.preventDefault();
 
       // Calculate new position
       const newX = e.clientX - dragOffset.x;
       const newY = e.clientY - dragOffset.y;
 
-      // Update pet position
-      controllerRef.current.handleMovePet(petId, newX, newY);
+      // Update pet position using singleton
+      petController.handleMovePet(petId, newX, newY);
     };
 
     // Handle mouse up to stop dragging
@@ -492,20 +459,25 @@ export default function PetView({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      if (globalSelectStartHandler) {
+        document.removeEventListener('selectstart', globalSelectStartHandler);
+      }
+      // Reset user-select
+      document.body.style.userSelect = '';
     };
   }, [isDragging, dragOffset, petId]);
 
   // Simulate completing a Pomodoro session
   const handleCompletePomo = () => {
-    if (controllerRef.current && petId) {
-      controllerRef.current.handlePomodoroCompleted(petId);
+    if (petId) {
+      petController.handlePomodoroCompleted(petId);
     }
   };
 
   // Simulate completing a task
   const handleCompleteTask = () => {
-    if (controllerRef.current && petId) {
-      controllerRef.current.handleTaskCompleted(petId);
+    if (petId) {
+      petController.handleTaskCompleted(petId);
     }
   };
 
@@ -524,7 +496,7 @@ export default function PetView({
   };
 
   // If pet not loaded yet, show loading state
-  if (!petState) {
+  if (isLoading || !petState) {
     return <div className="pet-loading">Loading pet...</div>;
   }
 
