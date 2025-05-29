@@ -59,14 +59,6 @@ export default function PomodoroView() {
               style={{backgroundImage: `url(${settingImg})`}}
               onClick={() => window.electronAPI.openOrFocusMainHome()}
             ></button>
-            <button
-              className="calendar"
-              style={{backgroundImage: `url(${calendarImg})`}}
-            ></button>
-            <button
-              className="notes"
-              style={{backgroundImage: `url(${notesImg})`}}
-            ></button>
           </div>
 
           <div className="timerBackground">

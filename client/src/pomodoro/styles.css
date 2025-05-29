@@ -74,22 +74,14 @@ html, body {
 }
 
 .settings {
-    left: 20px;
+    left: 90px;
 }
 
-.calendar {
-    left: 50px;
-}
-
-.notes {
-    left: 80px;
-}
-
-.settings:hover, .calendar:hover,.notes:hover {
+.settings:hover {
     opacity: 1;
 }
 
-.settings:active, .calendar:active, .notes:active {
+.settings:active {
   transform: scale(0.9);
 }
 
