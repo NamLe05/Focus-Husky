@@ -54,7 +54,7 @@ const createWindow = (): void => {
 
   mainWindow.webContents.setWindowOpenHandler(edata => {
     shell.openExternal(edata.url);
-    return { action: 'deny' };
+    return {action: 'deny'};
   });
 
   // and load the index.html of the app.
@@ -143,8 +143,8 @@ ipcMain.handle('getCanvasAssignments', async (e, userToken) => {
     const coursesResponse = await axios.get(
       `${CANVAS_BASE_URL}/api/v1/courses`,
       {
-        headers: { Authorization: `Bearer ${userToken}` },
-        params: { enrollment_state: 'active', include: ['term', 'favorites'] },
+        headers: {Authorization: `Bearer ${userToken}`},
+        params: {enrollment_state: 'active', include: ['term', 'favorites']},
       },
     );
 
@@ -156,7 +156,7 @@ ipcMain.handle('getCanvasAssignments', async (e, userToken) => {
     // Get assignments for each course
     console.log('Fetching Canvas planner items...');
     const plannerRequest = await axios.get(api, {
-      headers: { Authorization: `Bearer ${userToken}` },
+      headers: {Authorization: `Bearer ${userToken}`},
       params: {
         per_page: 1000,
         start_date: startDate.toISOString().split('T')[0],
