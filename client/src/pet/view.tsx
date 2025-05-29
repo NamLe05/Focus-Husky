@@ -83,29 +83,13 @@ const spriteMap = {
 let controllerInstance: PetController | null = null;
 let isInitialized = false;
 
-// Keep a cached copy of the last known pet state to prevent loading flicker
-let cachedPetId: PetId | null = null;
-let cachedPetState: PetState | null = null;
-
 // Function to get or create the controller instance
-const getControllerInstance = (
-  callback: (petId: PetId, state: PetState) => void,
-): PetController => {
+const getControllerInstance = (): PetController => {
   if (!controllerInstance) {
     console.log('Creating new PetController instance (singleton)');
-    controllerInstance = new PetController(callback);
+    controllerInstance = new PetController();
   } else {
     console.log('Reusing existing PetController instance');
-    // Update the callback in the existing controller
-    controllerInstance.updateCallback(callback);
-
-    // If we have cached state, immediately apply it
-    if (cachedPetId && cachedPetState) {
-      // Use setTimeout to ensure this happens after state initialization
-      setTimeout(() => {
-        callback(cachedPetId as PetId, cachedPetState as PetState);
-      }, 0);
-    }
   }
   return controllerInstance;
 };
@@ -128,20 +112,17 @@ export default function PetView({
   dragLayer?: boolean;
 }) {
   // Store the active pet and state
-  const [petId, setPetId] = useState<PetId | undefined>(
-    cachedPetId || undefined,
-  );
-  const [petState, setPetState] = useState<PetState | undefined>(
-    cachedPetState || undefined,
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(!cachedPetState);
+  const [petId, setPetId] = useState<PetId | undefined>(undefined);
+  const [petState, setPetState] = useState<PetState | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize sound effects
   useSoundEffects(); // Preload all sounds
   const SOUND_EFFECTS = useRef(createSoundEffects()).current;
 
-  // Maintain reference to controller
+  // Maintain reference to controller and callback ID
   const controllerRef = useRef<PetController | null>(null);
+  const callbackIdRef = useRef<string | null>(null);
 
   // Track interaction cooldowns
   const [interactionCooldowns, setInteractionCooldowns] = useState<{
@@ -155,7 +136,7 @@ export default function PetView({
   // Queue for interactions when pet is busy
   const [interactionQueue, setInteractionQueue] = useState<QueuedInteraction[]>(
     [],
-  ); // FIXED: Added missing closing bracket
+  );
 
   // State for pet position dragging
   const [isDragging, setIsDragging] = useState(false);
@@ -191,17 +172,15 @@ export default function PetView({
     handleInteraction(nextInteraction.type, true);
   }, [interactionQueue]);
 
-  // Create a state update handler that also caches the state
+  // Create a state update handler
   const handlePetUpdate = useCallback(
     (updatedPetId: PetId, state: PetState) => {
+      console.log(`PetView received update for pet ${updatedPetId}:`, state);
+      
       // Update component state
       setPetId(updatedPetId);
       setPetState({...state});
       setIsLoading(false);
-
-      // Cache the state for smooth transitions between tabs
-      cachedPetId = updatedPetId;
-      cachedPetState = {...state};
 
       // Check if pet was previously busy but now idle
       if (isBusyRef.current && state.animation === 'idle') {
@@ -224,7 +203,10 @@ export default function PetView({
     console.log('PetView mounted, initializing...');
 
     // Get or create controller instance using the singleton pattern
-    controllerRef.current = getControllerInstance(handlePetUpdate);
+    controllerRef.current = getControllerInstance();
+
+    // Register this view's callback with the controller
+    callbackIdRef.current = controllerRef.current.registerViewCallback(handlePetUpdate);
 
     // Initialize pets only once globally
     if (!isInitialized) {
@@ -236,36 +218,34 @@ export default function PetView({
 
       // If no pets were loaded, create a default one after a short delay
       setTimeout(() => {
-        if (controllerRef.current && !cachedPetId) {
-          console.log('No pets found, creating default pet...');
-          controllerRef.current.handleCreatePet('Dubs', 'husky');
+        if (controllerRef.current) {
+          const pets = controllerRef.current.getAllPets();
+          if (pets.length === 0) {
+            console.log('No pets found, creating default pet...');
+            controllerRef.current.handleCreatePet('Dubs', 'husky');
+          }
         }
       }, 500);
     } else {
       console.log('Reusing existing pets from controller...');
-
-      // If we don't have cached state yet, force an update to get current state
-      if (!cachedPetState) {
-        const pets = controllerRef.current.getAllPets();
-        if (pets.length > 0) {
-          const firstPet = pets[0];
-          const firstPetState = firstPet.getState();
-          // Set the cached state
-          cachedPetId = firstPet.getId();
-          cachedPetState = {...firstPetState};
-          // Update component state
-          setPetId(cachedPetId);
-          setPetState(cachedPetState);
-          setIsLoading(false);
-        }
+      
+      // Get current pets and update this view immediately
+      const pets = controllerRef.current.getAllPets();
+      if (pets.length > 0) {
+        const firstPet = pets[0];
+        const firstPetState = firstPet.getState();
+        handlePetUpdate(firstPet.getId(), firstPetState);
       }
     }
 
-    // Clean up function doesn't actually destroy the controller
-    // since it's a singleton, but we still need to handle component-specific cleanup
+    // Cleanup function
     return () => {
       console.log('PetView unmounting, performing cleanup...');
-      // We don't destroy the controller instance here, just clean up component-specific resources
+      // Unregister this view's callback
+      if (controllerRef.current && callbackIdRef.current) {
+        controllerRef.current.unregisterViewCallback(callbackIdRef.current);
+        callbackIdRef.current = null;
+      }
     };
   }, [handlePetUpdate]);
 
@@ -406,7 +386,7 @@ export default function PetView({
       try {
         SOUND_EFFECTS.error.play();
       } catch (e) {
-        console.warn('Error playing play sound:', e);
+        console.warn('Error playing error sound:', e);
       }
       return;
     }
@@ -440,7 +420,7 @@ export default function PetView({
   const handlePetMouseDown = (e: React.MouseEvent) => {
     if (!draggable || !petElementRef.current || !petState) return;
 
-    // Prevent default broswer behavior (Added to prevent text selection)
+    // Prevent default browser behavior (Added to prevent text selection)
     e.preventDefault();
 
     // Calculate offset from cursor to pet center
@@ -454,12 +434,10 @@ export default function PetView({
 
   // Handle mouse move for dragging
   useEffect(() => {
-    let globalSelectStartHandler: ((e: Event) => void) | null = null;
-
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging || !controllerRef.current || !petId) return;
 
-      // Prevent default broswer behavior (Added to prevent text selection)
+      // Prevent default browser behavior (Added to prevent text selection)
       e.preventDefault();
 
       // Calculate new position
@@ -481,10 +459,6 @@ export default function PetView({
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
 
-      // Add global selectstart prevention while dragging
-      globalSelectStartHandler = (e: Event) => e.preventDefault();
-      document.addEventListener('selectstart', globalSelectStartHandler);
-
       // Add user-select none to body while dragging
       document.body.style.userSelect = 'none';
     }
@@ -492,6 +466,11 @@ export default function PetView({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      
+      // Reset user-select when cleaning up
+      if (document.body.style.userSelect === 'none') {
+        document.body.style.userSelect = '';
+      }
     };
   }, [isDragging, dragOffset, petId]);
 
@@ -589,18 +568,16 @@ export default function PetView({
           ref={petElementRef}
           className={`pet-sprite mood-${petState.mood} ${petState.animation} no-drag ${isDragging && draggable ? 'dragging' : ''}`}
           style={{
-            position: 'absolute' /* FIXED: Added absolute positioning */,
-            // left: `${petState.position.x -270}px` /* FIXED: Use left/top instead of transform */,
-            // top: `${petState.position.y - 230}px`,
+            position: 'absolute',
             left: `${lockedPosition?.x ?? petState.position.x}px`,
             top: `${lockedPosition?.y ?? petState.position.y}px`,
             backgroundImage: `url(${spritePath})`,
-            width: '64px' /* FIXED: Added explicit width and height */,
+            width: '64px',
             height: '64px',
-            backgroundSize: 'contain' /* FIXED: Ensure sprite fits */,
+            backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
-            zIndex: 100 /* FIXED: Ensure sprite is visible above other elements */,
-            cursor: 'pointer' /* FIXED: Add pointer cursor for better UX */,
+            zIndex: 100,
+            cursor: 'pointer',
           }}
           onClick={handlePetClick}
           onMouseDown={handlePetMouseDown}
@@ -614,8 +591,7 @@ export default function PetView({
                 key={accessoryId}
                 className="pet-accessory"
                 style={{
-                  position:
-                    'absolute' /* FIXED: Added absolute positioning for accessories */,
+                  position: 'absolute',
                   top: 0,
                   left: 0,
                   width: '100%',
@@ -803,8 +779,7 @@ export default function PetView({
                 {Math.round(petState.cleanliness)}%
               </span>
             </div>
-          </div>{' '}
-          {/* FIXED: Added missing closing bracket for pet-stats div */}
+          </div>
           <div className="pet-status">
             <div>
               Last interaction:{' '}

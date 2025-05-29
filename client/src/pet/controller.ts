@@ -4,11 +4,10 @@ export class PetController {
   // Collection of all pet instances managed by this controller
   private pets: Map<PetId, PetModel>;
 
-  // View update callback
-  // When called, the PetController will pass the petId of the updated pet
-  // to this callback function, allowing the view to then retrieve the
-  // latest data for that pet and update its display accordingly.
-  private viewUpdateCallback: (petId: PetId, state: PetState) => void;
+  // Multiple view update callbacks
+  // Each view registers its callback and gets a unique ID
+  private viewUpdateCallbacks: Map<string, (petId: PetId, state: PetState) => void>;
+  private nextCallbackId: number = 0;
 
   // Update interval tracking for periodic update loop runs
   private updateIntervalId: NodeJS.Timeout | null = null;
@@ -16,13 +15,48 @@ export class PetController {
 
   /**
    * Create a new pet controller instance
-   * @param viewUpdateCallback Callback to notify view of updates
+   * @param viewUpdateCallback Initial callback to notify view of updates
    */
-  constructor(viewUpdateCallback: (petId: PetId, state: PetState) => void) {
+  constructor(viewUpdateCallback?: (petId: PetId, state: PetState) => void) {
     this.pets = new Map();
-    this.viewUpdateCallback = viewUpdateCallback;
+    this.viewUpdateCallbacks = new Map();
     this.lastUpdateTime = Date.now();
+    
+    // Register the initial callback if provided
+    if (viewUpdateCallback) {
+      this.registerViewCallback(viewUpdateCallback);
+    }
+    
     this.startUpdateLoop();
+  }
+
+  /**
+   * Register a new view callback and return its ID
+   * @param callback The callback function
+   * @returns Callback ID for later removal
+   */
+  public registerViewCallback(callback: (petId: PetId, state: PetState) => void): string {
+    const callbackId = `callback_${this.nextCallbackId++}`;
+    this.viewUpdateCallbacks.set(callbackId, callback);
+    
+    // Immediately notify the new callback about all existing pets
+    this.pets.forEach((pet, petId) => {
+      callback(petId, pet.getState());
+    });
+    
+    console.log(`Registered view callback ${callbackId}. Total callbacks: ${this.viewUpdateCallbacks.size}`);
+    return callbackId;
+  }
+
+  /**
+   * Unregister a view callback
+   * @param callbackId The ID returned from registerViewCallback
+   */
+  public unregisterViewCallback(callbackId: string): void {
+    const removed = this.viewUpdateCallbacks.delete(callbackId);
+    if (removed) {
+      console.log(`Unregistered view callback ${callbackId}. Total callbacks: ${this.viewUpdateCallbacks.size}`);
+    }
   }
 
   /**
@@ -33,6 +67,7 @@ export class PetController {
       clearInterval(this.updateIntervalId);
       this.updateIntervalId = null;
     }
+    this.viewUpdateCallbacks.clear();
   }
 
   /**
@@ -52,8 +87,8 @@ export class PetController {
     // Save to database
     this.savePetToDatabase(petId);
 
-    // Notify view
-    this.notifyViewUpdate(petId, pet.getState());
+    // Notify all views
+    this.notifyAllViews(petId, pet.getState());
 
     return petId;
   }
@@ -73,9 +108,9 @@ export class PetController {
     // Update via model
     const updatedState = pet.rename(newName);
 
-    // Save and update view
+    // Save and update all views
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.notifyAllViews(petId, updatedState);
   }
 
   /**
@@ -89,9 +124,9 @@ export class PetController {
     // Let model handle the feeding logic
     const updatedState = pet.interact('feed');
 
-    // Save and notify view
+    // Save and notify all views
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.notifyAllViews(petId, updatedState);
   }
 
   /**
@@ -105,9 +140,9 @@ export class PetController {
     // Let model handle the play logic
     const updatedState = pet.interact('play');
 
-    // Save and notify view
+    // Save and notify all views
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.notifyAllViews(petId, updatedState);
   }
 
   /**
@@ -121,9 +156,9 @@ export class PetController {
     // Let model handle the grooming logic
     const updatedState = pet.interact('groom');
 
-    // Save and notify view
+    // Save and notify all views
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.notifyAllViews(petId, updatedState);
   }
 
   /**
@@ -139,8 +174,8 @@ export class PetController {
     // Let model update position
     const updatedState = pet.setPosition(x, y);
 
-    // Only update view (no need to save position to database)
-    this.notifyViewUpdate(petId, updatedState);
+    // Only update views (no need to save position to database)
+    this.notifyAllViews(petId, updatedState);
   }
 
   /**
@@ -154,9 +189,9 @@ export class PetController {
     // Let model handle task completion logic
     const updatedState = pet.onTaskComplete();
 
-    // Save and notify view
+    // Save and notify all views
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.notifyAllViews(petId, updatedState);
   }
 
   /**
@@ -170,9 +205,9 @@ export class PetController {
     // Let model handle Pomodoro completion logic
     const updatedState = pet.onPomodoroComplete();
 
-    // Save and notify view
+    // Save and notify all views
     this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.notifyAllViews(petId, updatedState);
   }
 
   /**
@@ -215,12 +250,18 @@ export class PetController {
   }
 
   /**
-   * Notify view of pet updates
+   * Notify all registered views of pet updates
    */
-  private notifyViewUpdate(petId: PetId, petState: PetState): void {
-    if (this.viewUpdateCallback) {
-      this.viewUpdateCallback(petId, petState);
-    }
+  private notifyAllViews(petId: PetId, petState: PetState): void {
+    this.viewUpdateCallbacks.forEach((callback, callbackId) => {
+      try {
+        callback(petId, petState);
+      } catch (error) {
+        console.error(`Error in view callback ${callbackId}:`, error);
+        // Optionally remove broken callbacks
+        // this.viewUpdateCallbacks.delete(callbackId);
+      }
+    });
   }
 
   /**
@@ -233,8 +274,8 @@ export class PetController {
 
       // Update each pet's stats via the model
       this.pets.forEach((pet, petId) => {
-        pet.updateStats(deltaTime);
-        this.notifyViewUpdate(petId, pet.getState());
+        const updatedState = pet.updateStats(deltaTime);
+        this.notifyAllViews(petId, updatedState);
       });
 
       this.lastUpdateTime = currentTime;
@@ -242,18 +283,13 @@ export class PetController {
   }
 
   /**
-   * Update the view callback function
-   * This allows reusing the controller instance with a new view component
-   * @param viewUpdateCallback New callback function
+   * Legacy method for backward compatibility
+   * @deprecated Use registerViewCallback instead
    */
   public updateCallback(
     viewUpdateCallback: (petId: PetId, state: PetState) => void,
   ): void {
-    this.viewUpdateCallback = viewUpdateCallback;
-
-    // Notify the new callback about all existing pets
-    this.pets.forEach((pet, petId) => {
-      this.notifyViewUpdate(petId, pet.getState());
-    });
+    console.warn('updateCallback is deprecated. Use registerViewCallback instead.');
+    this.registerViewCallback(viewUpdateCallback);
   }
 }
