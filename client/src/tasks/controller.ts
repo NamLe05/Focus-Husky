@@ -39,6 +39,14 @@ export class TaskController {
    * Create a new task controller instance
    */
   constructor() {
+    this.reset();
+
+    // TODO: Load existing tasks from database.
+
+    // Query new tasks from Canvas.
+  }
+
+  public reset() {
     this.tasks = new Map();
     this.courses = new Map();
     this.userToken = undefined;
@@ -50,10 +58,6 @@ export class TaskController {
       course_format: '',
       time_zone: '',
     });
-
-    // TODO: Load existing tasks from database.
-
-    // Query new tasks from Canvas.
   }
 
   public setCallbacks(

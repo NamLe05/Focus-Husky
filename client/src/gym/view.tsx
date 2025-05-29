@@ -98,7 +98,7 @@ function QuestionLoader({
             value={answer === undefined ? '' : answer}
             onChange={updateAnswer}
           ></Form.Control>
-          <Button>Submit</Button>
+          <Button type="submit">Submit</Button>
         </InputGroup>
       </Form>
     );
