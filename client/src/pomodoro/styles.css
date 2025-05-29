@@ -74,22 +74,14 @@ html, body {
 }
 
 .settings {
-    left: 20px;
+    left: 90px;
 }
 
-.calendar {
-    left: 50px;
-}
-
-.notes {
-    left: 80px;
-}
-
-.settings:hover, .calendar:hover,.notes:hover {
+.settings:hover {
     opacity: 1;
 }
 
-.settings:active, .calendar:active, .notes:active {
+.settings:active {
   transform: scale(0.9);
 }
 
@@ -138,7 +130,7 @@ html, body {
     text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.6);
 }
 
-.timerButton {
+.timerButton, .increaseTimeButton, .decreaseTimeButton {
     border: none;
     cursor: pointer;
     display: flex;
@@ -150,7 +142,7 @@ html, body {
     background-color: #8F7A97;
     color: white;
     border-radius: 50%;
-    padding-top: 2px;
+    padding-top: 3px;
     padding-left: 7px;
     margin-top: 175px;
     margin-left: 90px;
@@ -163,6 +155,17 @@ html, body {
     -webkit-app-region: no-drag;
 }
 
+.increaseTimeButton {
+    margin-left: 30px;
+    font-size: 24px;
+    padding-left: 6px;
+}
+
+.decreaseTimeButton {
+    margin-left: 150px;
+    font-size: 24px;
+    padding-left: 6px;
+}
 .timerButton:hover {
     opacity: 1;
     box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.6);
