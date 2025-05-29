@@ -57,6 +57,7 @@ export default function PomodoroView() {
             <button
               className="settings"
               style={{backgroundImage: `url(${settingImg})`}}
+              onClick={() => window.electronAPI.openOrFocusMainHome()}
             ></button>
             <button
               className="calendar"

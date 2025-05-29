@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';   // ← new import
 import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -14,8 +15,7 @@ type TimeInfo = {
 };
 
 const formatDateTime = (date: Date): TimeInfo => {
-  const dayString = date.toLocaleDateString('en-US', {weekday: 'long'});
-
+  const dayString = date.toLocaleDateString('en-US', { weekday: 'long' });
   const dateString =
     date.toLocaleDateString('en-US', {
       month: 'numeric',
@@ -28,12 +28,11 @@ const formatDateTime = (date: Date): TimeInfo => {
       minute: '2-digit',
       hour12: true,
     });
-
-  return {dayString, dateString};
+  return { dayString, dateString };
 };
 
 // DateCard
-const DateCard: React.FC<{time: TimeInfo}> = ({time}) => (
+const DateCard: React.FC<{ time: TimeInfo }> = ({ time }) => (
   <Col className="dateCard">
     <div className="todayTxt">
       <h1>{time.dayString}</h1>
@@ -59,7 +58,7 @@ const PomodoroTimer: React.FC = () => (
 );
 
 // StatsCard
-const StatsCard: React.FC<{title: string; value: string; icon: string}> = ({
+const StatsCard: React.FC<{ title: string; value: string; icon: string }> = ({
   title,
   value,
   icon,
@@ -77,16 +76,28 @@ const StatsCard: React.FC<{title: string; value: string; icon: string}> = ({
 
 // View
 const View: React.FC = () => {
+  const navigate = useNavigate();   // ← hook for navigation
+
   const [currentTime, setCurrentTime] = useState<TimeInfo>(
-    formatDateTime(new Date()),
+    formatDateTime(new Date())
   );
 
+  // Update clock every 10s
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(formatDateTime(new Date()));
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // Listen for "navigate-home" from main process
+  useEffect(() => {
+  const handler = () => navigate('/');
+  window.electronAPI.onNavigateHome(handler);
+  return () => {
+    window.electronAPI.removeNavigateHomeListener(handler);
+  };
+}, [navigate]);
 
   return (
     <Container fluid className="root">
