@@ -24,6 +24,7 @@ import Tabs from 'react-bootstrap/Tabs';
 import Modal from 'react-bootstrap/Modal';
 import './styles.css';
 import {ErrorLoader, ErrorLoaderRef} from '../components/ErrorLoader';
+import { celebratePet } from '../pet/petCelebration';
 
 type TaskCardProps = {
   id: TaskId;
@@ -161,6 +162,7 @@ function TaskCard({
     if (task.imported) {
       controller.triggerAction('complete-imported', id);
     } else {
+      celebratePet();
       setCompleted(true);
       setTimeout(() => {
         controller.markComplete(id);
