@@ -138,11 +138,15 @@ export class TaskController {
     taskToUpdate.setState(task);
     // Update in disk
     // TODO: Await and handle any errors in UI
-    window.electron.dbUpdate(
-      TaskController.FILE_NAME,
-      taskToUpdate.getId(),
-      task,
-    );
+    try {
+      window.electron.dbUpdate(
+        TaskController.FILE_NAME,
+        taskToUpdate.getId(),
+        task,
+      );
+    } catch (err) {
+      // Ignore for now.
+    }
     // Update in view
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
@@ -176,11 +180,15 @@ export class TaskController {
       status: 'completed',
     });
     // TODO: Await and handle any errors in UI
-    window.electron.dbUpdate(
-      TaskController.FILE_NAME,
-      taskToUpdate.getId(),
-      taskToUpdate.getState(),
-    );
+    try {
+      window.electron.dbUpdate(
+        TaskController.FILE_NAME,
+        taskToUpdate.getId(),
+        taskToUpdate.getState(),
+      );
+    } catch (err) {
+      // Ignore for now.
+    }
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
     }
@@ -203,10 +211,14 @@ export class TaskController {
       return;
     }
     // Update the database
-    window.electron.dbRemove(
-      TaskController.FILE_NAME,
-      id === undefined ? this.activeTask : id,
-    );
+    try {
+      window.electron.dbRemove(
+        TaskController.FILE_NAME,
+        id === undefined ? this.activeTask : id,
+      );
+    } catch (err) {
+      // Ignore for now.
+    }
     // Update the view
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());

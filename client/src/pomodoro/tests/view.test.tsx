@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {render, screen, fireEvent} from '@testing-library/react';
 import React from 'react';
 import PomodoroView from '../view';
 
@@ -47,43 +47,43 @@ describe('PomodoroView - timer control buttons', () => {
   });
 
   it('does not go below 0 when decreasing repeatedly', () => {
-  render(<PomodoroView />);
-  const decreaseButton = screen.getByText('−');
+    render(<PomodoroView />);
+    const decreaseButton = screen.getByText('−');
 
-  for (let i = 0; i < 30; i++) {
-    fireEvent.click(decreaseButton);
-  }
+    for (let i = 0; i < 30; i++) {
+      fireEvent.click(decreaseButton);
+    }
 
-  const timer = screen.getByText((_, element) =>
-    element?.classList.contains('timerCountdown'),
-  );
-  expect(timer).toBeTruthy();
+    const timer = screen.getByText((_, element) =>
+      element?.classList.contains('timerCountdown'),
+    );
+    expect(timer).toBeTruthy();
 
-  // The timer text should be a valid mm:ss format
-  const timeText = timer.textContent || '';
-  expect(timeText).toMatch(/^\d{2}:\d{2}$/);
+    // The timer text should be a valid mm:ss format
+    const timeText = timer.textContent || '';
+    expect(timeText).toMatch(/^\d{2}:\d{2}$/);
 
-  // Parse minutes and seconds to total seconds
-  const [minutesStr, secondsStr] = timeText.split(':');
-  const totalSeconds = parseInt(minutesStr, 10) * 60 + parseInt(secondsStr, 10);
+    // Parse minutes and seconds to total seconds
+    const [minutesStr, secondsStr] = timeText.split(':');
+    const totalSeconds =
+      parseInt(minutesStr, 10) * 60 + parseInt(secondsStr, 10);
 
-  // Assert timer never goes below zero
-  expect(totalSeconds).toBeGreaterThanOrEqual(0);
-});
+    // Assert timer never goes below zero
+    expect(totalSeconds).toBeGreaterThanOrEqual(0);
+  });
 
-it('calls electronAPI.openOrFocusMainHome when settings button is clicked', () => {
-  const openMainMock = vi.fn();
+  it('calls electronAPI.openOrFocusMainHome when settings button is clicked', () => {
+    const openMainMock = vi.fn();
 
-  (window as any).electronAPI = {
-    openOrFocusMainHome: openMainMock,
-  };
+    (window as any).electronAPI = {
+      openOrFocusMainHome: openMainMock,
+    };
 
-  render(<PomodoroView />);
+    render(<PomodoroView />);
 
-  const settingsButton = screen.getByTestId('settings-button');
-  fireEvent.click(settingsButton); // fires click event
+    const settingsButton = screen.getByTestId('settings-button');
+    fireEvent.click(settingsButton); // fires click event
 
-  expect(openMainMock).toHaveBeenCalledTimes(1);
-});
-
+    expect(openMainMock).toHaveBeenCalledTimes(1);
+  });
 });

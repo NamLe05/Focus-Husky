@@ -2,7 +2,7 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
 import React from 'react';
 import View from '../view';
-import { MemoryRouter } from 'react-router-dom'; // Import this
+import {MemoryRouter} from 'react-router-dom'; // Import this
 
 const INITIAL_DATE = new Date('2025-05-20T17:18:00');
 const ONE_MINUTE_LATER = new Date('2025-05-20T17:19:00');
@@ -37,7 +37,7 @@ describe('View component - time updates', () => {
         static now() {
           return INITIAL_DATE.getTime();
         }
-      }
+      },
     );
   });
 
@@ -47,15 +47,15 @@ describe('View component - time updates', () => {
   });
 
   it('renders initial date and time, then updates after 1 minute', () => {
-    const { rerender } = render(
+    const {rerender} = render(
       <MemoryRouter>
         <View />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const initialTimeText = '5/20/2025 | 5:18 PM';
     expect(
-      screen.queryByText((content) => content.includes(initialTimeText))
+      screen.queryByText(content => content.includes(initialTimeText)),
     ).toBeTruthy();
 
     // Advance global Date mock to 1 minute later
@@ -75,19 +75,19 @@ describe('View component - time updates', () => {
         static now() {
           return newTimeMs;
         }
-      }
+      },
     );
 
     vi.advanceTimersByTime(60 * 1000);
     rerender(
       <MemoryRouter>
         <View />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const updatedTimeText = '5/20/2025 | 5:19 PM';
     expect(
-      screen.queryByText((content) => content.includes(updatedTimeText))
+      screen.queryByText(content => content.includes(updatedTimeText)),
     ).toBeTruthy();
   });
 });
@@ -106,7 +106,7 @@ describe('View component - Pomodoro button', () => {
     render(
       <MemoryRouter>
         <View />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const startButton = screen.getByRole('button');
