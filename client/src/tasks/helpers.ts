@@ -1,4 +1,4 @@
-import {CanvasSubmission, TaskStatus} from './model';
+import {CanvasSubmission, TaskState, TaskStatus} from './model';
 
 export function mapSubmissionToStatus(
   submissions: false | CanvasSubmission,

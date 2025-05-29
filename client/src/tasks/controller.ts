@@ -6,11 +6,13 @@ import {
   TaskAction,
 } from './model';
 import {CourseId, Course} from './course';
-import {getTodayMidnight} from './helpers';
 
 export type TaskError = 'deleteError' | 'completeError' | 'syncError';
 
 export class TaskController {
+  // Database file name
+  private static readonly FILE_NAME = 'tasks.db';
+
   // Collection of all user tasks
   private tasks: Map<TaskId, TaskModel>;
   private courses: Map<CourseId, Course>;
@@ -33,12 +35,18 @@ export class TaskController {
   // Task with action being taken on
   private activeTask?: TaskId;
 
-  // Singleton instance of controller
-
   /**
    * Create a new task controller instance
    */
   constructor() {
+    this.reset();
+
+    // TODO: Load existing tasks from database.
+
+    // Query new tasks from Canvas.
+  }
+
+  public reset() {
     this.tasks = new Map();
     this.courses = new Map();
     this.userToken = undefined;
@@ -50,10 +58,29 @@ export class TaskController {
       course_format: '',
       time_zone: '',
     });
-
-    // TODO: Load existing tasks from database.
-
-    // Query new tasks from Canvas.
+    window.electron
+      .dbGetAll(TaskController.FILE_NAME)
+      .then((docs: Array<TaskState & {_id: string}>) => {
+        // Insert each
+        for (const doc of docs) {
+          // Create task using task model
+          const link = 'link' in doc ? doc.link : undefined;
+          const status = 'status' in doc ? doc.status : undefined;
+          const createdTask = new TaskModel(
+            doc.title,
+            doc.description,
+            doc.course,
+            doc.deadline,
+            doc._id,
+            link,
+            status,
+          );
+          // Get task ID
+          const createdTaskId = createdTask.getId();
+          // Save task in temporary state
+          this.tasks.set(createdTaskId, createdTask);
+        }
+      });
   }
 
   public setCallbacks(
@@ -91,7 +118,14 @@ export class TaskController {
     // Save task in temporary state
     this.tasks.set(createdTaskId, createdTask);
     // Save task to database
-    this.saveTaskToDatabase(createdTaskId);
+    try {
+      window.electron.dbInsert({
+        filename: TaskController.FILE_NAME,
+        document: createdTask.getState(),
+      });
+    } catch (err) {
+      // TODO: Handle errors with database
+    }
     // Update the view
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
@@ -102,6 +136,14 @@ export class TaskController {
   public handleTaskUpdate(id: TaskId, task: TaskState) {
     const taskToUpdate = this.tasks.get(id);
     taskToUpdate.setState(task);
+    // Update in disk
+    // TODO: Await and handle any errors in UI
+    window.electron.dbUpdate(
+      TaskController.FILE_NAME,
+      taskToUpdate.getId(),
+      task,
+    );
+    // Update in view
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
     }
@@ -133,6 +175,12 @@ export class TaskController {
       imported: taskToUpdate.getState().imported,
       status: 'completed',
     });
+    // TODO: Await and handle any errors in UI
+    window.electron.dbUpdate(
+      TaskController.FILE_NAME,
+      taskToUpdate.getId(),
+      taskToUpdate.getState(),
+    );
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
     }
@@ -154,6 +202,11 @@ export class TaskController {
       }
       return;
     }
+    // Update the database
+    window.electron.dbRemove(
+      TaskController.FILE_NAME,
+      id === undefined ? this.activeTask : id,
+    );
     // Update the view
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
@@ -186,14 +239,6 @@ export class TaskController {
       )
       .sort((a, b) => +a[1].deadline - +b[1].deadline);
     return filteredTaskList;
-  }
-
-  private saveTaskToDatabase(taskId: TaskId): void {
-    const task = this.tasks.get(taskId);
-    if (!task) return;
-
-    console.log(`Saving task ${taskId} to database:`, task.getState());
-    // TODO: call database APIs
   }
 
   public async syncCanvas() {
@@ -237,12 +282,5 @@ export class TaskController {
 }
 
 const taskControllerInstance: TaskController = new TaskController();
-
-taskControllerInstance.handleCreateTask(
-  'Test',
-  'sample task',
-  0,
-  getTodayMidnight(),
-);
 
 export default taskControllerInstance;
