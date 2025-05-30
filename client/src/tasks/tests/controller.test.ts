@@ -12,9 +12,6 @@ describe('Task Model', () => {
     // Load a fresh controller for each test.
     controller = new TaskController();
 
-    // Clear mocks
-    vi.clearAllMocks();
-
     // Create mock callback functions
     mockViewUpdateCallback = vi.fn();
     mockActionCallback = vi.fn();

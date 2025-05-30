@@ -95,11 +95,14 @@ function TaskEditable({
     return editing ? (
       <div style={{marginRight: '300px'}}>
         <Form.Control
+          data-testid="task-editable"
+          type="text"
           size="sm"
           placeholder={placeholder}
           value={getter}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setter(e.target.value);
+            const value = e.target.value;
+            setter(value);
           }}
           required
         />
@@ -111,6 +114,7 @@ function TaskEditable({
     return editing ? (
       <div style={{marginRight: '300px'}}>
         <Form.Control
+          data-testid="task-editable"
           size="sm"
           type="datetime-local"
           placeholder={placeholder}
@@ -127,6 +131,8 @@ function TaskEditable({
   } else if (type === 'paragraph' && typeof getter === 'string') {
     return editing ? (
       <Form.Control
+        data-testid="task-editable"
+        type="text"
         size="sm"
         as="textarea"
         placeholder={placeholder}
@@ -137,7 +143,7 @@ function TaskEditable({
         required
       />
     ) : (
-      <span>{getter.toLocaleString()}</span>
+      <span>{getter}</span>
     );
   }
   return <span>ERROR</span>;
@@ -176,10 +182,10 @@ function TaskCard({
     controller.triggerAction('delete', id);
   };
   const updateTaskTitle = (newTitle: string) => {
-    setTempTask((prevTask: TaskState) => ({...prevTask, title: newTitle}));
+    setTempTask({...tempTask, title: newTitle});
   };
   const updateTaskDescription = (newDesc: string) => {
-    setTempTask((prevTask: TaskState) => ({...prevTask, description: newDesc}));
+    setTempTask({...tempTask, description: newDesc});
   };
   const updateTaskDeadline = (newDate: string) => {
     setTempTask((prevTask: TaskState) => ({
@@ -210,6 +216,7 @@ function TaskCard({
   return (
     <Card
       className="taskCard"
+      data-testid={newItem === undefined ? 'task-card' : 'new-task-card'}
       style={{display: newItem !== undefined && !newItem ? 'none' : 'block'}}
     >
       <Card.Body
@@ -219,10 +226,16 @@ function TaskCard({
         <div className="position-absolute top-0 end-0 p-3">
           {editing || newItem !== undefined ? (
             <>
-              <Button size="sm" onClick={saveChanges} className="mx-1">
+              <Button
+                data-testid="save-task-btn"
+                size="sm"
+                onClick={saveChanges}
+                className="mx-1"
+              >
                 <i className="bi bi-floppy-fill"></i> Save
               </Button>
               <Button
+                data-testid="cancel-task-btn"
                 size="sm"
                 variant="danger"
                 className="mx-1"
@@ -246,6 +259,7 @@ function TaskCard({
                   overlay={<Tooltip>Edit</Tooltip>}
                 >
                   <i
+                    data-testid="task-edit-btn"
                     onClick={onEditTask}
                     className="bi bi-pencil-square px-3"
                   ></i>
@@ -256,7 +270,10 @@ function TaskCard({
                   placement="top"
                   overlay={<Tooltip>Archive</Tooltip>}
                 >
-                  <i className="bi bi-archive-fill px-3"></i>
+                  <i
+                    data-testid="task-archive-btn"
+                    className="bi bi-archive-fill px-3"
+                  ></i>
                 </OverlayTrigger>
               ) : (
                 <OverlayTrigger
@@ -264,6 +281,7 @@ function TaskCard({
                   overlay={<Tooltip>Delete</Tooltip>}
                 >
                   <i
+                    data-testid="task-delete-btn"
                     className="bi bi-trash-fill px-3"
                     onClick={initiateDelete}
                   ></i>
@@ -275,6 +293,7 @@ function TaskCard({
               >
                 {completed ? (
                   <i
+                    data-testid="task-complete-btn"
                     className="bi bi-check-circle-fill px-3"
                     style={{color: '#4CAF50'}}
                   ></i>
@@ -288,7 +307,7 @@ function TaskCard({
             </div>
           )}
         </div>
-        <Card.Title className="poppins-dark">
+        <Card.Title className="poppins-dark" data-testid="task-card-title">
           <TaskEditable
             placeholder="Enter title"
             editing={editing || newItem !== undefined}
@@ -297,7 +316,10 @@ function TaskCard({
             setter={updateTaskTitle}
           />
         </Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">
+        <Card.Subtitle
+          className="mb-2 text-muted"
+          data-testid="task-card-deadline"
+        >
           <TaskEditable
             placeholder="Enter deadline"
             editing={editing || newItem !== undefined}
@@ -306,7 +328,7 @@ function TaskCard({
             setter={updateTaskDeadline}
           />
         </Card.Subtitle>
-        <Card.Text>
+        <Card.Text data-testid="task-card-desc">
           <TaskEditable
             placeholder="Enter description"
             editing={editing || newItem !== undefined}
@@ -522,7 +544,11 @@ export default function TaskView() {
           <Tab eventKey="todo" title="To-do">
             {!newTaskActive && (
               <div className="d-grid gap-2 mb-3">
-                <Button variant="outline-success" onClick={onCreateNewTask}>
+                <Button
+                  variant="outline-success"
+                  onClick={onCreateNewTask}
+                  data-testid="open-new-task-button"
+                >
                   <i className="bi bi-plus-circle-fill"></i> Create new task
                 </Button>
               </div>
@@ -626,7 +652,7 @@ export default function TaskView() {
 
 function AllGood() {
   return (
-    <div className="allgood">
+    <div className="allgood" data-testid="no-tasks-msg">
       <i className="bi bi-emoji-smile-fill lg-congratulations"></i>
       <h3>All set!</h3>
       <p>You have no tasks todo this week.</p>
