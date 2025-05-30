@@ -19,6 +19,7 @@ describe('Task View', () => {
 
   afterEach(() => {
     // restoring date after each test run
+    vi.runOnlyPendingTimers();
     vi.useRealTimers();
   });
 
@@ -41,7 +42,7 @@ describe('Task View', () => {
         new Date(2025, 6, 6, 0, 0, 0),
       );
       // Expect text with no tasks
-      await act(() => {
+      act(() => {
         render(<View />);
       });
       expect(screen.queryByTestId('no-tasks-msg')).toBeInTheDocument();
@@ -83,7 +84,7 @@ describe('Task View', () => {
   describe('task creation', () => {
     it('open new task editor', async () => {
       // Expect no task editor visible initially
-      await act(() => {
+      act(() => {
         render(<View />);
       });
       expect(screen.queryByTestId('new-task-card')).not.toBeVisible();
@@ -104,7 +105,7 @@ describe('Task View', () => {
     });
     it('submit created task', async () => {
       // Create the mock screen
-      await act(() => {
+      act(() => {
         render(<View />);
       });
       act(() => {
@@ -145,7 +146,7 @@ describe('Task View', () => {
   });
 
   describe('task editing', () => {
-    it('edits a task correctly', async () => {
+    it('opens task editor', async () => {
       // Create a fake task
       taskControllerInstance.handleCreateTask(
         'dummy task',
@@ -153,12 +154,14 @@ describe('Task View', () => {
         1,
         new Date(2025, 5, 29, 0, 0, 0),
       );
-      await act(() => {
+      act(() => {
         render(<View />);
       });
       // Click the edit icon
       act(() => {
-        screen.getByTestId('task-edit-btn').click();
+        within(screen.getByTestId('task-card'))
+          .getByTestId('task-edit-btn')
+          .click();
       });
       // Expect editor UI
       expect(
@@ -180,8 +183,140 @@ describe('Task View', () => {
           within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
         ).getByTestId('task-editable'),
       ).toBeInTheDocument();
-      expect(screen.queryByTestId('save-task-btn')).toBeInTheDocument();
-      expect(screen.queryByTestId('cancel-task-btn')).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('task-card')).getByTestId('save-task-btn'),
+      ).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('task-card')).getByTestId('cancel-task-btn'),
+      ).toBeInTheDocument();
+    });
+    it('edits a task correctly', async () => {
+      // Create a fake task
+      taskControllerInstance.handleCreateTask(
+        'dummy task',
+        'dummy',
+        1,
+        new Date(2025, 5, 29, 0, 0, 0),
+      );
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click the edit icon
+        screen.getByTestId('task-edit-btn').click();
+      });
+      act(() => {
+        // Update fields
+        fireEvent.change(
+          within(
+            within(screen.getByTestId('task-card')).getByTestId(
+              'task-card-title',
+            ),
+          ).getByTestId('task-editable'),
+          {target: {value: 'dummy test title'}},
+        );
+        // Update fields
+        fireEvent.change(
+          within(
+            within(screen.getByTestId('task-card')).getByTestId(
+              'task-card-desc',
+            ),
+          ).getByTestId('task-editable'),
+          {target: {value: 'dummy test description'}},
+        );
+        // Submit task
+        within(screen.getByTestId('task-card'))
+          .getByTestId('save-task-btn')
+          .click();
+      });
+      // Expect a single card
+      expect(screen.queryByTestId('no-tasks-msg')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId('task-card')).toHaveLength(1);
+      // Single card should contain correct details
+      expect(
+        within(screen.getByTestId('task-card')).getByTestId('task-card-title'),
+      ).toHaveTextContent('dummy test title');
+      expect(
+        within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
+      ).toHaveTextContent('dummy test description');
+    });
+  });
+
+  describe('task deletion and cancel', () => {
+    it('prompts user to confirm deletion', async () => {
+      // Create a fake task
+      taskControllerInstance.handleCreateTask(
+        'dummy task',
+        'dummy',
+        1,
+        new Date(2025, 5, 29, 0, 0, 0),
+      );
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click the edit icon
+        screen.getByTestId('task-delete-btn').click();
+      });
+      // Modal does not render unless it is shown
+      expect(screen.queryAllByRole('dialog')).toHaveLength(1);
+    });
+    it('cancel deletion prompt does not affect tasks', async () => {
+      // Create a fake task
+      taskControllerInstance.handleCreateTask(
+        'dummy task',
+        'dummy',
+        1,
+        new Date(2025, 5, 29, 0, 0, 0),
+      );
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click the edit icon
+        screen.getByTestId('task-delete-btn').click();
+      });
+      act(() => {
+        // Click the cancel button
+        within(screen.getByRole('dialog'))
+          .getByRole('button', {name: 'Cancel'})
+          .click();
+      });
+      // Expect the task to still be there
+      expect(screen.queryByTestId('no-tasks-msg')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId('task-card')).toHaveLength(1);
+      // Single card should contain correct details
+      expect(
+        within(screen.getByTestId('task-card')).getByTestId('task-card-title'),
+      ).toHaveTextContent('dummy task');
+      expect(
+        within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
+      ).toHaveTextContent('dummy');
+    });
+    it('confirm deletion prompt removes task card', async () => {
+      // Create a fake task
+      taskControllerInstance.handleCreateTask(
+        'dummy task',
+        'dummy',
+        1,
+        new Date(2025, 5, 29, 0, 0, 0),
+      );
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click the edit icon
+        screen.getByTestId('task-delete-btn').click();
+      });
+      act(() => {
+        // Click the cancel button
+        within(screen.getByRole('dialog'))
+          .getByRole('button', {name: 'Confirm'})
+          .click();
+      });
+      // Expect the task to still be there
+      expect(screen.queryByTestId('no-tasks-msg')).toBeInTheDocument();
+      expect(screen.queryByTestId('task-card')).not.toBeInTheDocument();
     });
   });
 });
