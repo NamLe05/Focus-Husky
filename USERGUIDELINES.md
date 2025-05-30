@@ -145,7 +145,12 @@ To install the software you first need to have VS code downloaded. Once you have
    ```bash
    cd Focus-Husky/
    ```
-5. Install dependencies
+   Then, ensure you are in client:
+      ```bash
+     #first ensure you are in the client directory
+     cd client/
+     ```
+5. Install dependencies into the client folder
    
     ```bash
    npm install
