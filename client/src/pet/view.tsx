@@ -5,6 +5,8 @@ import {PetController} from './controller';
 import {PetId, PetState} from './model';
 import {getPetSpritePath, getAccessorySpritePath} from './helpers';
 import {useSoundEffects, createSoundEffects} from './soundEffects';
+import { getPetController } from './controller';
+import { registerPetId } from './petCelebration';
 
 // FIXED: Import all the sprite images directly
 import huskyNeutralIdle from '../Static/pets/neutral_idle.png';
@@ -198,6 +200,8 @@ export default function PetView({
       setPetId(updatedPetId);
       setPetState({...state});
       setIsLoading(false);
+      registerPetId(petId);
+      console.log('[view.tsx] Registered petId:', petId);
 
       // Cache the state for smooth transitions between tabs
       cachedPetId = updatedPetId;
@@ -224,7 +228,7 @@ export default function PetView({
     console.log('PetView mounted, initializing...');
 
     // Get or create controller instance using the singleton pattern
-    controllerRef.current = getControllerInstance(handlePetUpdate);
+    controllerRef.current = getPetController(handlePetUpdate);
 
     // Initialize pets only once globally
     if (!isInitialized) {

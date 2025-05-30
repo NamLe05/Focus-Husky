@@ -2,6 +2,7 @@ import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
 import React from 'react';
 import View from '../view';
+import {MemoryRouter} from 'react-router-dom'; // Import this
 
 const INITIAL_DATE = new Date('2025-05-20T17:18:00');
 const ONE_MINUTE_LATER = new Date('2025-05-20T17:19:00');
@@ -10,6 +11,14 @@ describe('View component - time updates', () => {
   let OriginalDate: typeof Date;
 
   beforeEach(() => {
+    // Mock the electronAPI
+    (window as any).electronAPI = {
+      openPomodoroWindow: vi.fn(),
+      openPetWindow: vi.fn(),
+      onNavigateHome: vi.fn(),
+      removeNavigateHomeListener: vi.fn(),
+    };
+
     OriginalDate = Date;
 
     vi.useFakeTimers();
@@ -38,7 +47,11 @@ describe('View component - time updates', () => {
   });
 
   it('renders initial date and time, then updates after 1 minute', () => {
-    const {rerender} = render(<View />);
+    const {rerender} = render(
+      <MemoryRouter>
+        <View />
+      </MemoryRouter>,
+    );
 
     const initialTimeText = '5/20/2025 | 5:18 PM';
     expect(
@@ -65,11 +78,12 @@ describe('View component - time updates', () => {
       },
     );
 
-    // Advance timers by 60 seconds (your interval is 10 seconds, but advancing by 1 minute is fine)
     vi.advanceTimersByTime(60 * 1000);
-
-    // Rerender to reflect new time in the component (in case useEffect depends on state updates)
-    rerender(<View />);
+    rerender(
+      <MemoryRouter>
+        <View />
+      </MemoryRouter>,
+    );
 
     const updatedTimeText = '5/20/2025 | 5:19 PM';
     expect(
@@ -79,18 +93,25 @@ describe('View component - time updates', () => {
 });
 
 describe('View component - Pomodoro button', () => {
-  it('calls electronAPI.openPomodoroWindow when Pomodoro start button is clicked', () => {
-    const openPomodoroWindowMock = vi.fn();
+  beforeEach(() => {
     (window as any).electronAPI = {
-      openPomodoroWindow: openPomodoroWindowMock,
+      openPomodoroWindow: vi.fn(),
+      openPetWindow: vi.fn(),
+      onNavigateHome: vi.fn(),
+      removeNavigateHomeListener: vi.fn(),
     };
+  });
 
-    render(<View />);
+  it('calls electronAPI.openPomodoroWindow when Pomodoro start button is clicked', () => {
+    render(
+      <MemoryRouter>
+        <View />
+      </MemoryRouter>,
+    );
 
     const startButton = screen.getByRole('button');
-
     fireEvent.click(startButton);
 
-    expect(openPomodoroWindowMock).toHaveBeenCalledTimes(1);
+    expect(window.electronAPI.openPomodoroWindow).toHaveBeenCalledTimes(1);
   });
 });
