@@ -4,9 +4,11 @@ import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import taskControllerInstance from '../tasks/controller'; // Adjust the import path as needed
+import { TaskId, TaskState, TaskAction } from '../tasks/model'; // Adjust this import too
 
 const handleOpenPomodoro = () => {
-  window.electronAPI?.openPomodoroWindow();
+  window.electronAPI?.openPomodoroWindow?.();
 };
 
 type TimeInfo = {
@@ -31,7 +33,6 @@ const formatDateTime = (date: Date): TimeInfo => {
   return { dayString, dateString };
 };
 
-// Helper to convert total seconds into "HH:MM:SS"
 const formatSeconds = (totalSeconds: number): string => {
   const hrs = Math.floor(totalSeconds / 3600);
   const mins = Math.floor((totalSeconds % 3600) / 60);
@@ -42,7 +43,6 @@ const formatSeconds = (totalSeconds: number): string => {
   return `${hh}:${mm}:${ss}`;
 };
 
-// DateCard
 const DateCard: React.FC<{ time: TimeInfo }> = ({ time }) => (
   <Col className="dateCard">
     <div className="todayTxt">
@@ -54,7 +54,6 @@ const DateCard: React.FC<{ time: TimeInfo }> = ({ time }) => (
   </Col>
 );
 
-// PomodoroTimer
 const PomodoroTimer: React.FC = () => (
   <Col>
     <div className="pomodoroTimer">
@@ -68,7 +67,6 @@ const PomodoroTimer: React.FC = () => (
   </Col>
 );
 
-// StatsCard
 const StatsCard: React.FC<{ title: string; value: string; icon: string }> = ({
   title,
   value,
@@ -85,15 +83,14 @@ const StatsCard: React.FC<{ title: string; value: string; icon: string }> = ({
   </Col>
 );
 
-// View
 const View: React.FC = () => {
   const navigate = useNavigate();
 
   const [currentTime, setCurrentTime] = useState<TimeInfo>(formatDateTime(new Date()));
   const [focusCount, setFocusCount] = useState<number>(0);
   const [totalSecondsFocused, setTotalSecondsFocused] = useState<number>(0);
+  const [tasksCompleted, setTasksCompleted] = useState<number>(0);
 
-  // Fetch initial focus count and total time on mount
   useEffect(() => {
     async function fetchStats() {
       if (window.electronAPI?.getFocusCount) {
@@ -108,7 +105,6 @@ const View: React.FC = () => {
     fetchStats();
   }, []);
 
-  // Listen for focus-session-ended and re-fetch both stats when it occurs
   useEffect(() => {
     const handleSessionEnded = async () => {
       if (window.electronAPI?.getFocusCount) {
@@ -128,28 +124,40 @@ const View: React.FC = () => {
     };
   }, []);
 
-  // Update clock every 10 seconds
   useEffect(() => {
-  const interval = setInterval(async () => {
-    setCurrentTime(formatDateTime(new Date()));
+    const interval = setInterval(async () => {
+      setCurrentTime(formatDateTime(new Date()));
+      if (window.electronAPI?.getTotalTime) {
+        const updatedTotal = await window.electronAPI.getTotalTime();
+        setTotalSecondsFocused(updatedTotal);
+      }
+    }, 10000);
 
-    if (window.electronAPI?.getTotalTime) {
-      const updatedTotal = await window.electronAPI.getTotalTime();
-      setTotalSecondsFocused(updatedTotal);
-    }
-  }, 10000); // update every 60 seconds or you can keep 10 seconds if you want smoother update
+    return () => clearInterval(interval);
+  }, []);
 
-  return () => clearInterval(interval);
-}, []);
-
-  // Listen for "navigate-home" event from main process
   useEffect(() => {
     const handler = () => navigate('/');
-    window.electronAPI.onNavigateHome(handler);
+    window.electronAPI?.onNavigateHome?.(handler);
     return () => {
-      window.electronAPI.removeNavigateHomeListener(handler);
+      window.electronAPI?.removeNavigateHomeListener?.(handler);
     };
   }, [navigate]);
+
+  useEffect(() => {
+    taskControllerInstance.setCallbacks(
+      (tasks: [TaskId, TaskState][]) => {
+        const completed = tasks.filter(([, task]) => task.status === 'completed').length;
+        setTasksCompleted(completed);
+      },
+      (_action: TaskAction) => {
+        // Optional: handle task action
+      },
+      (errorType: 'deleteError' | 'completeError' | 'syncError', msg: string) => {
+        console.error(`[${errorType}] ${msg}`);
+      }
+    );
+  }, []);
 
   return (
     <Container fluid className="root">
@@ -169,7 +177,11 @@ const View: React.FC = () => {
           value={formatSeconds(totalSecondsFocused)}
           icon="bi-clock"
         />
-        <StatsCard title="Tasks Completed" value="12" icon="bi-check2-circle" />
+        <StatsCard
+          title="Tasks Completed"
+          value={tasksCompleted.toString()}
+          icon="bi-check2-circle"
+        />
       </Row>
 
       <Row>

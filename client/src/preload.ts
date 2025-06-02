@@ -74,4 +74,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getTotalTime: async () => {
     return await ipcRenderer.invoke('get-total-time');
   },
+
 });
