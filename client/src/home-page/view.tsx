@@ -4,8 +4,8 @@ import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import taskControllerInstance from '../tasks/controller'; // Adjust the import path as needed
-import { TaskId, TaskState, TaskAction } from '../tasks/model'; // Adjust this import too
+import taskControllerInstance from '../tasks/controller'; // Adjust path if needed
+import { TaskId, TaskState, TaskAction } from '../tasks/model'; // Adjust path if needed
 
 const handleOpenPomodoro = () => {
   window.electronAPI?.openPomodoroWindow?.();
@@ -90,6 +90,7 @@ const View: React.FC = () => {
   const [focusCount, setFocusCount] = useState<number>(0);
   const [totalSecondsFocused, setTotalSecondsFocused] = useState<number>(0);
   const [tasksCompleted, setTasksCompleted] = useState<number>(0);
+  const [todoTasks, setTodoTasks] = useState<[TaskId, TaskState][]>([]);
 
   useEffect(() => {
     async function fetchStats() {
@@ -147,8 +148,13 @@ const View: React.FC = () => {
   useEffect(() => {
     taskControllerInstance.setCallbacks(
       (tasks: [TaskId, TaskState][]) => {
+        // Count completed tasks
         const completed = tasks.filter(([, task]) => task.status === 'completed').length;
         setTasksCompleted(completed);
+
+        // Filter only incomplete tasks for To Do list
+        const incomplete = tasks.filter(([, task]) => task.status !== 'completed');
+        setTodoTasks(incomplete);
       },
       (_action: TaskAction) => {
         // Optional: handle task action
@@ -193,6 +199,20 @@ const View: React.FC = () => {
         <Col>
           <div className="activeCard">
             <h1>To Do</h1>
+            <ul className="taskList">
+              {todoTasks.length === 0 && <li className="noTasks">No tasks pending 🎉</li>}
+              {todoTasks.map(([id, task]) => (
+                <li key={id} className="taskListItem">
+                  <span className="bullet">&#x2022;</span>
+                  <div className="taskContent">
+                    <div className="taskTitle">{task.title}</div>
+                    <div className="taskDeadline">
+                      Due: {new Date(task.deadline).toLocaleDateString('en-US')}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </Col>
       </Row>
