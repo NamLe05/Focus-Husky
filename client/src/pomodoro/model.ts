@@ -2,15 +2,25 @@ export type TimerState = 'focus' | 'break';
 
 export interface PomodoroState {
   state: TimerState;
-  focusTime: number; // Focus time in seconds
-  breakTime: number; // Break time in seconds
-  remainingTime: number; // Remaining time in seconds for the current state
+  focusTime: number;   // Focus length in seconds
+  breakTime: number;   // Break length in seconds
+  remainingTime: number;
 }
+
+// Stats
+export type PomodoroStats = {
+  _id: string;        // always "focus-counter"
+  focusCount: number;
+  totalTime: number;  // accumulated real focus seconds
+};
 
 export class PomodoroTimerModel {
   private state: PomodoroState;
   private timerInterval: NodeJS.Timeout | null = null;
   private onTick?: (state: PomodoroState) => void;
+
+  // Track how many seconds have truly elapsed in the current focus session
+  private focusElapsed = 0;
 
   constructor(focusTime: number, breakTime: number) {
     this.state = {
@@ -25,14 +35,19 @@ export class PomodoroTimerModel {
     if (this.timerInterval) return;
 
     this.timerInterval = setInterval(() => {
-      if (this.state.remainingTime > 0) {
+      // Only increment focusElapsed if we are in focus mode and time is ticking down
+      if (this.state.state === 'focus' && this.state.remainingTime > 0) {
+        this.focusElapsed += 1;
+        this.state.remainingTime -= 1;
+      } else if (this.state.remainingTime > 0) {
+        // if in break, just tick down
         this.state.remainingTime -= 1;
       } else {
+        // remainingTime reached 0 (or below) → switch states
         this.switchState();
       }
 
-      // 🔔 Notify the controller on every tick
-      this.onTick?.({...this.state});
+      this.onTick?.({ ...this.state });
     }, 1000);
   }
 
@@ -51,16 +66,23 @@ export class PomodoroTimerModel {
   }
 
   public switchState(): void {
-    if (this.state.state === 'focus') {
+    const justFinishedFocus = this.state.state === 'focus';
+
+    if (justFinishedFocus) {
+      // Pass focusElapsed to callback, then reset it
+      this.onFocusComplete?.(this.focusElapsed);
+      this.focusElapsed = 0;
+
+      // Now switch to break
       this.state.state = 'break';
       this.state.remainingTime = this.state.breakTime;
     } else {
+      // Switch back to focus
       this.state.state = 'focus';
       this.state.remainingTime = this.state.focusTime;
     }
 
-    // 🔔 Trigger tick after state switch
-    this.onTick?.({...this.state});
+    this.onTick?.({ ...this.state });
   }
 
   public getState(): PomodoroState {
@@ -71,6 +93,7 @@ export class PomodoroTimerModel {
     this.state.focusTime = focusTime;
     if (this.state.state === 'focus') {
       this.state.remainingTime = focusTime;
+      this.focusElapsed = 0;
     }
   }
 
@@ -84,18 +107,29 @@ export class PomodoroTimerModel {
   public getRemainingTime(): number {
     return this.state.remainingTime;
   }
+  
 
-  // 👇 Add this to allow the controller to register a tick handler
   public setOnTick(callback: (state: PomodoroState) => void): void {
     this.onTick = callback;
   }
 
   public adjustRemainingTime(delta: number): void {
     this.state.remainingTime += delta;
+    // Do NOT change focusElapsed here—manual jumps don't count as elapsed
     if (this.state.remainingTime <= 0) {
-      this.switchState(); // auto-switch and reset
+      this.switchState();
     } else {
-      this.onTick?.({...this.state});
+      this.onTick?.({ ...this.state });
     }
+  }
+
+  // onFocusComplete now receives actual elapsed focus‐seconds
+  private onFocusComplete?: (elapsedSeconds: number) => void;
+  public setOnFocusComplete(callback: (elapsedSeconds: number) => void): void {
+    this.onFocusComplete = callback;
+  }
+
+  public getFocusElapsed(): number {
+    return this.focusElapsed;
   }
 }

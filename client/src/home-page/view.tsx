@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';   // ← new import
+import { useNavigate } from 'react-router-dom';
 import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -29,6 +29,17 @@ const formatDateTime = (date: Date): TimeInfo => {
       hour12: true,
     });
   return { dayString, dateString };
+};
+
+// Helper to convert total seconds into "HH:MM:SS"
+const formatSeconds = (totalSeconds: number): string => {
+  const hrs = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  const hh = hrs.toString().padStart(2, '0');
+  const mm = mins.toString().padStart(2, '0');
+  const ss = secs.toString().padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
 };
 
 // DateCard
@@ -76,28 +87,69 @@ const StatsCard: React.FC<{ title: string; value: string; icon: string }> = ({
 
 // View
 const View: React.FC = () => {
-  const navigate = useNavigate();   // ← hook for navigation
+  const navigate = useNavigate();
 
-  const [currentTime, setCurrentTime] = useState<TimeInfo>(
-    formatDateTime(new Date())
-  );
+  const [currentTime, setCurrentTime] = useState<TimeInfo>(formatDateTime(new Date()));
+  const [focusCount, setFocusCount] = useState<number>(0);
+  const [totalSecondsFocused, setTotalSecondsFocused] = useState<number>(0);
 
-  // Update clock every 10s
+  // Fetch initial focus count and total time on mount
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(formatDateTime(new Date()));
-    }, 10000);
-    return () => clearInterval(interval);
+    async function fetchStats() {
+      if (window.electronAPI?.getFocusCount) {
+        const count = await window.electronAPI.getFocusCount();
+        setFocusCount(count);
+      }
+      if (window.electronAPI?.getTotalTime) {
+        const total = await window.electronAPI.getTotalTime();
+        setTotalSecondsFocused(total);
+      }
+    }
+    fetchStats();
   }, []);
 
-  // Listen for "navigate-home" from main process
+  // Listen for focus-session-ended and re-fetch both stats when it occurs
   useEffect(() => {
-  const handler = () => navigate('/');
-  window.electronAPI.onNavigateHome(handler);
-  return () => {
-    window.electronAPI.removeNavigateHomeListener(handler);
-  };
-}, [navigate]);
+    const handleSessionEnded = async () => {
+      if (window.electronAPI?.getFocusCount) {
+        const updatedCount = await window.electronAPI.getFocusCount();
+        setFocusCount(updatedCount);
+      }
+      if (window.electronAPI?.getTotalTime) {
+        const newTotal = await window.electronAPI.getTotalTime();
+        setTotalSecondsFocused(newTotal);
+      }
+    };
+
+    window.electronAPI?.onFocusSessionEnded?.(handleSessionEnded);
+
+    return () => {
+      window.electronAPI?.removeFocusSessionEndedListener?.(handleSessionEnded);
+    };
+  }, []);
+
+  // Update clock every 10 seconds
+  useEffect(() => {
+  const interval = setInterval(async () => {
+    setCurrentTime(formatDateTime(new Date()));
+
+    if (window.electronAPI?.getTotalTime) {
+      const updatedTotal = await window.electronAPI.getTotalTime();
+      setTotalSecondsFocused(updatedTotal);
+    }
+  }, 10000); // update every 60 seconds or you can keep 10 seconds if you want smoother update
+
+  return () => clearInterval(interval);
+}, []);
+
+  // Listen for "navigate-home" event from main process
+  useEffect(() => {
+    const handler = () => navigate('/');
+    window.electronAPI.onNavigateHome(handler);
+    return () => {
+      window.electronAPI.removeNavigateHomeListener(handler);
+    };
+  }, [navigate]);
 
   return (
     <Container fluid className="root">
@@ -108,11 +160,15 @@ const View: React.FC = () => {
 
       <Row className="noPadding">
         <StatsCard
-          title="Weekly Activity"
-          value="25%"
+          title="Sessions Completed"
+          value={focusCount.toString()}
           icon="bi-lightning-charge-fill"
         />
-        <StatsCard title="Worked This Week" value="40:00:05" icon="bi-clock" />
+        <StatsCard
+          title="Total Time Focused"
+          value={formatSeconds(totalSecondsFocused)}
+          icon="bi-clock"
+        />
         <StatsCard title="Tasks Completed" value="12" icon="bi-check2-circle" />
       </Row>
 

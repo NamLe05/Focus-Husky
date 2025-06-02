@@ -43,4 +43,35 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeNavigateHomeListener: (callback: () => void) => {
     ipcRenderer.removeListener('navigate-home', callback);
   },
+
+  // focus count
+  incrementFocusCount: () => {
+    ipcRenderer.send('increment-focus-count');
+    ipcRenderer.send('log-focus-complete'); // also send a log event
+  },
+
+  getFocusCount: async () => {
+    return await ipcRenderer.invoke('get-focus-count');
+  },
+
+
+  // main window listener
+  onFocusSessionEnded: (callback: () => void) => {
+    ipcRenderer.on('focus-session-ended', callback);
+  },
+
+  removeFocusSessionEndedListener: (callback: () => void) => {
+    ipcRenderer.removeListener('focus-session-ended', callback);
+  },
+   notifyFocusSessionEnded: () => {
+    ipcRenderer.send('focus-session-ended');
+  },
+
+  // total time
+  incrementTotalTime: (seconds: number) => {
+    ipcRenderer.send('increment-total-time', seconds);
+  },
+  getTotalTime: async () => {
+    return await ipcRenderer.invoke('get-total-time');
+  },
 });
