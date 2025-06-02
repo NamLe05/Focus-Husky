@@ -174,6 +174,10 @@ export class RewardsStore {
     this.points = this.points - amount;
   }
 
+  public addPoints(amount: number) {
+    this.points += amount;
+  }
+
   //Get item ID number through name
   public getItemID(name: string): string {
     for (const category in this.marketItems) {
