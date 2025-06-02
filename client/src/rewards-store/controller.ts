@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {marketPlaceItem, RewardsStore} from './model';
 import {Tab} from './view';
 
