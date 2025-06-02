@@ -142,7 +142,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #3b2e5a;
   box-sizing: border-box;    /* include padding and border in width */
-  width: 100%;               /* ensure full container width */
+  width: 85%;               /* ensure full container width */
 }
 
 .taskListItem {
@@ -151,7 +151,7 @@
   margin-bottom: 1.2vh;
   padding-left: 0;
   line-height: 1.4;
-  max-width: 80%;
+  max-width: 90%;
   transform-origin: left center; /* scale from bullet side */
 }
 
