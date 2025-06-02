@@ -1,5 +1,4 @@
-/* eslint-disable prettier/prettier */
-import { marketPlaceItem, RewardsStore} from './model';
+import {marketPlaceItem, RewardsStore} from './model';
 import {Tab} from './view';
 
 export const store = new RewardsStore();

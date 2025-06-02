@@ -240,4 +240,60 @@ export class PetController {
       this.lastUpdateTime = currentTime;
     }, 1000);
   }
+
+  /**
+   * Update the view callback function
+   * This allows reusing the controller instance with a new view component
+   * @param viewUpdateCallback New callback function
+   */
+  public updateCallback(
+    viewUpdateCallback: (petId: PetId, state: PetState) => void,
+  ): void {
+    this.viewUpdateCallback = viewUpdateCallback;
+
+    // Notify the new callback about all existing pets
+    this.pets.forEach((pet, petId) => {
+      this.notifyViewUpdate(petId, pet.getState());
+    });
+  }
+
+  public setViewUpdateCallback(callback: (petId: PetId, state: PetState) => void) {
+  this.viewUpdateCallback = callback;
+  }
+
+  public celebrateActivePet(): void {
+  const pets = Object.values(this.pets);
+  if (pets.length === 0) {
+    console.warn('[PetController] No pets available to celebrate.');
+    return;
+  }
+
+  const pet = pets[0];
+  const petId = pet.getId();
+
+  pet.onTaskComplete();
+  this.notifyViewUpdate(petId, pet.getState());
+
+  // Reset after 3 seconds
+  setTimeout(() => {
+    pet.setAnimation('idle');
+    this.notifyViewUpdate(petId, pet.getState());
+  }, 3000);
 }
+}
+
+
+let controllerInstance: PetController | null = null;
+
+export const getPetController = (
+  callback?: (petId: PetId, state: PetState) => void,
+): PetController => {
+  if (!controllerInstance) {
+    console.log('[controller.ts] Creating PetController');
+    controllerInstance = new PetController(callback ?? (() => {}));
+  } else if (callback) {
+    console.log('[controller.ts] Updating PetController callback');
+    controllerInstance.updateCallback(callback);
+  }
+  return controllerInstance;
+};

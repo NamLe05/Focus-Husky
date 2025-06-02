@@ -1,19 +1,29 @@
-import { PomodoroTimerModel, PomodoroState } from './model';
+import {PomodoroTimerModel, PomodoroState} from './model';
 
 export class PomodoroController {
   private timerModel: PomodoroTimerModel;
-  private viewUpdateCallback: (timerState: boolean, pomodoroState: PomodoroState) => void;
-  private timerState: boolean = false;
+  private viewUpdateCallback: (
+    timerState: boolean,
+    pomodoroState: PomodoroState,
+  ) => void;
+  private timerState = false;
 
-  constructor(focusTime: number, breakTime: number, callback: (timerState: boolean, pomodoroState: PomodoroState) => void) {
-    this.viewUpdateCallback = callback;
-    this.timerModel = new PomodoroTimerModel(focusTime, breakTime);
-    
-    // 🔁 Forward tick updates to the view
-    this.timerModel.setOnTick((updatedState) => {
-      this.viewUpdateCallback(this.timerState, updatedState);
-    });
-  }
+  constructor(
+  focusTime: number,
+  breakTime: number,
+  callback: (timerState: boolean, pomodoroState: PomodoroState) => void,
+) {
+  this.viewUpdateCallback = callback;
+  this.timerModel = new PomodoroTimerModel(focusTime, breakTime);
+
+  // 🔁 Forward tick updates to the view
+  this.timerModel.setOnTick(updatedState => {
+    this.viewUpdateCallback(this.timerState, updatedState);
+  });
+
+  // invoke callback with initial state
+  this.viewUpdateCallback(this.timerState, this.timerModel.getState());
+}
 
   public toggleTimer(): void {
     if (this.timerState) {
@@ -54,5 +64,9 @@ export class PomodoroController {
   public setBreakTime(breakTime: number): void {
     this.timerModel.setBreakTime(breakTime);
     this.updateViewState();
+  }
+
+  public adjustRemainingTime(deltaSeconds: number): void {
+    this.timerModel.adjustRemainingTime(deltaSeconds);
   }
 }

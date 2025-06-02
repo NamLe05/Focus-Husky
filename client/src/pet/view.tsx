@@ -4,6 +4,9 @@ import petImg from '../Static/pet.png';
 import {PetController} from './controller';
 import {PetId, PetState} from './model';
 import {getPetSpritePath, getAccessorySpritePath} from './helpers';
+import {useSoundEffects, createSoundEffects} from './soundEffects';
+import { getPetController } from './controller';
+import { registerPetId } from './petCelebration';
 
 // FIXED: Import all the sprite images directly
 import huskyNeutralIdle from '../Static/pets/neutral_idle.png';
@@ -77,34 +80,70 @@ const spriteMap = {
   },
 };
 
+// Create a singleton instance of the controller
+// This will persist even when components unmount and remount
+let controllerInstance: PetController | null = null;
+let isInitialized = false;
+
+// Keep a cached copy of the last known pet state to prevent loading flicker
+let cachedPetId: PetId | null = null;
+let cachedPetState: PetState | null = null;
+
+// Function to get or create the controller instance
+const getControllerInstance = (
+  callback: (petId: PetId, state: PetState) => void,
+): PetController => {
+  if (!controllerInstance) {
+    console.log('Creating new PetController instance (singleton)');
+    controllerInstance = new PetController(callback);
+  } else {
+    console.log('Reusing existing PetController instance');
+    // Update the callback in the existing controller
+    controllerInstance.updateCallback(callback);
+
+    // If we have cached state, immediately apply it
+    if (cachedPetId && cachedPetState) {
+      // Use setTimeout to ensure this happens after state initialization
+      setTimeout(() => {
+        callback(cachedPetId as PetId, cachedPetState as PetState);
+      }, 0);
+    }
+  }
+  return controllerInstance;
+};
+
 // Type for interaction queue
 interface QueuedInteraction {
   type: 'feed' | 'play' | 'groom';
   timestamp: number;
 }
 
-// Sound effects
-// Currently set to only printing message because audio not recognized
-const SOUND_EFFECTS = {
-  feed: {play: () => console.log('Feed sound played')},
-  play: {play: () => console.log('Play sound played')},
-  groom: {play: () => console.log('Groom sound played')},
-  error: {play: () => console.log('Error sound played')},
-};
-
-export default function PetView() {
+export default function PetView({
+  showInfoPanel = true,
+  draggable = true,
+  lockedPosition,
+  dragLayer = true,
+}: {
+  showInfoPanel?: boolean;
+  draggable?: boolean;
+  lockedPosition?: {x: number; y: number};
+  dragLayer?: boolean;
+}) {
   // Store the active pet and state
-  const [petId, setPetId] = useState<PetId | undefined>(undefined);
-  const [petState, setPetState] = useState<PetState | undefined>(undefined);
+  const [petId, setPetId] = useState<PetId | undefined>(
+    cachedPetId || undefined,
+  );
+  const [petState, setPetState] = useState<PetState | undefined>(
+    cachedPetState || undefined,
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(!cachedPetState);
 
-  // Track if component has initialized
-  const hasInitializedRef = useRef(false);
+  // Initialize sound effects
+  useSoundEffects(); // Preload all sounds
+  const SOUND_EFFECTS = useRef(createSoundEffects()).current;
 
-  // Respond to any callback from the controller
-  const viewUpdateCallback = (petId: PetId, state: PetState) => {
-    setPetId(petId);
-    setPetState({...state});
-  };
+  // Maintain reference to controller
+  const controllerRef = useRef<PetController | null>(null);
 
   // Track interaction cooldowns
   const [interactionCooldowns, setInteractionCooldowns] = useState<{
@@ -154,21 +193,19 @@ export default function PetView() {
     handleInteraction(nextInteraction.type, true);
   }, [interactionQueue]);
 
-  // Create new instance of controller
-  // Done: Controller should have a singleton instance.
-  // Use ref to maintain a single controller instance across renders
-  const controllerRef = useRef<PetController | null>(null);
-
-  // FIXED: Split the useEffect for initialization and state updates
-  // Initialize controller and pet once on component mount
-  useEffect(() => {
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-
-    // Create controller with callback for state updates
-    const handlePetUpdate = (updatedPetId: PetId, state: PetState) => {
+  // Create a state update handler that also caches the state
+  const handlePetUpdate = useCallback(
+    (updatedPetId: PetId, state: PetState) => {
+      // Update component state
       setPetId(updatedPetId);
       setPetState({...state});
+      setIsLoading(false);
+      registerPetId(petId);
+      console.log('[view.tsx] Registered petId:', petId);
+
+      // Cache the state for smooth transitions between tabs
+      cachedPetId = updatedPetId;
+      cachedPetState = {...state};
 
       // Check if pet was previously busy but now idle
       if (isBusyRef.current && state.animation === 'idle') {
@@ -182,30 +219,59 @@ export default function PetView() {
       if (state.animation !== 'idle') {
         isBusyRef.current = true;
       }
-    };
+    },
+    [processNextQueuedInteraction],
+  );
 
-    // Create controller instance if it doesn't exist
-    if (!controllerRef.current) {
-      controllerRef.current = new PetController(handlePetUpdate);
+  // Initialize controller and pet once on component mount
+  useEffect(() => {
+    console.log('PetView mounted, initializing...');
+
+    // Get or create controller instance using the singleton pattern
+    controllerRef.current = getPetController(handlePetUpdate);
+
+    // Initialize pets only once globally
+    if (!isInitialized) {
+      console.log('First initialization, loading pets...');
+      isInitialized = true;
+
       // Try to load existing pets
       controllerRef.current.loadPetsFromDatabase();
+
+      // If no pets were loaded, create a default one after a short delay
+      setTimeout(() => {
+        if (controllerRef.current && !cachedPetId) {
+          console.log('No pets found, creating default pet...');
+          controllerRef.current.handleCreatePet('Dubs', 'husky');
+        }
+      }, 500);
+    } else {
+      console.log('Reusing existing pets from controller...');
+
+      // If we don't have cached state yet, force an update to get current state
+      if (!cachedPetState) {
+        const pets = controllerRef.current.getAllPets();
+        if (pets.length > 0) {
+          const firstPet = pets[0];
+          const firstPetState = firstPet.getState();
+          // Set the cached state
+          cachedPetId = firstPet.getId();
+          cachedPetState = {...firstPetState};
+          // Update component state
+          setPetId(cachedPetId);
+          setPetState(cachedPetState);
+          setIsLoading(false);
+        }
+      }
     }
 
-    // If no pets were loaded, create a default one
-    setTimeout(() => {
-      if (!petId && controllerRef.current) {
-        controllerRef.current.handleCreatePet('Dubs', 'husky');
-      }
-    }, 500);
-
-    // Clean up controller on unmount
+    // Clean up function doesn't actually destroy the controller
+    // since it's a singleton, but we still need to handle component-specific cleanup
     return () => {
-      if (controllerRef.current) {
-        controllerRef.current.destroy();
-        controllerRef.current = null;
-      }
+      console.log('PetView unmounting, performing cleanup...');
+      // We don't destroy the controller instance here, just clean up component-specific resources
     };
-  }, []); // FIXED: Empty dependency array - only run once on mount
+  }, [handlePetUpdate]);
 
   // Update cooldowns
   useEffect(() => {
@@ -376,7 +442,7 @@ export default function PetView() {
 
   // Handle pet mouse down for dragging
   const handlePetMouseDown = (e: React.MouseEvent) => {
-    if (!petElementRef.current || !petState) return;
+    if (!draggable || !petElementRef.current || !petState) return;
 
     // Prevent default broswer behavior (Added to prevent text selection)
     e.preventDefault();
@@ -415,7 +481,7 @@ export default function PetView() {
       }
     };
 
-    if (isDragging) {
+    if (isDragging && draggable) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
 
@@ -499,152 +565,180 @@ export default function PetView() {
     console.warn('Error getting pet sprite:', e);
   }
 
+  const handleOpenPet = () => {
+    window.electronAPI?.openPetWindow();
+  };
+
   // Otherwise, render the pet...
   return (
     <div className="pet-container">
       {/* Pet sprite that can be positioned anywhere */}
-      <div
-        ref={petElementRef}
-        className={`pet-sprite mood-${petState.mood} ${petState.animation} ${isDragging ? 'dragging' : ''}`}
-        style={{
-          position: 'absolute' /* FIXED: Added absolute positioning */,
-          left: `${petState.position.x}px` /* FIXED: Use left/top instead of transform */,
-          top: `${petState.position.y}px`,
-          backgroundImage: `url(${spritePath})`,
-          width: '64px' /* FIXED: Added explicit width and height */,
-          height: '64px',
-          backgroundSize: 'contain' /* FIXED: Ensure sprite fits */,
-          backgroundRepeat: 'no-repeat',
-          zIndex: 100 /* FIXED: Ensure sprite is visible above other elements */,
-          cursor: 'pointer' /* FIXED: Add pointer cursor for better UX */,
-        }}
-        onClick={handlePetClick}
-        onMouseDown={handlePetMouseDown}
-        onMouseEnter={handlePetMouseEnter}
-        onMouseLeave={handlePetMouseLeave}
-      >
-        {/* Render pet accessories if any */}
-        {Array.isArray(petState.accessories) &&
-          petState.accessories.map(accessoryId => (
+      {/* This div creates the drag for the window of the pet interaction*/}
+      <>
+        {dragLayer && (
+          <div
+            className="drag-layer"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 112,
+              height: 320,
+              zIndex: -1000,
+              background: 'transparent',
+            }}
+          />
+        )}
+        <div
+          ref={petElementRef}
+          className={`pet-sprite mood-${petState.mood} ${petState.animation} no-drag ${isDragging && draggable ? 'dragging' : ''}`}
+          style={{
+            position: 'absolute' /* FIXED: Added absolute positioning */,
+            // left: `${petState.position.x -270}px` /* FIXED: Use left/top instead of transform */,
+            // top: `${petState.position.y - 230}px`,
+            left: `${lockedPosition?.x ?? petState.position.x}px`,
+            top: `${lockedPosition?.y ?? petState.position.y}px`,
+            backgroundImage: `url(${spritePath})`,
+            width: '64px' /* FIXED: Added explicit width and height */,
+            height: '64px',
+            backgroundSize: 'contain' /* FIXED: Ensure sprite fits */,
+            backgroundRepeat: 'no-repeat',
+            zIndex: 100 /* FIXED: Ensure sprite is visible above other elements */,
+            cursor: 'pointer' /* FIXED: Add pointer cursor for better UX */,
+          }}
+          onClick={handlePetClick}
+          onMouseDown={handlePetMouseDown}
+          onMouseEnter={handlePetMouseEnter}
+          onMouseLeave={handlePetMouseLeave}
+        >
+          {/* Render pet accessories if any */}
+          {Array.isArray(petState.accessories) &&
+            petState.accessories.map(accessoryId => (
+              <div
+                key={accessoryId}
+                className="pet-accessory"
+                style={{
+                  position:
+                    'absolute' /* FIXED: Added absolute positioning for accessories */,
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  backgroundImage: `url(${
+                    typeof getAccessorySpritePath === 'function'
+                      ? getAccessorySpritePath(accessoryId)
+                      : ''
+                  })`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              />
+            ))}
+
+          {/* Hover metrics display */}
+          {isHovering && (
             <div
-              key={accessoryId}
-              className="pet-accessory"
+              className="pet-hover-metrics"
               style={{
-                position:
-                  'absolute' /* FIXED: Added absolute positioning for accessories */,
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backgroundImage: `url(${
-                  typeof getAccessorySpritePath === 'function'
-                    ? getAccessorySpritePath(accessoryId)
-                    : ''
-                })`,
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
+                position: 'absolute',
+                top: '-60px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.7)',
+                color: 'white',
+                padding: '5px',
+                borderRadius: '5px',
+                width: 'auto',
+                whiteSpace: 'nowrap',
               }}
-            />
-          ))}
+            >
+              <div className="metric">💖 {Math.round(petState.happiness)}%</div>
+              <div className="metric">⚡ {Math.round(petState.energy)}%</div>
+              <div className="metric">
+                ✨ {Math.round(petState.cleanliness)}%
+              </div>
+            </div>
+          )}
 
-        {/* Hover metrics display */}
-        {isHovering && (
-          <div
-            className="pet-hover-metrics"
-            style={{
-              position: 'absolute',
-              top: '-60px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(0,0,0,0.7)',
-              color: 'white',
-              padding: '5px',
-              borderRadius: '5px',
-              width: 'auto',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <div className="metric">💖 {Math.round(petState.happiness)}%</div>
-            <div className="metric">⚡ {Math.round(petState.energy)}%</div>
-            <div className="metric">✨ {Math.round(petState.cleanliness)}%</div>
-          </div>
-        )}
-
-        {/* Wheel menu for interactions */}
-        {showWheelMenu && (
-          <div
-            className="pet-wheel-menu"
-            style={{
-              position: 'absolute',
-              top: '70px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '5px',
-              zIndex: 1001,
-            }}
-          >
-            <button
-              className={`wheel-option wheel-feed ${interactionCooldowns.feed > 0 ? 'disabled' : ''}`}
-              onClick={() => handleInteraction('feed')}
-              disabled={interactionCooldowns.feed > 0}
+          {/* Wheel menu for interactions */}
+          {showWheelMenu && (
+            <div
+              className="pet-wheel-menu"
               style={{
+                position: 'absolute',
+                top: '70px',
+                left: '50%',
+                transform: 'translateX(-50%)',
                 display: 'flex',
-                alignItems: 'center',
+                flexDirection: 'column',
                 gap: '5px',
-                padding: '5px 10px',
-                background: interactionCooldowns.feed > 0 ? '#ccc' : '#f5a742',
-                border: 'none',
-                borderRadius: '15px',
-                cursor:
-                  interactionCooldowns.feed > 0 ? 'not-allowed' : 'pointer',
+                zIndex: 1001,
               }}
             >
-              <span className="wheel-icon">🍔</span>
-              <span className="wheel-label">Feed</span>
-            </button>
-            <button
-              className={`wheel-option wheel-play ${interactionCooldowns.play > 0 ? 'disabled' : ''}`}
-              onClick={() => handleInteraction('play')}
-              disabled={interactionCooldowns.play > 0}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '5px 10px',
-                background: interactionCooldowns.play > 0 ? '#ccc' : '#42aef5',
-                border: 'none',
-                borderRadius: '15px',
-                cursor:
-                  interactionCooldowns.play > 0 ? 'not-allowed' : 'pointer',
-              }}
-            >
-              <span className="wheel-icon">🎮</span>
-              <span className="wheel-label">Play</span>
-            </button>
-            <button
-              className={`wheel-option wheel-groom ${interactionCooldowns.groom > 0 ? 'disabled' : ''}`}
-              onClick={() => handleInteraction('groom')}
-              disabled={interactionCooldowns.groom > 0}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '5px 10px',
-                background: interactionCooldowns.groom > 0 ? '#ccc' : '#42f5a4',
-                border: 'none',
-                borderRadius: '15px',
-                cursor:
-                  interactionCooldowns.groom > 0 ? 'not-allowed' : 'pointer',
-              }}
-            >
-              <span className="wheel-icon">🧼</span>
-              <span className="wheel-label">Groom</span>
-            </button>
-          </div>
-        )}
-      </div>
+              <button
+                className={`wheel-option wheel-feed ${interactionCooldowns.feed > 0 ? 'disabled' : ''}`}
+                onClick={() => handleInteraction('feed')}
+                disabled={interactionCooldowns.feed > 0}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '5px 10px',
+                  background:
+                    interactionCooldowns.feed > 0 ? '#ccc' : '#f5a742',
+                  border: 'none',
+                  borderRadius: '15px',
+                  cursor:
+                    interactionCooldowns.feed > 0 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <span className="wheel-icon">🍔</span>
+                <span className="wheel-label">Feed</span>
+              </button>
+              <button
+                className={`wheel-option wheel-play ${interactionCooldowns.play > 0 ? 'disabled' : ''}`}
+                onClick={() => handleInteraction('play')}
+                disabled={interactionCooldowns.play > 0}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '5px 10px',
+                  background:
+                    interactionCooldowns.play > 0 ? '#ccc' : '#42aef5',
+                  border: 'none',
+                  borderRadius: '15px',
+                  cursor:
+                    interactionCooldowns.play > 0 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <span className="wheel-icon">🎮</span>
+                <span className="wheel-label">Play</span>
+              </button>
+              <button
+                className={`wheel-option wheel-groom ${interactionCooldowns.groom > 0 ? 'disabled' : ''}`}
+                onClick={() => handleInteraction('groom')}
+                disabled={interactionCooldowns.groom > 0}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '5px 10px',
+                  background:
+                    interactionCooldowns.groom > 0 ? '#ccc' : '#42f5a4',
+                  border: 'none',
+                  borderRadius: '15px',
+                  cursor:
+                    interactionCooldowns.groom > 0 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <span className="wheel-icon">🧼</span>
+                <span className="wheel-label">Groom</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </>
 
       {/* Error message display */}
       {errorMessage && (
@@ -667,135 +761,142 @@ export default function PetView() {
       )}
 
       {/* Info panel with pet stats and controls */}
-      <div className="pet-info-panel">
-        <h3>{petState.name}</h3>
-        <div className="pet-mood">
-          <span>Mood: </span>
-          <span className={`mood-indicator mood-${petState.mood}`}>
-            {petState.mood}
-          </span>
-        </div>
-        <div className="pet-stats">
-          <div className="stat-row">
-            <span className="stat-label">Happiness:</span>
-            <div className="stat-bar">
-              <div
-                className="stat-fill happiness"
-                style={{width: `${petState.happiness}%`}}
-              />
-            </div>
-            <span className="stat-value">
-              {Math.round(petState.happiness)}%
+      {showInfoPanel && (
+        <div className="pet-info-panel">
+          <h3>{petState.name}</h3>
+          <div className="pet-mood">
+            <span>Mood: </span>
+            <span className={`mood-indicator mood-${petState.mood}`}>
+              {petState.mood}
             </span>
           </div>
+          <div className="pet-stats">
+            <div className="stat-row">
+              <span className="stat-label">Happiness:</span>
+              <div className="stat-bar">
+                <div
+                  className="stat-fill happiness"
+                  style={{width: `${petState.happiness}%`}}
+                />
+              </div>
+              <span className="stat-value">
+                {Math.round(petState.happiness)}%
+              </span>
+            </div>
 
-          <div className="stat-row">
-            <span className="stat-label">Energy:</span>
-            <div className="stat-bar">
-              <div
-                className="stat-fill energy"
-                style={{width: `${petState.energy}%`}}
+            <div className="stat-row">
+              <span className="stat-label">Energy:</span>
+              <div className="stat-bar">
+                <div
+                  className="stat-fill energy"
+                  style={{width: `${petState.energy}%`}}
+                />
+              </div>
+              <span className="stat-value">{Math.round(petState.energy)}%</span>
+            </div>
+
+            <div className="stat-row">
+              <span className="stat-label">Cleanliness:</span>
+              <div className="stat-bar">
+                <div
+                  className="stat-fill cleanliness"
+                  style={{width: `${petState.cleanliness}%`}}
+                />
+              </div>
+              <span className="stat-value">
+                {Math.round(petState.cleanliness)}%
+              </span>
+            </div>
+          </div>{' '}
+          {/* FIXED: Added missing closing bracket for pet-stats div */}
+          <div className="pet-status">
+            <div>
+              Last interaction:{' '}
+              {new Date(petState.lastInteraction).toLocaleTimeString()}
+            </div>
+          </div>
+          <div className="pet-actions">
+            <h4>Interactions</h4>
+            <div className="action-row">
+              <button
+                className="action-button"
+                onClick={() => handleInteraction('feed')}
+                disabled={interactionCooldowns.feed > 0}
+              >
+                {interactionCooldowns.feed > 0
+                  ? `Feed (${Math.ceil(interactionCooldowns.feed / 60000)}m)`
+                  : 'Feed (F)'}
+              </button>
+              <button
+                className="action-button"
+                onClick={() => handleInteraction('play')}
+                disabled={interactionCooldowns.play > 0}
+              >
+                {interactionCooldowns.play > 0
+                  ? `Play (${Math.ceil(interactionCooldowns.play / 60000)}m)`
+                  : 'Play (P)'}
+              </button>
+              <button
+                className="action-button"
+                onClick={() => handleInteraction('groom')}
+                disabled={interactionCooldowns.groom > 0}
+              >
+                {interactionCooldowns.groom > 0
+                  ? `Groom (${Math.ceil(interactionCooldowns.groom / 60000)}m)`
+                  : 'Groom (G)'}
+              </button>
+            </div>
+          </div>
+          <div className="productivity-actions">
+            <h4>Productivity Actions</h4>
+            <div className="productivity-buttons">
+              <button
+                className="action-button primary"
+                onClick={handleCompletePomo}
+              >
+                Complete Pomodoro
+              </button>
+              <button
+                className="action-button primary"
+                onClick={handleCompleteTask}
+              >
+                Complete Task
+              </button>
+            </div>
+          </div>
+          <div className="pet-settings">
+            <h4>Settings</h4>
+            <div className="setting-row">
+              <label htmlFor="auto-care" className="setting-label">
+                Auto-care during study:
+              </label>
+              <input
+                id="auto-care"
+                type="checkbox"
+                checked={autoCareEnabled}
+                onChange={toggleAutoCare}
               />
             </div>
-            <span className="stat-value">{Math.round(petState.energy)}%</span>
           </div>
-
-          <div className="stat-row">
-            <span className="stat-label">Cleanliness:</span>
-            <div className="stat-bar">
-              <div
-                className="stat-fill cleanliness"
-                style={{width: `${petState.cleanliness}%`}}
-              />
+          {interactionQueue.length > 0 && (
+            <div className="queued-interactions">
+              <h4>Queued Interactions: {interactionQueue.length}</h4>
+              <button
+                className="action-button"
+                onClick={processNextQueuedInteraction}
+                disabled={isBusyRef.current}
+              >
+                Process Next
+              </button>
             </div>
-            <span className="stat-value">
-              {Math.round(petState.cleanliness)}%
-            </span>
-          </div>
-        </div>{' '}
-        {/* FIXED: Added missing closing bracket for pet-stats div */}
-        <div className="pet-status">
-          <div>
-            Last interaction:{' '}
-            {new Date(petState.lastInteraction).toLocaleTimeString()}
-          </div>
-        </div>
-        <div className="pet-actions">
-          <h4>Interactions</h4>
-          <div className="action-row">
-            <button
-              className="action-button"
-              onClick={() => handleInteraction('feed')}
-              disabled={interactionCooldowns.feed > 0}
-            >
-              {interactionCooldowns.feed > 0
-                ? `Feed (${Math.ceil(interactionCooldowns.feed / 60000)}m)`
-                : 'Feed (F)'}
-            </button>
-            <button
-              className="action-button"
-              onClick={() => handleInteraction('play')}
-              disabled={interactionCooldowns.play > 0}
-            >
-              {interactionCooldowns.play > 0
-                ? `Play (${Math.ceil(interactionCooldowns.play / 60000)}m)`
-                : 'Play (P)'}
-            </button>
-            <button
-              className="action-button"
-              onClick={() => handleInteraction('groom')}
-              disabled={interactionCooldowns.groom > 0}
-            >
-              {interactionCooldowns.groom > 0
-                ? `Groom (${Math.ceil(interactionCooldowns.groom / 60000)}m)`
-                : 'Groom (G)'}
+          )}
+          <div className="pet-window">
+            <button className="pet-window-button" onClick={handleOpenPet}>
+              Create Pet Window
             </button>
           </div>
         </div>
-        <div className="productivity-actions">
-          <h4>Productivity Actions</h4>
-          <div className="productivity-buttons">
-            <button
-              className="action-button primary"
-              onClick={handleCompletePomo}
-            >
-              Complete Pomodoro
-            </button>
-            <button
-              className="action-button primary"
-              onClick={handleCompleteTask}
-            >
-              Complete Task
-            </button>
-          </div>
-        </div>
-        <div className="pet-settings">
-          <h4>Settings</h4>
-          <div className="setting-row">
-            <label htmlFor="auto-care" className="setting-label">
-              Auto-care during study:
-            </label>
-            <input
-              id="auto-care"
-              type="checkbox"
-              checked={autoCareEnabled}
-              onChange={toggleAutoCare}
-            />
-          </div>
-        </div>
-        {interactionQueue.length > 0 && (
-          <div className="queued-interactions">
-            <h4>Queued Interactions: {interactionQueue.length}</h4>
-            <button
-              className="action-button"
-              onClick={processNextQueuedInteraction}
-              disabled={isBusyRef.current}
-            >
-              Process Next
-            </button>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

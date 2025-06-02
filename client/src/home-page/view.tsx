@@ -1,86 +1,134 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';   // ← new import
 import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+
 const handleOpenPomodoro = () => {
   window.electronAPI?.openPomodoroWindow();
 };
 
-const View = () => {
+type TimeInfo = {
+  dayString: string;
+  dateString: string;
+};
+
+const formatDateTime = (date: Date): TimeInfo => {
+  const dayString = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const dateString =
+    date.toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric',
+    }) +
+    ' | ' +
+    date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  return { dayString, dateString };
+};
+
+// DateCard
+const DateCard: React.FC<{ time: TimeInfo }> = ({ time }) => (
+  <Col className="dateCard">
+    <div className="todayTxt">
+      <h1>{time.dayString}</h1>
+    </div>
+    <div className="dateTxt">
+      <h1>{time.dateString}</h1>
+    </div>
+  </Col>
+);
+
+// PomodoroTimer
+const PomodoroTimer: React.FC = () => (
+  <Col>
+    <div className="pomodoroTimer">
+      <div className="pomodoroTxt">
+        <h1>Start Pomodoro Timer</h1>
+      </div>
+      <button className="pomodoroTimerButton" onClick={handleOpenPomodoro}>
+        <i className="bi bi-play-fill"></i>
+      </button>
+    </div>
+  </Col>
+);
+
+// StatsCard
+const StatsCard: React.FC<{ title: string; value: string; icon: string }> = ({
+  title,
+  value,
+  icon,
+}) => (
+  <Col>
+    <div className="statsCard">
+      <h1>{title} :</h1>
+      <div className="statsCardContent">
+        <h2>{value}</h2>
+        <i className={`bi ${icon}`}></i>
+      </div>
+    </div>
+  </Col>
+);
+
+// View
+const View: React.FC = () => {
+  const navigate = useNavigate();   // ← hook for navigation
+
+  const [currentTime, setCurrentTime] = useState<TimeInfo>(
+    formatDateTime(new Date())
+  );
+
+  // Update clock every 10s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(formatDateTime(new Date()));
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for "navigate-home" from main process
+  useEffect(() => {
+  const handler = () => navigate('/');
+  window.electronAPI.onNavigateHome(handler);
+  return () => {
+    window.electronAPI.removeNavigateHomeListener(handler);
+  };
+}, [navigate]);
+
   return (
-    <>
-      <Container fluid className="root">
-        <Row className="noPadding">
-          <Col className="dateCard">
-            <div className="todayTxt">
-              <h1>Tuesday</h1>
-            </div>
-            <div className="dateTxt">
-              <h1>5/13/2025 | 10:00 AM</h1>
-            </div>
-          </Col>
+    <Container fluid className="root">
+      <Row className="noPadding">
+        <DateCard time={currentTime} />
+        <PomodoroTimer />
+      </Row>
 
-          <Col>
-            <div className="pomodoroTimer">
-              <div className="pomodoroTxt">
-                <h1>Start Pomodoro Timer</h1>
-              </div>
-              <button
-                className="pomodoroTimerButton"
-                onClick={handleOpenPomodoro}
-              >
-                <i className="bi bi-play-fill"></i>
-              </button>
-            </div>
-          </Col>
-        </Row>
+      <Row className="noPadding">
+        <StatsCard
+          title="Weekly Activity"
+          value="25%"
+          icon="bi-lightning-charge-fill"
+        />
+        <StatsCard title="Worked This Week" value="40:00:05" icon="bi-clock" />
+        <StatsCard title="Tasks Completed" value="12" icon="bi-check2-circle" />
+      </Row>
 
-        <Row className="noPadding">
-          <Col>
-            <div className="statsCard">
-              <h1>Weekly Activity :</h1>
-              <div className="statsCardContent">
-                <h2>25%</h2>
-                <i className="bi bi-lightning-charge-fill"></i>
-              </div>
-            </div>
-          </Col>
-          <Col>
-            <div className="statsCard">
-              <h1>Worked This Week :</h1>
-              <div className="statsCardContent">
-                <h2>40:00:05</h2>
-                <i className="bi bi-clock"></i>
-              </div>
-            </div>
-          </Col>
-          <Col>
-            <div className="statsCard">
-              <h1>Tasks Completed :</h1>
-              <div className="statsCardContent">
-                <h2>12</h2>
-                <i className="bi bi-check2-circle"></i>
-              </div>
-            </div>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col>
-            <div className="activeCard">
-              <h1>Friends</h1>
-            </div>
-          </Col>
-
-          <Col>
-            <div className="activeCard">
-              <h1>To Do</h1>
-            </div>
-          </Col>
-        </Row>
-      </Container>
-    </>
+      <Row>
+        <Col>
+          <div className="activeCard">
+            <h1>Friends</h1>
+          </div>
+        </Col>
+        <Col>
+          <div className="activeCard">
+            <h1>To Do</h1>
+          </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

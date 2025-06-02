@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 import HuskyImage from '../Static/Husky.png';
 import FrogImage from '../Static/Frog.png';
 import DuckImage from '../Static/Duck.png';
@@ -22,18 +22,18 @@ import HomeworkImage from '../Static/homework.png';
 import CalendarImage from '../Static/calendar.png';
 
 export interface Pet {
-    ID: string,
-    name: string,
-    price: number,
-    owned: boolean,
+  ID: string;
+  name: string;
+  price: number;
+  owned: boolean;
 }
 
 export interface marketPlaceItem {
-    ID: string,
-    name: string,
-    price: number,
-    owned: boolean,
-    image: string
+  ID: string;
+  name: string;
+  price: number;
+  owned: boolean;
+  image: string;
 }
 
 export interface equippedItems {
@@ -107,24 +107,23 @@ export class RewardsStore {
         };
     }
 
-    public deductPoints(amount: number){
-        this.points = this.points - amount;
-    }
+  public deductPoints(amount: number) {
+    this.points = this.points - amount;
+  }
 
-    //Get item ID number through name
-    public getItemID(name: string): string {
-
-        for (const category in this.marketItems){
-            const items = this.marketItems[category as keyof typeof this.marketItems];
-            for (const item of items){
-                if (item.name === name){
-                    return item.ID;
-                }
-            }
+  //Get item ID number through name
+  public getItemID(name: string): string {
+    for (const category in this.marketItems) {
+      const items = this.marketItems[category as keyof typeof this.marketItems];
+      for (const item of items) {
+        if (item.name === name) {
+          return item.ID;
         }
-
-        throw new Error ('Invalid pet ID');
+      }
     }
+
+    throw new Error('Invalid pet ID');
+  }
 
     public purchaseItem(category: keyof typeof this.marketItems, itemId: string): boolean {
         //console.log('Currently equipped Husky: ', this.equipped);
@@ -174,38 +173,37 @@ export class RewardsStore {
         throw new Error(`Item ${id} not found`);
     }
 
-    // returns users' current list of points available to spend
-    public getTotalPoints() {
-        return this.points;
-    }
+  // returns users' current list of points available to spend
+  public getTotalPoints() {
+    return this.points;
+  }
 
-    // checks if user has enough points to spend on an item
-    public canAfford(item: marketPlaceItem): boolean {
-        if (item.price > this.points){
-            return false;
-        } else {
-            return true;
+  // checks if user has enough points to spend on an item
+  public canAfford(item: marketPlaceItem): boolean {
+    if (item.price > this.points) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  //updates the users new points
+  public updatePoints(newPoints: number): void {
+    this.points = newPoints;
+  }
+
+  //return a list of all the owned items
+  public getOwnedItems() {
+    const owned_items: marketPlaceItem[] = [];
+
+    for (const category in this.marketItems) {
+      const items = this.marketItems[category as keyof typeof this.marketItems];
+      for (const item of items) {
+        if (item.owned === true) {
+          owned_items.push(item);
         }
+      }
     }
-
-    //updates the users new points
-    public updatePoints(newPoints: number): void {
-        this.points = newPoints;
-    }
-
-    //return a list of all the owned items
-    public getOwnedItems() {
-
-        const owned_items: marketPlaceItem[] = [];
-
-        for (const category in this.marketItems){
-            const items = this.marketItems[category as keyof typeof this.marketItems];
-            for (const item of items){
-                if (item.owned === true){
-                    owned_items.push(item);
-                }
-            }
-        }
-        return owned_items;
-    }
+    return owned_items;
+  }
 }
