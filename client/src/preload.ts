@@ -77,4 +77,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return await ipcRenderer.invoke('get-total-time');
   },
 
+  getRewards: async () => {
+    return await ipcRenderer.invoke('get-rewards-state');
+  },
+
+  updateRewards: async ({
+  points,
+  ownedItems,
+  }: {
+    points: number;
+    ownedItems: string[];
+  }) => {
+    return await ipcRenderer.invoke('update-rewards-state', { points, ownedItems });
+  },
+
 });

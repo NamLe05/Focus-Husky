@@ -43,6 +43,12 @@ export interface equippedItems {
   image: marketPlaceItem;
 }
 
+export interface RewardState {
+  _id: string; // e.g., 'user-rewards'
+  points: number;
+  ownedItems: string[]; 
+}
+
 export class RewardsStore {
   marketItems: {
     pets: marketPlaceItem[];
@@ -58,28 +64,28 @@ export class RewardsStore {
     this.marketItems = {
       pets: [
         {
-          ID: uuidv4(),
+          ID: 'pet-husky',
           name: 'Husky',
           price: 200,
           owned: true,
           image: HuskyImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'pet-tiger',
           name: 'Tiger',
           price: 200,
           owned: false,
           image: TigerImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'pet-duck',
           name: 'Duck',
           price: 200,
           owned: false,
           image: DuckImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'pet-frog',
           name: 'Frog',
           price: 200,
           owned: false,
@@ -87,16 +93,20 @@ export class RewardsStore {
         },
       ],
       accessories: [
-        {ID: uuidv4(), name: 'Hat', price: 50, owned: false, image: HatImage},
+        { ID: 'acc-hat', 
+          name: 'Hat', 
+          price: 50, 
+          owned: false, 
+          image: HatImage},
         {
-          ID: uuidv4(),
+          ID: 'acc-collar',
           name: 'Collar',
           price: 75,
           owned: false,
           image: CollarImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'acc-leash',
           name: 'Leash',
           price: 40,
           owned: false,
@@ -105,21 +115,21 @@ export class RewardsStore {
       ],
       timers: [
         {
-          ID: uuidv4(),
+          ID: 'timer-classic',
           name: 'Classic Timer',
           price: 30,
           owned: false,
           image: ClassicTimerImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'timer-pomodoro',
           name: 'Pomodoro',
           price: 25,
           owned: false,
           image: PomodoroImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'timer-stopwatch',
           name: 'Stopwatch',
           price: 15,
           owned: false,
@@ -129,14 +139,14 @@ export class RewardsStore {
       sounds: [
         {ID: uuidv4(), name: 'Bell', price: 30, owned: false, image: BellImage},
         {
-          ID: uuidv4(),
+          ID: 'sounds-chime',
           name: 'Chime',
           price: 25,
           owned: false,
           image: ChimeImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'sounds-alert',
           name: 'Alert',
           price: 15,
           owned: false,
@@ -145,21 +155,21 @@ export class RewardsStore {
       ],
       tasks: [
         {
-          ID: uuidv4(),
+          ID: 'tasks-checklist',
           name: 'Checklist',
           price: 40,
           owned: false,
           image: CheckListImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'tasks-homework',
           name: 'Homework',
           price: 45,
           owned: false,
           image: HomeworkImage,
         },
         {
-          ID: uuidv4(),
+          ID: 'task-calendar',
           name: 'Calendar',
           price: 55,
           owned: false,
@@ -168,7 +178,28 @@ export class RewardsStore {
       ],
     };
     this.points = 200;
+
+    this.loadStateFromDB();
   }
+  
+  
+  async loadStateFromDB() {
+    const state = await window.electronAPI?.getRewards?.();
+    if (!state || typeof state.points !== 'number') {
+      console.warn('No reward state loaded — skipping initialization.');
+      return;
+    }
+
+    this.points = state.points;
+
+    for (const category of Object.values(this.marketItems)) {
+      for (const item of category) {
+        if (state.ownedItems.includes(item.ID)) {
+          item.owned = true;
+        }
+      }
+    }
+  } 
 
   public deductPoints(amount: number) {
     this.points = this.points - amount;
@@ -192,10 +223,10 @@ export class RewardsStore {
     throw new Error('Invalid pet ID');
   }
 
-  public purchaseItem(
+  public async purchaseItem(
     category: keyof typeof this.marketItems,
-    itemId: string,
-  ): boolean {
+    itemId: string
+  ): Promise<boolean> {
     const items = this.marketItems[category];
     const item = items.find(i => i.ID === itemId);
     if (!item) {
@@ -210,10 +241,36 @@ export class RewardsStore {
       console.log(`Not enough points to purchase ${item.name}`);
       return false;
     }
+    
+    // Deduct points
     this.deductPoints(item.price);
+    
+    // Mark item as owned
     item.owned = true;
+
+    // Prepare updated owned items list: gather all owned item IDs from all categories
+    const ownedItems = Object.values(this.marketItems)
+      .flat()
+      .filter(i => i.owned)
+      .map(i => i.ID);
+
+    // Call updateRewards with new points and ownedItems array
+    await this.updateRewards(this.points, ownedItems);
+
     return true;
   }
+
+  async updateRewards(points: number, ownedItems: string[]): Promise<void> {
+    try {
+      // Assuming you expose this via your preload API as electronAPI.updateRewards
+      await window.electronAPI.updateRewards({ points, ownedItems });
+      console.log('Rewards updated successfully');
+    } catch (error) {
+      console.error('Failed to update rewards:', error);
+    }
+  }
+
+  
 
   // gets the specific item based on item ID
   // returns exception if pet with give name is not in list of available pets

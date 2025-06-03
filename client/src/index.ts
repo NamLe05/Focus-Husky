@@ -3,6 +3,7 @@ import TypedDatastore from './services/db';
 import {TaskState} from './tasks/model';
 import {PetState} from './pet/model';
 import { PomodoroStats } from './pomodoro/model';
+import { RewardState } from './rewards-store/model';
 
 app.disableHardwareAcceleration();
 
@@ -267,7 +268,8 @@ const getFilePath = (filename: string) =>
 type DbInsertConfig =
   | {filename: 'tasks.db'; document: TaskState}
   | {filename: 'pets.db'; document: PetState}
-  | { filename: 'pomodoro.db'; document: PomodoroStats };
+  | { filename: 'pomodoro.db'; document: PomodoroStats }
+  | { filename: 'rewards.db'; document: RewardState };
 
 type DbUpdateConfig =
   | {
@@ -284,6 +286,11 @@ type DbUpdateConfig =
       filename: 'pomodoro.db';
       query: Partial<PomodoroStats & { _id: string }>;
       update: Partial<PomodoroStats> | { $set: Partial<PomodoroStats> };
+    }
+  | {
+      filename: 'rewards.db';
+      query: Partial<RewardState & { _id: string }>;
+      update: Partial<RewardState> | { $set: Partial<RewardState> };
   };
     
 
@@ -299,7 +306,12 @@ type DbRemoveConfig =
   | {
         filename: 'pomodoro.db';
         query: Partial<PomodoroStats> & { _id: string };
+    }
+  | {
+        filename: 'rewards.db';
+        query: Partial<RewardState> & { _id: string };
     };
+  
 
 const databases: {[filename: string]: TypedDatastore<unknown>} = {};
 
@@ -314,7 +326,13 @@ const getDbInstance = (filename: string) => {
         getFilePath(filename),
       );
     } else if (filename === 'pomodoro.db') {
-      databases[filename] = new TypedDatastore<PomodoroStats>(getFilePath(filename));
+      databases[filename] = new TypedDatastore<PomodoroStats>(
+        getFilePath(filename)
+      );
+    } else if (filename === 'rewards.db') {
+      databases[filename] = new TypedDatastore<RewardState>(
+        getFilePath(filename)
+      );
     }
   }
   return databases[filename];
@@ -413,4 +431,46 @@ ipcMain.on('focus-session-ended', () => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('focus-session-ended');
   }
+});
+
+
+// Reward Handlers
+
+ipcMain.handle('get-rewards-state', async () => {
+  const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
+  const [doc] = await db.findDoc({ _id: 'user-rewards' });
+
+  if (!doc) {
+    const initial: RewardState = {
+      _id: 'user-rewards',
+      points: 200,
+      ownedItems: ['pet-husky'], // you can hardcode initial items or leave empty
+    };
+    await db.insertDoc(initial);
+    return initial;
+  }
+
+  return doc;
+});
+
+
+ipcMain.handle('update-rewards-state', async (event, newState: Partial<RewardState>) => {
+  console.log('saved item')
+  const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
+
+  const [existing] = await db.findDoc({ _id: 'user-rewards' });
+
+  const updatedState: RewardState = {
+    _id: 'user-rewards',
+    points: newState.points ?? existing?.points ?? 0,
+    ownedItems: newState.ownedItems ?? existing?.ownedItems ?? [],
+  };
+
+  if (existing) {
+    await db.updateDoc({ _id: 'user-rewards' }, { $set: updatedState });
+  } else {
+    await db.insertDoc(updatedState);
+  }
+
+  return; // or return updatedState if you want
 });
