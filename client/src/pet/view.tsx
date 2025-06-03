@@ -121,11 +121,13 @@ export default function PetView({
   draggable = true,
   lockedPosition,
   dragLayer = true,
+  hideSprite = false,
 }: {
   showInfoPanel?: boolean;
   draggable?: boolean;
   lockedPosition?: {x: number; y: number};
   dragLayer?: boolean;
+  hideSprite?: boolean;
 }) {
   // Store the active pet and state
   const [petId, setPetId] = useState<string | undefined>(undefined);
@@ -477,168 +479,154 @@ export default function PetView({
       {/* Pet sprite that can be positioned anywhere */}
       {/* This div creates the drag for the window of the pet interaction*/}
       <>
-        {dragLayer && (
+        {!hideSprite && (
           <div
-            className="drag-layer"
+            ref={petElementRef}
+            className={`pet-sprite mood-${petState.mood} ${petState.animation} no-drag ${isDragging && draggable ? 'dragging' : ''}`}
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              width: 112,
-              height: 320,
-              zIndex: -1000,
-              background: 'transparent',
+              left: `${lockedPosition?.x ?? petState.position.x}px`,
+              top: `${lockedPosition?.y ?? petState.position.y}px`,
+              backgroundImage: `url(${spritePath})`,
+              width: '64px',
+              height: '64px',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 9999,
+              cursor: 'pointer',
             }}
-          />
-        )}
-        <div
-          ref={petElementRef}
-          className={`pet-sprite mood-${petState.mood} ${petState.animation} no-drag ${isDragging && draggable ? 'dragging' : ''}`}
-          style={{
-            position: 'absolute' /* FIXED: Added absolute positioning */,
-            // left: `${petState.position.x -270}px` /* FIXED: Use left/top instead of transform */,
-            // top: `${petState.position.y - 230}px`,
-            left: `${lockedPosition?.x ?? petState.position.x}px`,
-            top: `${lockedPosition?.y ?? petState.position.y}px`,
-            backgroundImage: `url(${spritePath})`,
-            width: '64px' /* FIXED: Added explicit width and height */,
-            height: '64px',
-            backgroundSize: 'contain' /* FIXED: Ensure sprite fits */,
-            backgroundRepeat: 'no-repeat',
-            zIndex: 100 /* FIXED: Ensure sprite is visible above other elements */,
-            cursor: 'pointer' /* FIXED: Add pointer cursor for better UX */,
-          }}
-          onClick={handlePetClick}
-          onMouseDown={handlePetMouseDown}
-          onMouseEnter={handlePetMouseEnter}
-          onMouseLeave={handlePetMouseLeave}
-        >
-          {/* Render pet accessories if any */}
-          {Array.isArray(petState.accessories) &&
-            (petState.accessories as string[]).map((accessoryId: string) => (
+            onClick={handlePetClick}
+            onMouseDown={handlePetMouseDown}
+            onMouseEnter={handlePetMouseEnter}
+            onMouseLeave={handlePetMouseLeave}
+          >
+            {/* Render pet accessories if any */}
+            {Array.isArray(petState.accessories) &&
+              (petState.accessories as string[]).map((accessoryId: string) => (
+                <div
+                  key={accessoryId}
+                  className="pet-accessory"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundImage: `url(${
+                      typeof getAccessorySpritePath === 'function'
+                        ? getAccessorySpritePath(accessoryId)
+                        : ''
+                    })`,
+                    backgroundSize: 'contain',
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                />
+              ))}
+
+            {/* Hover metrics display */}
+            {isHovering && (
               <div
-                key={accessoryId}
-                className="pet-accessory"
+                className="pet-hover-metrics"
                 style={{
                   position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  backgroundImage: `url(${
-                    typeof getAccessorySpritePath === 'function'
-                      ? getAccessorySpritePath(accessoryId)
-                      : ''
-                  })`,
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
+                  top: '-60px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(0,0,0,0.7)',
+                  color: 'white',
+                  padding: '5px',
+                  borderRadius: '5px',
+                  width: 'auto',
+                  whiteSpace: 'nowrap',
                 }}
-              />
-            ))}
-
-          {/* Hover metrics display */}
-          {isHovering && (
-            <div
-              className="pet-hover-metrics"
-              style={{
-                position: 'absolute',
-                top: '-60px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.7)',
-                color: 'white',
-                padding: '5px',
-                borderRadius: '5px',
-                width: 'auto',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <div className="metric">💖 {Math.round(petState.happiness)}%</div>
-              <div className="metric">⚡ {Math.round(petState.energy)}%</div>
-              <div className="metric">
-                ✨ {Math.round(petState.cleanliness)}%
+              >
+                <div className="metric">💖 {Math.round(petState.happiness)}%</div>
+                <div className="metric">⚡ {Math.round(petState.energy)}%</div>
+                <div className="metric">
+                  ✨ {Math.round(petState.cleanliness)}%
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Wheel menu for interactions */}
-          {showWheelMenu && (
-            <div
-              className="pet-wheel-menu"
-              style={{
-                position: 'absolute',
-                top: '70px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '5px',
-                zIndex: 1001,
-              }}
-            >
-              <button
-                className={`wheel-option wheel-feed ${interactionCooldowns.feed > 0 ? 'disabled' : ''}`}
-                onClick={() => handleInteraction('feed')}
-                disabled={interactionCooldowns.feed > 0}
+            {/* Wheel menu for interactions */}
+            {showWheelMenu && (
+              <div
+                className="pet-wheel-menu"
                 style={{
+                  position: 'absolute',
+                  top: '70px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
                   display: 'flex',
-                  alignItems: 'center',
+                  flexDirection: 'column',
                   gap: '5px',
-                  padding: '5px 10px',
-                  background:
-                    interactionCooldowns.feed > 0 ? '#ccc' : '#f5a742',
-                  border: 'none',
-                  borderRadius: '15px',
-                  cursor:
-                    interactionCooldowns.feed > 0 ? 'not-allowed' : 'pointer',
+                  zIndex: 1001,
                 }}
               >
-                <span className="wheel-icon">🍔</span>
-                <span className="wheel-label">Feed</span>
-              </button>
-              <button
-                className={`wheel-option wheel-play ${interactionCooldowns.play > 0 ? 'disabled' : ''}`}
-                onClick={() => handleInteraction('play')}
-                disabled={interactionCooldowns.play > 0}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '5px 10px',
-                  background:
-                    interactionCooldowns.play > 0 ? '#ccc' : '#42aef5',
-                  border: 'none',
-                  borderRadius: '15px',
-                  cursor:
-                    interactionCooldowns.play > 0 ? 'not-allowed' : 'pointer',
-                }}
-              >
-                <span className="wheel-icon">🎮</span>
-                <span className="wheel-label">Play</span>
-              </button>
-              <button
-                className={`wheel-option wheel-groom ${interactionCooldowns.groom > 0 ? 'disabled' : ''}`}
-                onClick={() => handleInteraction('groom')}
-                disabled={interactionCooldowns.groom > 0}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '5px 10px',
-                  background:
-                    interactionCooldowns.groom > 0 ? '#ccc' : '#42f5a4',
-                  border: 'none',
-                  borderRadius: '15px',
-                  cursor:
-                    interactionCooldowns.groom > 0 ? 'not-allowed' : 'pointer',
-                }}
-              >
-                <span className="wheel-icon">🧼</span>
-                <span className="wheel-label">Groom</span>
-              </button>
-            </div>
-          )}
-        </div>
+                <button
+                  className={`wheel-option wheel-feed ${interactionCooldowns.feed > 0 ? 'disabled' : ''}`}
+                  onClick={() => handleInteraction('feed')}
+                  disabled={interactionCooldowns.feed > 0}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 10px',
+                    background:
+                      interactionCooldowns.feed > 0 ? '#ccc' : '#f5a742',
+                    border: 'none',
+                    borderRadius: '15px',
+                    cursor:
+                      interactionCooldowns.feed > 0 ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <span className="wheel-icon">🍔</span>
+                  <span className="wheel-label">Feed</span>
+                </button>
+                <button
+                  className={`wheel-option wheel-play ${interactionCooldowns.play > 0 ? 'disabled' : ''}`}
+                  onClick={() => handleInteraction('play')}
+                  disabled={interactionCooldowns.play > 0}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 10px',
+                    background:
+                      interactionCooldowns.play > 0 ? '#ccc' : '#42aef5',
+                    border: 'none',
+                    borderRadius: '15px',
+                    cursor:
+                      interactionCooldowns.play > 0 ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <span className="wheel-icon">🎮</span>
+                  <span className="wheel-label">Play</span>
+                </button>
+                <button
+                  className={`wheel-option wheel-groom ${interactionCooldowns.groom > 0 ? 'disabled' : ''}`}
+                  onClick={() => handleInteraction('groom')}
+                  disabled={interactionCooldowns.groom > 0}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 10px',
+                    background:
+                      interactionCooldowns.groom > 0 ? '#ccc' : '#42f5a4',
+                    border: 'none',
+                    borderRadius: '15px',
+                    cursor:
+                      interactionCooldowns.groom > 0 ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <span className="wheel-icon">🧼</span>
+                  <span className="wheel-label">Groom</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </>
 
       {/* Error message display */}
@@ -774,11 +762,6 @@ export default function PetView({
               </button>
             </div>
           )}
-          <div className="pet-window">
-            <button className="pet-window-button" onClick={handleOpenPet}>
-              Create Pet Window
-            </button>
-          </div>
         </div>
       )}
     </div>

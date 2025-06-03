@@ -103,7 +103,10 @@ ipcMain.handle('open-or-focus-main-home', async () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', async () => {
+  createWindow();
+  await createPetWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -236,12 +239,11 @@ const createPetWindow = async (): Promise<void> => {
   }
 
   petWindow = new BrowserWindow({
-    width: 120,
-    height: 350,
+    fullscreen: true,
     title: 'Pet Interaction',
     frame: false,
     transparent: true,
-    resizable: false,
+    resizable: true,
     hasShadow: false,
     alwaysOnTop: true,
     movable: true,
@@ -251,8 +253,20 @@ const createPetWindow = async (): Promise<void> => {
     },
   });
 
+  // Robust always-on-top logic
+  const ensureAlwaysOnTop = () => {
+    if (petWindow) petWindow.setAlwaysOnTop(true, 'screen-saver');
+  };
+  petWindow.on('focus', ensureAlwaysOnTop);
+  petWindow.on('show', ensureAlwaysOnTop);
+  petWindow.on('blur', ensureAlwaysOnTop);
+  // Optionally, listen for visibility-change if supported
+  // petWindow.on('visibility-change', ensureAlwaysOnTop);
+  const alwaysOnTopInterval = setInterval(ensureAlwaysOnTop, 2000);
+
   await petWindow.loadURL(PET_WINDOW_WEBPACK_ENTRY);
   petWindow.on('closed', () => {
+    clearInterval(alwaysOnTopInterval);
     petWindow = null;
   });
 };
