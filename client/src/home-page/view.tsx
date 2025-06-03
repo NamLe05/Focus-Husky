@@ -7,10 +7,6 @@ import Col from 'react-bootstrap/Col';
 import taskControllerInstance from '../tasks/controller'; // Adjust path if needed
 import { TaskId, TaskState, TaskAction } from '../tasks/model'; // Adjust path if needed
 
-const handleOpenPomodoro = () => {
-  window.electronAPI?.openPomodoroWindow?.();
-};
-
 type TimeInfo = {
   dayString: string;
   dateString: string;
@@ -54,14 +50,17 @@ const DateCard: React.FC<{ time: TimeInfo }> = ({ time }) => (
   </Col>
 );
 
-const PomodoroTimer: React.FC = () => (
+const PomodoroTimer: React.FC<{
+  isRunning: boolean;
+  onToggle: () => void;
+}> = ({ isRunning, onToggle }) => (
   <Col>
     <div className="pomodoroTimer">
       <div className="pomodoroTxt">
-        <h1>Start Pomodoro Timer</h1>
+        <h1>{isRunning ? 'Close Pomodoro Timer' : 'Start Pomodoro Timer'}</h1>
       </div>
-      <button className="pomodoroTimerButton" onClick={handleOpenPomodoro}>
-        <i className="bi bi-play-fill"></i>
+      <button className="pomodoroTimerButton" onClick={onToggle}>
+        <i className={`bi ${isRunning ? 'bi-x' : 'bi-play-fill'}`}></i>
       </button>
     </div>
   </Col>
@@ -91,6 +90,27 @@ const View: React.FC = () => {
   const [totalSecondsFocused, setTotalSecondsFocused] = useState<number>(0);
   const [tasksCompleted, setTasksCompleted] = useState<number>(0);
   const [todoTasks, setTodoTasks] = useState<[TaskId, TaskState][]>([]);
+  const [isPomodoroOpen, setIsPomodoroOpen] = useState(false);
+
+  const handleTogglePomodoro = () => {
+    if (isPomodoroOpen) {
+      window.electronAPI?.closePomodoroWindow?.();
+      setIsPomodoroOpen(false);
+    } else {
+      window.electronAPI?.openPomodoroWindow?.();
+      setIsPomodoroOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    async function checkPomodoroWindow() {
+      if (window.electronAPI?.isPomodoroWindowOpen) {
+        const isOpen = await window.electronAPI.isPomodoroWindowOpen();
+        setIsPomodoroOpen(isOpen);
+      }
+    }
+    checkPomodoroWindow();
+  }, []);
 
   useEffect(() => {
     async function fetchStats() {
@@ -148,11 +168,9 @@ const View: React.FC = () => {
   useEffect(() => {
     taskControllerInstance.setCallbacks(
       (tasks: [TaskId, TaskState][]) => {
-        // Count completed tasks
         const completed = tasks.filter(([, task]) => task.status === 'completed').length;
         setTasksCompleted(completed);
 
-        // Filter only incomplete tasks for To Do list
         const incomplete = tasks.filter(([, task]) => task.status !== 'completed');
         setTodoTasks(incomplete);
       },
@@ -169,7 +187,7 @@ const View: React.FC = () => {
     <Container fluid className="root">
       <Row className="noPadding">
         <DateCard time={currentTime} />
-        <PomodoroTimer />
+        <PomodoroTimer isRunning={isPomodoroOpen} onToggle={handleTogglePomodoro} />
       </Row>
 
       <Row className="noPadding">
