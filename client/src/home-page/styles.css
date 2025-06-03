@@ -131,3 +131,78 @@
     padding-top: 2.5vh;
     padding-left: 2.5vw;
 }
+
+.taskList {
+  list-style: none; /* remove default bullets */
+  margin: 1.5vh 4vw;
+  padding: 0;
+  max-height: 24vh;
+  overflow-y: auto;
+  overflow-x: hidden;        /* Hide horizontal scrollbar */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #3b2e5a;
+  box-sizing: border-box;    /* include padding and border in width */
+  width: 85%;               /* ensure full container width */
+}
+
+.taskListItem {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1.2vh;
+  padding-left: 0;
+  line-height: 1.4;
+  max-width: 90%;
+  transform-origin: left center; /* scale from bullet side */
+}
+
+.bullet {
+  color: #fabb18;
+  font-size: 1.6rem;
+  margin-right: 1vw;
+  user-select: none;
+  line-height: 1;
+  margin-top: 0.3rem;
+  flex-shrink: 0;
+}
+
+.taskContent {
+  border-left: 3px solid #fabb18;
+  padding-left: 10vw;
+  background-color: #fff9e6; /* light warm paper-like */
+  border-radius: 0 8px 8px 0;
+  padding: 1vh 2vw;
+  width: 100%;               /* don't overflow parent */
+  box-sizing: border-box;    /* include padding and border */
+  box-shadow: inset 0 2px 6px #f5e9b8;
+  margin-left: 0;
+  overflow-wrap: break-word; /* break long words to prevent overflow */
+}
+
+.taskListItem:hover {
+  cursor: pointer;
+  border-radius: 8px;
+  transform: scale(1.06);
+  z-index: 10;
+  transition: transform 0.3s ease;
+}
+
+.taskListItem:hover .taskContent {
+  border-left-color: #e5a900;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.taskTitle {
+  font-size: 1.15vw;
+  font-weight: 600;
+  margin-bottom: 0.3vh;
+  user-select: text;
+  color: #3b2e5a;
+}
+
+.taskDeadline {
+  font-size: 0.85vw;
+  font-style: italic;
+  color: #8c85a3;
+  margin-top: 0.2vh;
+  user-select: text;
+}

@@ -1,6 +1,7 @@
 import {describe, vi, it, expect, beforeEach, afterEach} from 'vitest';
 import {TaskController} from '../controller';
 import {getTodayMidnight} from '../helpers';
+import * as RewardsController from '../../rewards-store/controller';
 
 vi.mock('../../pet/petCelebration', () => ({ celebratePet: vi.fn() }));
 
@@ -85,6 +86,20 @@ describe('Task Model', () => {
       );
       expect(mockViewUpdateCallback).not.toHaveBeenCalled();
     });
+
+    it('25 points added to rewards when task is completed', () => {
+      const check = vi.spyOn(RewardsController, 'taskCompletePoints');
+      
+      const newTaskId = controller.handleCreateTask(
+        'Sample',
+        'sample',
+        0,
+        getTodayMidnight(),
+      );
+
+      controller.markComplete(newTaskId);
+      expect(check).toHaveBeenCalled();
+    })
   });
 
   describe('Task deletion', () => {
