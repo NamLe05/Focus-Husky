@@ -5,8 +5,6 @@ import {PetController} from './controller';
 import {PetId, PetState} from './model';
 import {getPetSpritePath, getAccessorySpritePath} from './helpers';
 import {useSoundEffects, createSoundEffects} from './soundEffects';
-import { getPetController } from './controller';
-import { registerPetId } from './petCelebration';
 
 // FIXED: Import all the sprite images directly
 import huskyNeutralIdle from '../Static/pets/neutral_idle.png';
@@ -130,20 +128,13 @@ export default function PetView({
   dragLayer?: boolean;
 }) {
   // Store the active pet and state
-  const [petId, setPetId] = useState<PetId | undefined>(
-    cachedPetId || undefined,
-  );
-  const [petState, setPetState] = useState<PetState | undefined>(
-    cachedPetState || undefined,
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(!cachedPetState);
+  const [petId, setPetId] = useState<string | undefined>(undefined);
+  const [petState, setPetState] = useState<any>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize sound effects
   useSoundEffects(); // Preload all sounds
   const SOUND_EFFECTS = useRef(createSoundEffects()).current;
-
-  // Maintain reference to controller
-  const controllerRef = useRef<PetController | null>(null);
 
   // Track interaction cooldowns
   const [interactionCooldowns, setInteractionCooldowns] = useState<{
@@ -157,7 +148,7 @@ export default function PetView({
   // Queue for interactions when pet is busy
   const [interactionQueue, setInteractionQueue] = useState<QueuedInteraction[]>(
     [],
-  ); // FIXED: Added missing closing bracket
+  );
 
   // State for pet position dragging
   const [isDragging, setIsDragging] = useState(false);
@@ -184,94 +175,56 @@ export default function PetView({
   // Process any interactions in the queue
   const processNextQueuedInteraction = useCallback(() => {
     if (interactionQueue.length === 0) return;
-
     // Get next interaction
     const [nextInteraction, ...remainingQueue] = interactionQueue;
     setInteractionQueue(remainingQueue);
-
     // Process it
     handleInteraction(nextInteraction.type, true);
   }, [interactionQueue]);
 
+  // Fetch pet state and subscribe to updates
+  useEffect(() => {
+    setIsLoading(true);
+    (window.electronAPI as any).getPetState().then((pets: any[]) => {
+      if (pets.length > 0) {
+        setPetId(pets[0].id);
+        setPetState({...pets[0]});
+        setIsLoading(false);
+        console.log('[Renderer] Initial petId:', pets[0].id, 'petState:', pets[0]);
+      }
+    });
+    const updateHandler = (pets: any[]) => {
+      if (pets.length > 0) {
+        setPetId(pets[0].id);
+        setPetState({...pets[0]});
+        setIsLoading(false);
+        console.log('[Renderer] Updated petId:', pets[0].id, 'petState:', pets[0]);
+      }
+    };
+    (window.electronAPI as any).onPetStateUpdate(updateHandler);
+    return () => {
+      (window.electronAPI as any).removePetStateUpdateListener(updateHandler);
+    };
+  }, []);
+
   // Create a state update handler that also caches the state
   const handlePetUpdate = useCallback(
-    (updatedPetId: PetId, state: PetState) => {
-      // Update component state
+    (updatedPetId: string, state: any) => {
       setPetId(updatedPetId);
       setPetState({...state});
       setIsLoading(false);
-      registerPetId(petId);
-      console.log('[view.tsx] Registered petId:', petId);
-
-      // Cache the state for smooth transitions between tabs
-      cachedPetId = updatedPetId;
-      cachedPetState = {...state};
-
+      // No cache needed, all state is from main process
       // Check if pet was previously busy but now idle
       if (isBusyRef.current && state.animation === 'idle') {
         isBusyRef.current = false;
-
-        // Process any queued interactions
         processNextQueuedInteraction();
       }
-
-      // Update busy status based on animation
       if (state.animation !== 'idle') {
         isBusyRef.current = true;
       }
     },
     [processNextQueuedInteraction],
   );
-
-  // Initialize controller and pet once on component mount
-  useEffect(() => {
-    console.log('PetView mounted, initializing...');
-
-    // Get or create controller instance using the singleton pattern
-    controllerRef.current = getPetController(handlePetUpdate);
-
-    // Initialize pets only once globally
-    if (!isInitialized) {
-      console.log('First initialization, loading pets...');
-      isInitialized = true;
-
-      // Try to load existing pets
-      controllerRef.current.loadPetsFromDatabase();
-
-      // If no pets were loaded, create a default one after a short delay
-      setTimeout(() => {
-        if (controllerRef.current && !cachedPetId) {
-          console.log('No pets found, creating default pet...');
-          controllerRef.current.handleCreatePet('Dubs', 'husky');
-        }
-      }, 500);
-    } else {
-      console.log('Reusing existing pets from controller...');
-
-      // If we don't have cached state yet, force an update to get current state
-      if (!cachedPetState) {
-        const pets = controllerRef.current.getAllPets();
-        if (pets.length > 0) {
-          const firstPet = pets[0];
-          const firstPetState = firstPet.getState();
-          // Set the cached state
-          cachedPetId = firstPet.getId();
-          cachedPetState = {...firstPetState};
-          // Update component state
-          setPetId(cachedPetId);
-          setPetState(cachedPetState);
-          setIsLoading(false);
-        }
-      }
-    }
-
-    // Clean up function doesn't actually destroy the controller
-    // since it's a singleton, but we still need to handle component-specific cleanup
-    return () => {
-      console.log('PetView unmounting, performing cleanup...');
-      // We don't destroy the controller instance here, just clean up component-specific resources
-    };
-  }, [handlePetUpdate]);
 
   // Update cooldowns
   useEffect(() => {
@@ -286,7 +239,6 @@ export default function PetView({
         return newCooldowns;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -294,23 +246,21 @@ export default function PetView({
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!petId) return;
-
       switch (e.key.toLowerCase()) {
-        case 'f': // Feed
+        case 'f':
           handleInteraction('feed');
           break;
-        case 'p': // Play
+        case 'p':
           handleInteraction('play');
           break;
-        case 'g': // Groom
+        case 'g':
           handleInteraction('groom');
           break;
-        case 'escape': // Close wheel menu
+        case 'escape':
           setShowWheelMenu(false);
           break;
       }
     };
-
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [petId]);
@@ -318,13 +268,9 @@ export default function PetView({
   // Auto-care timer
   useEffect(() => {
     if (!autoCareEnabled) return;
-
-    // Automatically take care of pet every 5 minutes
     const autoInterval = setInterval(
       () => {
         if (!petId || !petState) return;
-
-        // Check if pet needs care
         if (petState.happiness < 50) {
           queueInteraction('play');
         }
@@ -337,7 +283,6 @@ export default function PetView({
       },
       5 * 60 * 1000,
     );
-
     return () => clearInterval(autoInterval);
   }, [autoCareEnabled, petId, petState]);
 
@@ -347,7 +292,6 @@ export default function PetView({
       type,
       timestamp: Date.now(),
     };
-
     setInteractionQueue(prev => [...prev, newInteraction]);
   };
 
@@ -356,8 +300,8 @@ export default function PetView({
     type: 'feed' | 'play' | 'groom',
     bypassBusyCheck = false,
   ) => {
-    if (!controllerRef.current || !petId || interactionCooldowns[type] > 0) {
-      // Play error sound if on cooldown
+    console.log('[Renderer] Interaction:', type, 'petId:', petId);
+    if (!petId || interactionCooldowns[type] > 0) {
       try {
         SOUND_EFFECTS.error.play();
       } catch (e) {
@@ -365,21 +309,16 @@ export default function PetView({
       }
       return;
     }
-
-    // Check if pet is busy
     if (isBusyRef.current && !bypassBusyCheck) {
-      // Queue the interaction for later
       queueInteraction(type);
       setErrorMessage('Pet is busy! Interaction queued for later.');
       setTimeout(() => setErrorMessage(null), 3000);
       return;
     }
-
-    // Call appropriate controller method
     try {
       switch (type) {
         case 'feed':
-          controllerRef.current.handleFeedPet(petId);
+          (window.electronAPI as any).feedPet(petId);
           try {
             SOUND_EFFECTS.feed.play();
           } catch (e) {
@@ -387,7 +326,7 @@ export default function PetView({
           }
           break;
         case 'play':
-          controllerRef.current.handlePlayWithPet(petId);
+          (window.electronAPI as any).playPet(petId);
           try {
             SOUND_EFFECTS.play.play();
           } catch (e) {
@@ -395,7 +334,7 @@ export default function PetView({
           }
           break;
         case 'groom':
-          controllerRef.current.handleGroomPet(petId);
+          (window.electronAPI as any).groomPet(petId);
           try {
             SOUND_EFFECTS.groom.play();
           } catch (e) {
@@ -414,44 +353,32 @@ export default function PetView({
       }
       return;
     }
-
-    // Set cooldown
     const cooldownTime = {
-      feed: 0.1 * 60 * 1000, // 6 seconds
-      play: 0.1 * 60 * 1000, // 6 seconds
-      groom: 0.1 * 60 * 1000, // 6 seconds
+      feed: 0.1 * 60 * 1000,
+      play: 0.1 * 60 * 1000,
+      groom: 0.1 * 60 * 1000,
     }[type];
-
     setInteractionCooldowns(prev => ({
       ...prev,
       [type]: cooldownTime,
     }));
-
-    // Close wheel menu after interaction
     setShowWheelMenu(false);
   };
 
   // Handle the pet sprite being clicked (open wheel menu)
   const handlePetClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isDragging) return; // Don't show menu if we were dragging
-
-    // Toggle wheel menu
+    if (isDragging) return;
     setShowWheelMenu(prev => !prev);
   };
 
   // Handle pet mouse down for dragging
   const handlePetMouseDown = (e: React.MouseEvent) => {
     if (!draggable || !petElementRef.current || !petState) return;
-
-    // Prevent default broswer behavior (Added to prevent text selection)
     e.preventDefault();
-
-    // Calculate offset from cursor to pet center
     const rect = petElementRef.current.getBoundingClientRect();
     const offsetX = e.clientX - (petState.position.x + rect.width / 2);
     const offsetY = e.clientY - (petState.position.y + rect.height / 2);
-
     setDragOffset({x: offsetX, y: offsetY});
     setIsDragging(true);
   };
@@ -459,40 +386,25 @@ export default function PetView({
   // Handle mouse move for dragging
   useEffect(() => {
     let globalSelectStartHandler: ((e: Event) => void) | null = null;
-
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !controllerRef.current || !petId) return;
-
-      // Prevent default broswer behavior (Added to prevent text selection)
+      if (!isDragging || !petId) return;
       e.preventDefault();
-
-      // Calculate new position
       const newX = e.clientX - dragOffset.x;
       const newY = e.clientY - dragOffset.y;
-
-      // Update pet position
-      controllerRef.current.handleMovePet(petId, newX, newY);
+      (window.electronAPI as any).movePet(petId, newX, newY);
     };
-
-    // Handle mouse up to stop dragging
     const handleMouseUp = () => {
       if (isDragging) {
         setIsDragging(false);
       }
     };
-
     if (isDragging && draggable) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
-
-      // Add global selectstart prevention while dragging
       globalSelectStartHandler = (e: Event) => e.preventDefault();
       document.addEventListener('selectstart', globalSelectStartHandler);
-
-      // Add user-select none to body while dragging
       document.body.style.userSelect = 'none';
     }
-
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
@@ -501,16 +413,12 @@ export default function PetView({
 
   // Simulate completing a Pomodoro session
   const handleCompletePomo = () => {
-    if (controllerRef.current && petId) {
-      controllerRef.current.handlePomodoroCompleted(petId);
-    }
+    // TODO: Implement if needed
   };
 
   // Simulate completing a task
   const handleCompleteTask = () => {
-    if (controllerRef.current && petId) {
-      controllerRef.current.handleTaskCompleted(petId);
-    }
+    // TODO: Implement if needed
   };
 
   // Handle hover state for showing metrics
@@ -527,8 +435,7 @@ export default function PetView({
     setAutoCareEnabled(prev => !prev);
   };
 
-  // If pet not loaded yet, show loading state
-  if (!petState) {
+  if (isLoading || !petState) {
     return <div className="pet-loading">Loading pet...</div>;
   }
 
@@ -536,37 +443,32 @@ export default function PetView({
   let spritePath = petImg; // default fallback
   try {
     // Try to get sprite from our map first
+    const species = (petState as any).species;
+    const mood = (petState as any).mood;
+    const animation = (petState as any).animation;
+    const spriteMapAny = spriteMap as any;
     if (
-      spriteMap[petState.species] &&
-      spriteMap[petState.species][petState.mood] &&
-      spriteMap[petState.species][petState.mood][petState.animation]
+      spriteMapAny[species] &&
+      spriteMapAny[species][mood] &&
+      spriteMapAny[species][mood][animation]
     ) {
-      spritePath =
-        spriteMap[petState.species][petState.mood][petState.animation];
+      spritePath = spriteMapAny[species][mood][animation];
       console.log('Using imported sprite:', spritePath);
-    }
-    // Fallback to the helper function if sprite not in our map
-    else if (typeof getPetSpritePath === 'function') {
-      const path = getPetSpritePath(
-        petState.species,
-        petState.mood,
-        petState.animation,
-      );
+    } else if (typeof getPetSpritePath === 'function') {
+      const path = getPetSpritePath(species, mood, animation);
       if (path) spritePath = path;
     }
-
-    // Log debug info
     console.log('Pet state:', {
-      species: petState.species,
-      mood: petState.mood,
-      animation: petState.animation,
+      species,
+      mood,
+      animation,
     });
   } catch (e) {
     console.warn('Error getting pet sprite:', e);
   }
 
   const handleOpenPet = () => {
-    window.electronAPI?.openPetWindow();
+    (window.electronAPI as any).openPetWindow();
   };
 
   // Otherwise, render the pet...
@@ -613,13 +515,12 @@ export default function PetView({
         >
           {/* Render pet accessories if any */}
           {Array.isArray(petState.accessories) &&
-            petState.accessories.map(accessoryId => (
+            (petState.accessories as string[]).map((accessoryId: string) => (
               <div
                 key={accessoryId}
                 className="pet-accessory"
                 style={{
-                  position:
-                    'absolute' /* FIXED: Added absolute positioning for accessories */,
+                  position: 'absolute',
                   top: 0,
                   left: 0,
                   width: '100%',

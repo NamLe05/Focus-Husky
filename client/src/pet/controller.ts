@@ -281,19 +281,3 @@ export class PetController {
   }, 3000);
 }
 }
-
-
-let controllerInstance: PetController | null = null;
-
-export const getPetController = (
-  callback?: (petId: PetId, state: PetState) => void,
-): PetController => {
-  if (!controllerInstance) {
-    console.log('[controller.ts] Creating PetController');
-    controllerInstance = new PetController(callback ?? (() => {}));
-  } else if (callback) {
-    console.log('[controller.ts] Updating PetController callback');
-    controllerInstance.updateCallback(callback);
-  }
-  return controllerInstance;
-};

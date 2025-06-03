@@ -5,7 +5,7 @@ import './styles.css';
 
 const PetApp = () => (
   <PetView
-    draggable={true}
+    draggable={false}
     showInfoPanel={false}
     lockedPosition={{x: 19, y: 70}}
   />
