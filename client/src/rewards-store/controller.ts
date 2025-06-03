@@ -24,3 +24,6 @@ export function markItemAsEquipped(item: marketPlaceItem, category: Tab){
   return store.setEquipped(item, category)
 }
 
+export function taskCompletePoints(): void {
+  store.addPoints(25);
+}
