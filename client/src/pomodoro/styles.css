@@ -166,12 +166,12 @@ html, body {
     font-size: 24px;
     padding-left: 6px;
 }
-.timerButton:hover {
+.timerButton:hover, .decreaseTimeButton:hover, .increaseTimeButton:hover {
     opacity: 1;
     box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.6);
 }
 
-.timerButton:active {
+.timerButton:active, .decreaseTimeButton:active, .increaseTimeButton:active {
   transform: scale(0.9);
 }
 /* Timer Controller */
