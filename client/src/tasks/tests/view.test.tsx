@@ -4,6 +4,7 @@ import {act, fireEvent, render, screen, within} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import View from '../view';
 import taskControllerInstance from '../controller';
+import {CustomDate} from '../helpers';
 
 describe('Task View', () => {
   beforeEach(() => {
@@ -33,13 +34,13 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 27, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
-        new Date(2025, 6, 6, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 6, 0, 0, 0)),
       );
       // Expect text with no tasks
       act(() => {
@@ -54,25 +55,25 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 27, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
-        new Date(2025, 6, 3, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 3, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 3',
         'dummy',
         1,
-        new Date(2025, 6, 5, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 5, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 4',
         'dummy',
         1,
-        new Date(2025, 6, 6, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 6, 0, 0, 0)),
       );
       // Expect two task cards rendered
       render(<View />);
@@ -152,7 +153,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -196,7 +197,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -249,7 +250,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -267,7 +268,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -299,7 +300,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);

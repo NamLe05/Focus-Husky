@@ -1,4 +1,24 @@
-import {CanvasSubmission, TaskState, TaskStatus} from './model';
+import {CanvasSubmission, TaskStatus} from './model';
+
+export class CustomDate extends Date {
+  public invalid: boolean;
+  public date: string | Date;
+
+  constructor(date?: string | Date) {
+    super(date);
+    this.invalid = this.dateToHtmlInputString() === 'invalid';
+  }
+
+  public dateToHtmlInputString() {
+    try {
+      const dateCopy = new Date(this);
+      dateCopy.setMinutes(dateCopy.getMinutes() - dateCopy.getTimezoneOffset());
+      return dateCopy.toISOString().slice(0, 16);
+    } catch (e) {
+      return 'invalid';
+    }
+  }
+}
 
 export function mapSubmissionToStatus(
   submissions: false | CanvasSubmission,
@@ -25,18 +45,12 @@ export function isComplete(status: TaskStatus) {
   );
 }
 
-export function dateToHtmlInputString(date: Date) {
-  const dateCopy = new Date(date);
-  dateCopy.setMinutes(dateCopy.getMinutes() - dateCopy.getTimezoneOffset());
-  return dateCopy.toISOString().slice(0, 16);
-}
-
 export function htmlInputStringToDate(str: string) {
-  return new Date(str);
+  return new CustomDate(str);
 }
 
 export function getTodayMidnight() {
-  const dueToday = new Date();
+  const dueToday = new CustomDate(new Date());
   dueToday.setHours(23);
   dueToday.setMinutes(59);
   dueToday.setSeconds(0);
