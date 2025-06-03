@@ -1,8 +1,9 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
-import React from 'react';
+import React, { act } from 'react';
 import View from '../view';
 import {MemoryRouter} from 'react-router-dom'; // Import this
+import taskControllerInstance from '../../tasks/controller';
 
 const INITIAL_DATE = new Date('2025-05-20T17:18:00');
 const ONE_MINUTE_LATER = new Date('2025-05-20T17:19:00');
@@ -114,4 +115,49 @@ describe('View component - Pomodoro button', () => {
 
     expect(window.electronAPI.openPomodoroWindow).toHaveBeenCalledTimes(1);
   });
+
+  // Stat card tests
+  describe('View component - Stats and To Do list', () => {
+  beforeEach(() => {
+    (window as any).electronAPI = {
+      openPomodoroWindow: vi.fn(),
+      openPetWindow: vi.fn(),
+      onNavigateHome: vi.fn(),
+      removeNavigateHomeListener: vi.fn(),
+      getFocusCount: vi.fn().mockResolvedValue(5),
+      getTotalTime: vi.fn().mockResolvedValue(3661),
+    };
+  });
+
+  it('renders correct stats info based on electronAPI responses', async () => {
+    render(
+      <MemoryRouter>
+        <View />
+      </MemoryRouter>
+    );
+
+    // Wait for "Sessions Completed :" label to appear and check the sibling's textContent
+    const sessionsCompleted = await screen.findByText('Sessions Completed :');
+    const sessionsValue = sessionsCompleted.nextElementSibling;
+    expect(sessionsValue && sessionsValue.textContent).toBe('5');
+
+    // Wait for "Total Time Focused :" label to appear and check the sibling's textContent
+    const totalTimeFocused = await screen.findByText('Total Time Focused :');
+    const totalTimeValue = totalTimeFocused.nextElementSibling;
+    expect(totalTimeValue && totalTimeValue.textContent).toBe('01:01:01');
+  });
+
+  it('renders To Do list with "No tasks pending 🎉" when there are no tasks', () => {
+    render(
+      <MemoryRouter>
+        <View />
+      </MemoryRouter>
+    );
+
+    // Since todoTasks starts empty, the "No tasks pending 🎉" message should appear
+    const noTasksMessage = screen.getByText('No tasks pending 🎉');
+    expect(noTasksMessage).not.toBeNull();
+  });
+});
+
 });

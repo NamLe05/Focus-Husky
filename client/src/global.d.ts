@@ -10,6 +10,17 @@ declare global {
 
       onNavigateHome: (callback: () => void) => void;
       removeNavigateHomeListener: (callback: () => void) => void;
+
+      // focus count and listeners
+      incrementFocusCount: () => void;
+      getFocusCount: () => Promise<number>;
+      onFocusSessionEnded: (callback: () => void) => void;
+      removeFocusSessionEndedListener: (callback: () => void) => void;
+      notifyFocusSessionEnded: () => void;
+
+      // total time
+      incrementTotalTime: (seconds: number) => void;
+      getTotalTime: () => Promise<number>;
     };
     electron: ElectronAPI;
   }

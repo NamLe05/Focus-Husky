@@ -5,9 +5,6 @@ import {PomodoroState} from './model';
 import PetView from '../pet/view';
 
 import settingImg from '../Static/settings.png';
-import calendarImg from '../Static/calendar.png';
-import notesImg from '../Static/notes.png';
-import petImg from '../Static/pet.png';
 
 export default function PomodoroView() {
   const [timerState, setTimerState] = useState<boolean>(false);
