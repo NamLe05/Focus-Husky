@@ -1,3 +1,6 @@
+/* eslint-disable prettier/prettier */
+import { taskCompletePoints } from '../rewards-store/controller';
+
 export type TimerState = 'focus' | 'break';
 
 export interface PomodoroState {
@@ -73,6 +76,8 @@ export class PomodoroTimerModel {
       this.onFocusComplete?.(this.focusElapsed);
       this.focusElapsed = 0;
 
+      taskCompletePoints();
+
       // Now switch to break
       this.state.state = 'break';
       this.state.remainingTime = this.state.breakTime;
@@ -107,7 +112,6 @@ export class PomodoroTimerModel {
   public getRemainingTime(): number {
     return this.state.remainingTime;
   }
-  
 
   public setOnTick(callback: (state: PomodoroState) => void): void {
     this.onTick = callback;

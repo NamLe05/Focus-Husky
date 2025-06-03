@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-trailing-spaces */
+/* eslint-disable prettier/prettier */
 import {v4 as uuidv4} from 'uuid';
 import HuskyImage from '../Static/Husky.png';
 import FrogImage from '../Static/Frog.png';
@@ -192,6 +194,7 @@ export class RewardsStore {
     };
     this.points = 200;
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.loadStateFromDB();
   }
   

@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable eol-last */
 import {marketPlaceItem, RewardsStore} from './model';
 import {Tab} from './view';
 
