@@ -242,5 +242,6 @@ export class RewardsStore {
   public onTimerComplete(pointsEarned = 30) {
     this.addPoints(pointsEarned);
     console.log(`Timer completed! Earned ${pointsEarned} points.`);
+    console.log(`TOTAL POINTS ${this.points}`);
   }
 }
