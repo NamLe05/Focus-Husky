@@ -372,11 +372,11 @@ export class PetModel {
   /**
    * Update pet stats based on elapsed time
    * @param deltaTime Time in milliseconds since last update
-   * @returns Updated pet state if changes occurred
+   * @returns Updated pet state (always returns state for UI refresh)
    */
-  public updateStats(deltaTime: number): PetState | null {
+  public updateStats(deltaTime: number): PetState {
     // Skip tiny updates
-    if (deltaTime < 100) return null;
+    if (deltaTime < 100) return this.getState();
 
     // Convert to minutes for easier calculation
     const minutes = deltaTime / (1000 * 60);
@@ -393,14 +393,7 @@ export class PetModel {
     // Update mood based on new stats
     this.updateMood();
 
-    // Only return state if visible changes occurred
-    if (
-      this.state.mood !== initialMood ||
-      this.state.animation !== initialAnimation
-    ) {
-      return this.getState();
-    }
-
-    return null;
+    // Always return state for UI refresh
+    return this.getState();
   }
 }

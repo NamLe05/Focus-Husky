@@ -332,6 +332,14 @@ const petController = new PetController(() => {}); // No view callback needed in
 // ADD THIS LINE:
 petController.loadPetsFromDatabase();
 
+// Periodically update pet stats and broadcast to renderer
+setInterval(() => {
+  petController.getAllPets().forEach(pet => {
+    pet.updateStats(1000); // 1000 ms = 1 second
+  });
+  broadcastPetState();
+}, 1000);
+
 function broadcastPetState() {
   const pets = petController.getAllPets();
   const state = pets.map((pet: any) => ({ ...pet.getState(), id: pet.getId() }));
