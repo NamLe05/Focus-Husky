@@ -307,6 +307,9 @@ const getDbInstance = (filename: string) => {
   return databases[filename];
 };
 
+// Export getDbInstance globally for use in PetController
+(global as any).getDbInstance = getDbInstance;
+
 ipcMain.on('insertDoc', async (e, {filename, document}: DbInsertConfig) => {
   await getDbInstance(filename).insertDoc(document);
 });
@@ -373,6 +376,7 @@ ipcMain.on('pet:move', (event, petId, x, y) => {
 });
 
 ipcMain.on('pet:celebrate', () => {
+  console.log('[main process] Received pet:celebrate IPC event');
   petController.celebrateActivePet();
   broadcastPetState();
 });

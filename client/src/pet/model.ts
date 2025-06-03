@@ -34,9 +34,9 @@ export class PetModel {
    * @param name name of the pet
    * @param species species
    */
-  public constructor(name: string, species: PetSpecies) {
+  public constructor(name: string, species: PetSpecies, id?: PetId) {
     // Generate a UUID identified for the pet
-    this.id = uuid();
+    this.id = id ?? uuid();
     this.state = {
       name,
       species,
@@ -177,10 +177,10 @@ export class PetModel {
 
   /**
    * Get a complete snapshot of the pet's state
-   * @returns {PetState} all pet state data
+   * @returns {PetState & {_id: string}} all pet state data with _id
    */
-  public getState(): PetState {
-    return this.state;
+  public getState(): PetState & { _id: string } {
+    return { ...this.state, _id: this.id };
   }
 
   /**
@@ -395,5 +395,16 @@ export class PetModel {
 
     // Always return state for UI refresh
     return this.getState();
+  }
+
+  /**
+   * Set the pet's state (for loading from database)
+   * @param state The new state to set
+   */
+  public setState(state: PetState & { _id?: string }): void {
+    this.state = state;
+    if ((state as any)._id) {
+      this.id = (state as any)._id;
+    }
   }
 }

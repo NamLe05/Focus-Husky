@@ -1,4 +1,5 @@
 import {PetModel, PetId, PetAccessoryId, PetState} from './model';
+import TypedDatastore from '../services/db';
 
 export class PetController {
   // Collection of all pet instances managed by this controller
@@ -191,27 +192,52 @@ export class PetController {
   }
 
   /**
-   * Load pets from database
+   * Load pets from database (async, real DB)
    */
-  public loadPetsFromDatabase(): void {
-    console.log('Loading pets from database...');
-
-    // TODO:: This SHOULD query database
-    // For testing, created a mock pet
+  public async loadPetsFromDatabase(): Promise<void> {
+    const db = (global as any).getDbInstance ? (global as any).getDbInstance('pets.db') : null;
+    if (!db) {
+      console.warn('[PetController] No database instance found for loading pets.');
+      return;
+    }
+    const docs = await db.findDoc({});
+    for (const doc of docs) {
+      const pet = new PetModel(doc.name, doc.species, doc._id);
+      pet.setState(doc);
+      this.pets.set(pet.getId(), pet);
+    }
     if (this.pets.size === 0) {
       this.handleCreatePet('Default Husky', 'husky');
+      console.log('[PetController] Created default pet.');
     }
+    console.log('[PetController] All pets loaded from database.');
   }
 
   /**
-   * Simulate saving pet to database
+   * Save a single pet to the database by ID (async, real DB)
    */
-  private savePetToDatabase(petId: PetId): void {
+  public async savePetToDatabase(petId: PetId): Promise<void> {
+    const db = (global as any).getDbInstance ? (global as any).getDbInstance('pets.db') : null;
+    if (!db) {
+      console.warn('[PetController] No database instance found for saving pets.');
+      return;
+    }
     const pet = this.pets.get(petId);
     if (!pet) return;
-
-    console.log(`Saving pet ${petId} to database:`, pet.getState());
-    // TODO: call database APIs
+    try {
+      const existing = await db.findDoc({ _id: pet.getId() });
+      console.log('[PetController] findDoc result:', existing);
+      if (existing && existing.length > 0) {
+        const updateResult = await db.updateDoc({ _id: pet.getId() }, pet.getState());
+        console.log('[PetController] updateDoc result:', updateResult);
+        console.log(`[PetController] Updated pet ${petId} in database.`);
+      } else {
+        await db.insertDoc(pet.getState());
+        console.log(`[PetController] Inserted new pet ${petId} to database.`);
+      }
+    } catch (err) {
+      console.error(`[PetController] Failed to save pet ${petId} to database:`, err);
+    }
   }
 
   /**
@@ -280,4 +306,38 @@ export class PetController {
     this.notifyViewUpdate(petId, pet.getState());
   }, 3000);
 }
+
+  /**
+   * Save all pets to the database
+   */
+  public async saveAllPetsToDatabase(): Promise<void> {
+    const db = (global as any).getDbInstance ? (global as any).getDbInstance('pets.db') : null;
+    if (!db) {
+      console.warn('[PetController] No database instance found for saving pets.');
+      return;
+    }
+    for (const pet of this.pets.values()) {
+      await db.insertDoc(pet.getState());
+    }
+    console.log('[PetController] All pets saved to database.');
+  }
+
+  /**
+   * Load all pets from the database
+   */
+  public async loadAllPetsFromDatabase(): Promise<void> {
+    const db = (global as any).getDbInstance ? (global as any).getDbInstance('pets.db') : null;
+    if (!db) {
+      console.warn('[PetController] No database instance found for loading pets.');
+      return;
+    }
+    const docs = await db.findDoc({});
+    for (const doc of docs) {
+      // Assuming PetModel constructor can take a state object
+      const pet = new PetModel(doc.name, doc.species);
+      pet.setState(doc);
+      this.pets.set(pet.getId(), pet);
+    }
+    console.log('[PetController] All pets loaded from database.');
+  }
 }
