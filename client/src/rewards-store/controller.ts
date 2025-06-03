@@ -18,3 +18,7 @@ export function markItemAsOwned(itemId: string, category: Tab) {
     item.owned = true;
   }
 }
+
+export function taskCompletePoints(): void {
+  store.addPoints(25);
+}
