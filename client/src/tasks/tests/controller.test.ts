@@ -1,6 +1,8 @@
-import {describe, vi, it, expect, beforeEach} from 'vitest';
+import {describe, vi, it, expect, beforeEach, afterEach} from 'vitest';
 import {TaskController} from '../controller';
 import {getTodayMidnight} from '../helpers';
+
+vi.mock('../../pet/petCelebration', () => ({ celebratePet: vi.fn() }));
 
 describe('Task Model', () => {
   let controller: TaskController;

@@ -1,9 +1,19 @@
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {describe, it, expect, vi, beforeEach, afterEach, beforeAll} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
 import React from 'react';
 import PomodoroView from '../view';
 
 describe('PomodoroView - timer control buttons', () => {
+  beforeAll(() => {
+    (window as any).electronAPI = {
+      getPetState: vi.fn().mockResolvedValue([]),
+      openOrFocusMainHome: vi.fn(),
+      onPetStateUpdate: vi.fn(),
+      removePetStateUpdateListener: vi.fn(),
+      // Add other methods as needed
+    };
+  });
+
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -76,7 +86,10 @@ describe('PomodoroView - timer control buttons', () => {
     const openMainMock = vi.fn();
 
     (window as any).electronAPI = {
+      getPetState: vi.fn().mockResolvedValue([]),
       openOrFocusMainHome: openMainMock,
+      onPetStateUpdate: vi.fn(),
+      removePetStateUpdateListener: vi.fn(),
     };
 
     render(<PomodoroView />);
