@@ -255,13 +255,7 @@ const createPetWindow = async (): Promise<void> => {
   });
 };
 
-ipcMain.on('open-pomodoro-window', async () => {
-  await createPomodoroWindow();
-});
 
-ipcMain.on('open-pet-window', async () => {
-  await createPetWindow();
-});
 
 const getFilePath = (filename: string) =>
   app.isPackaged ? `${app.getAppPath()}/data/${filename}` : `data/${filename}`;
@@ -347,6 +341,29 @@ ipcMain.on('deleteDoc', async (e, {filename, query}: DbRemoveConfig) => {
 
 
 // Pomodoro handlers
+ipcMain.on('open-pomodoro-window', async () => {
+  await createPomodoroWindow();
+});
+
+ipcMain.on('open-pet-window', async () => {
+  await createPetWindow();
+});
+
+ipcMain.on('close-pomodoro-window', () => {
+  if (pomodoroWindow) {
+    pomodoroWindow.close();
+    pomodoroWindow = null;
+  }
+});
+
+
+function isPomodoroWindowOpen() {
+  return pomodoroWindow !== null && !pomodoroWindow.isDestroyed();
+}
+ipcMain.handle('is-pomodoro-window-open', () => {
+  return isPomodoroWindowOpen();
+});
+
 
 ipcMain.on('increment-focus-count', async () => {
   const db = getDbInstance('pomodoro.db') as TypedDatastore<PomodoroStats>;

@@ -5,6 +5,8 @@ declare global {
     electronAPI?: {
       openPomodoroWindow: () => void;
       openPetWindow: () => void;
+      closePomodoroWindow: () => void;
+      isPomodoroWindowOpen: () => Promise<boolean>;
 
       openOrFocusMainHome: () => Promise<void>;
 

@@ -30,7 +30,9 @@ contextBridge.exposeInMainWorld('electron', {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openPomodoroWindow: () => ipcRenderer.send('open-pomodoro-window'),
+  closePomodoroWindow: () => ipcRenderer.send('close-pomodoro-window'),
   openPetWindow: () => ipcRenderer.send('open-pet-window'),
+  isPomodoroWindowOpen: () => ipcRenderer.invoke('is-pomodoro-window-open'),
 
   // Expose the openOrFocusMainHome method (ipc invoke)
   openOrFocusMainHome: () => ipcRenderer.invoke('open-or-focus-main-home'),
