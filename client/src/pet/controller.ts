@@ -1,81 +1,28 @@
 import {PetModel, PetId, PetAccessoryId, PetState} from './model';
+import {GlobalPetController} from './globalController';
 
 export class PetController {
-  // Collection of all pet instances managed by this controller
-  private pets: Map<PetId, PetModel>;
-
   // View update callback
-  // When called, the PetController will pass the petId of the updated pet
-  // to this callback function, allowing the view to then retrieve the
-  // latest data for that pet and update its display accordingly.
   private viewUpdateCallback: (petId: PetId, state: PetState) => void;
-
-  // Update interval tracking for periodic update loop runs
-  private updateIntervalId: NodeJS.Timeout | null = null;
-  private lastUpdateTime: number;
+  private globalController: GlobalPetController;
 
   /**
    * Create a new pet controller instance
    * @param viewUpdateCallback Callback to notify view of updates
    */
   constructor(viewUpdateCallback: (petId: PetId, state: PetState) => void) {
-    this.pets = new Map();
     this.viewUpdateCallback = viewUpdateCallback;
-    this.lastUpdateTime = Date.now();
-    this.startUpdateLoop();
+    this.globalController = GlobalPetController.getInstance();
+    this.globalController.registerLocalController(this.viewUpdateCallback);
   }
 
   /**
-   * Clean up resources when controller is destroyed
+   * Handle "Create Pet" button press
+   * @param name Name of the pet
+   * @param species Species of the pet
    */
-  public destroy(): void {
-    if (this.updateIntervalId) {
-      clearInterval(this.updateIntervalId);
-      this.updateIntervalId = null;
-    }
-  }
-
-  /**
-   * Handle the "Create Pet" user action
-   * @param name Name for the new pet
-   * @param species Species of the new pet
-   * @returns The new pet's ID
-   */
-  public handleCreatePet(name: string, species: 'husky'): PetId {
-    // Create pet using the model
-    const pet = new PetModel(name, species);
-    const petId = pet.getId();
-
-    // Store the pet
-    this.pets.set(petId, pet);
-
-    // Save to database
-    this.savePetToDatabase(petId);
-
-    // Notify view
-    this.notifyViewUpdate(petId, pet.getState());
-
-    return petId;
-  }
-
-  /**
-   * Handle the "Rename Pet" user action
-   * @param petId ID of the pet to rename
-   * @param newName New name for the pet
-   */
-  public handleRenamePet(petId: PetId, newName: string): void {
-    const pet = this.pets.get(petId);
-    if (!pet) {
-      console.error(`Cannot rename pet: Pet with ID ${petId} not found`);
-      return;
-    }
-
-    // Update via model
-    const updatedState = pet.rename(newName);
-
-    // Save and update view
-    this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+  public handleCreatePet(name: string, species: string): PetId {
+    return this.globalController.handleCreatePet(name, species);
   }
 
   /**
@@ -83,15 +30,7 @@ export class PetController {
    * @param petId ID of the pet
    */
   public handleFeedPet(petId: PetId): void {
-    const pet = this.getPet(petId);
-    if (!pet) return;
-
-    // Let model handle the feeding logic
-    const updatedState = pet.interact('feed');
-
-    // Save and notify view
-    this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.globalController.handleFeedPet(petId);
   }
 
   /**
@@ -99,15 +38,7 @@ export class PetController {
    * @param petId ID of the pet
    */
   public handlePlayWithPet(petId: PetId): void {
-    const pet = this.getPet(petId);
-    if (!pet) return;
-
-    // Let model handle the play logic
-    const updatedState = pet.interact('play');
-
-    // Save and notify view
-    this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.globalController.handlePlayWithPet(petId);
   }
 
   /**
@@ -115,15 +46,7 @@ export class PetController {
    * @param petId ID of the pet
    */
   public handleGroomPet(petId: PetId): void {
-    const pet = this.getPet(petId);
-    if (!pet) return;
-
-    // Let model handle the grooming logic
-    const updatedState = pet.interact('groom');
-
-    // Save and notify view
-    this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.globalController.handleGroomPet(petId);
   }
 
   /**
@@ -133,30 +56,7 @@ export class PetController {
    * @param y Y coordinate
    */
   public handleMovePet(petId: PetId, x: number, y: number): void {
-    const pet = this.getPet(petId);
-    if (!pet) return;
-
-    // Let model update position
-    const updatedState = pet.setPosition(x, y);
-
-    // Only update view (no need to save position to database)
-    this.notifyViewUpdate(petId, updatedState);
-  }
-
-  /**
-   * Handle task completion notification
-   * @param petId ID of the pet
-   */
-  public handleTaskCompleted(petId: PetId): void {
-    const pet = this.getPet(petId);
-    if (!pet) return;
-
-    // Let model handle task completion logic
-    const updatedState = pet.onTaskComplete();
-
-    // Save and notify view
-    this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.globalController.handleMovePet(petId, x, y);
   }
 
   /**
@@ -164,81 +64,29 @@ export class PetController {
    * @param petId ID of the pet
    */
   public handlePomodoroCompleted(petId: PetId): void {
-    const pet = this.getPet(petId);
-    if (!pet) return;
-
-    // Let model handle Pomodoro completion logic
-    const updatedState = pet.onPomodoroComplete();
-
-    // Save and notify view
-    this.savePetToDatabase(petId);
-    this.notifyViewUpdate(petId, updatedState);
+    this.globalController.handlePomodoroCompleted(petId);
   }
 
   /**
-   * Get a pet by ID (for view access)
-   * @param petId ID of the pet to retrieve
+   * Handle task completion
+   * @param petId ID of the pet
    */
-  public getPet(petId: PetId): PetModel | undefined {
-    return this.pets.get(petId);
+  public handleTaskCompleted(petId: PetId): void {
+    this.globalController.handleTaskCompleted(petId);
   }
 
   /**
-   * Get all pets (for view access)
+   * Get all pets managed by this controller
    */
   public getAllPets(): PetModel[] {
-    return Array.from(this.pets.values());
+    return this.globalController.getAllPets();
   }
 
   /**
    * Load pets from database
    */
   public loadPetsFromDatabase(): void {
-    console.log('Loading pets from database...');
-
-    // TODO:: This SHOULD query database
-    // For testing, created a mock pet
-    if (this.pets.size === 0) {
-      this.handleCreatePet('Default Husky', 'husky');
-    }
-  }
-
-  /**
-   * Simulate saving pet to database
-   */
-  private savePetToDatabase(petId: PetId): void {
-    const pet = this.pets.get(petId);
-    if (!pet) return;
-
-    console.log(`Saving pet ${petId} to database:`, pet.getState());
-    // TODO: call database APIs
-  }
-
-  /**
-   * Notify view of pet updates
-   */
-  private notifyViewUpdate(petId: PetId, petState: PetState): void {
-    if (this.viewUpdateCallback) {
-      this.viewUpdateCallback(petId, petState);
-    }
-  }
-
-  /**
-   * Start the periodic update loop
-   */
-  private startUpdateLoop(): void {
-    this.updateIntervalId = setInterval(() => {
-      const currentTime = Date.now();
-      const deltaTime = currentTime - this.lastUpdateTime;
-
-      // Update each pet's stats via the model
-      this.pets.forEach((pet, petId) => {
-        pet.updateStats(deltaTime);
-        this.notifyViewUpdate(petId, pet.getState());
-      });
-
-      this.lastUpdateTime = currentTime;
-    }, 1000);
+    this.globalController.loadPetsFromDatabase();
   }
 
   /**
@@ -249,39 +97,17 @@ export class PetController {
   public updateCallback(
     viewUpdateCallback: (petId: PetId, state: PetState) => void,
   ): void {
+    this.globalController.unregisterLocalController(this.viewUpdateCallback);
     this.viewUpdateCallback = viewUpdateCallback;
-
-    // Notify the new callback about all existing pets
-    this.pets.forEach((pet, petId) => {
-      this.notifyViewUpdate(petId, pet.getState());
-    });
+    this.globalController.registerLocalController(this.viewUpdateCallback);
   }
 
   public setViewUpdateCallback(callback: (petId: PetId, state: PetState) => void) {
-  this.viewUpdateCallback = callback;
+    this.globalController.unregisterLocalController(this.viewUpdateCallback);
+    this.viewUpdateCallback = callback;
+    this.globalController.registerLocalController(this.viewUpdateCallback);
   }
-
-  public celebrateActivePet(): void {
-  const pets = Object.values(this.pets);
-  if (pets.length === 0) {
-    console.warn('[PetController] No pets available to celebrate.');
-    return;
-  }
-
-  const pet = pets[0];
-  const petId = pet.getId();
-
-  pet.onTaskComplete();
-  this.notifyViewUpdate(petId, pet.getState());
-
-  // Reset after 3 seconds
-  setTimeout(() => {
-    pet.setAnimation('idle');
-    this.notifyViewUpdate(petId, pet.getState());
-  }, 3000);
 }
-}
-
 
 let controllerInstance: PetController | null = null;
 
