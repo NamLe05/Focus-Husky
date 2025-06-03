@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {PomodoroTimerModel, PomodoroState} from './model';
 
 export class PomodoroController {
