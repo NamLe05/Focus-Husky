@@ -21,6 +21,13 @@ declare global {
       // total time
       incrementTotalTime: (seconds: number) => void;
       getTotalTime: () => Promise<number>;
+
+      getRewards: () => Promise<{
+        points: number;
+        ownedItems: string[];
+      }>;
+
+      updateRewards: (payload: { points: number; ownedItems: string[] }) => Promise<void>;
     };
     electron: ElectronAPI;
   }
