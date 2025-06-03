@@ -184,7 +184,12 @@ export class RewardsStore {
   
   
   async loadStateFromDB() {
-    const state = await window.electronAPI?.getRewards();
+    const state = await window.electronAPI?.getRewards?.();
+    if (!state || typeof state.points !== 'number') {
+      console.warn('No reward state loaded — skipping initialization.');
+      return;
+    }
+
     this.points = state.points;
 
     for (const category of Object.values(this.marketItems)) {
@@ -194,7 +199,7 @@ export class RewardsStore {
         }
       }
     }
-  }
+  } 
 
   public deductPoints(amount: number) {
     this.points = this.points - amount;

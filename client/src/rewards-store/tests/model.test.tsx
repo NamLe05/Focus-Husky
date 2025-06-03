@@ -83,4 +83,22 @@ describe('RewardsStore API methods', () => {
     expect(result).toBe(false);
     expect(window.electronAPI.updateRewards).not.toHaveBeenCalled();
   });
+
+  it('loadStateFromDB does nothing if electronAPI returns undefined', async () => {
+  // Make getRewards return undefined
+  (window as any).electronAPI.getRewards = vi.fn().mockResolvedValue(undefined);
+
+  // Manually reset the store to avoid side effects from earlier tests
+  store = new RewardsStore();
+
+  // Attempt to load
+  await store.loadStateFromDB();
+
+  // Points should remain default (200), and no items should be owned
+  expect(store.getTotalPoints()).toBe(200);
+  const ownedItems = store.getOwnedItems();
+  expect(ownedItems.length).toBe(1);
+});
+
+
 });
