@@ -748,23 +748,6 @@ export default function PetView({
               </button>
             </div>
           </div>
-          <div className="productivity-actions">
-            <h4>Productivity Actions</h4>
-            <div className="productivity-buttons">
-              <button
-                className="action-button primary"
-                onClick={handleCompletePomo}
-              >
-                Complete Pomodoro
-              </button>
-              <button
-                className="action-button primary"
-                onClick={handleCompleteTask}
-              >
-                Complete Task
-              </button>
-            </div>
-          </div>
           <div className="pet-settings">
             <h4>Settings</h4>
             <div className="setting-row">
