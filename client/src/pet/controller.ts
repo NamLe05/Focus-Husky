@@ -91,8 +91,8 @@ export class PetController {
     const updatedState = pet.interact('feed');
 
     // Save and notify view
-    this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
+    this.savePetToDatabase(petId);
   }
 
   /**
@@ -107,8 +107,8 @@ export class PetController {
     const updatedState = pet.interact('play');
 
     // Save and notify view
-    this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
+    this.savePetToDatabase(petId);
   }
 
   /**
@@ -123,8 +123,8 @@ export class PetController {
     const updatedState = pet.interact('groom');
 
     // Save and notify view
-    this.savePetToDatabase(petId);
     this.notifyViewUpdate(petId, updatedState);
+    this.savePetToDatabase(petId);
   }
 
   /**
@@ -288,56 +288,22 @@ export class PetController {
   }
 
   public celebrateActivePet(): void {
-  const pets = Object.values(this.pets);
-  if (pets.length === 0) {
-    console.warn('[PetController] No pets available to celebrate.');
-    return;
-  }
+    const pets = Array.from(this.pets.values());
+    if (pets.length === 0) {
+      console.warn('[PetController] No pets available to celebrate.');
+      return;
+    }
 
-  const pet = pets[0];
-  const petId = pet.getId();
+    const pet = pets[0];
+    const petId = pet.getId();
 
-  pet.onTaskComplete();
-  this.notifyViewUpdate(petId, pet.getState());
-
-  // Reset after 3 seconds
-  setTimeout(() => {
-    pet.setAnimation('idle');
+    pet.onTaskComplete();
     this.notifyViewUpdate(petId, pet.getState());
-  }, 3000);
-}
 
-  /**
-   * Save all pets to the database
-   */
-  public async saveAllPetsToDatabase(): Promise<void> {
-    const db = (global as any).getDbInstance ? (global as any).getDbInstance('pets.db') : null;
-    if (!db) {
-      console.warn('[PetController] No database instance found for saving pets.');
-      return;
-    }
-    for (const pet of this.pets.values()) {
-      await db.insertDoc(pet.getState());
-    }
-    console.log('[PetController] All pets saved to database.');
-  }
-
-  /**
-   * Load all pets from the database
-   */
-  public async loadAllPetsFromDatabase(): Promise<void> {
-    const db = (global as any).getDbInstance ? (global as any).getDbInstance('pets.db') : null;
-    if (!db) {
-      console.warn('[PetController] No database instance found for loading pets.');
-      return;
-    }
-    const docs = await db.findDoc({});
-    for (const doc of docs) {
-      // Assuming PetModel constructor can take a state object
-      const pet = new PetModel(doc.name, doc.species);
-      pet.setState(doc);
-      this.pets.set(pet.getId(), pet);
-    }
-    console.log('[PetController] All pets loaded from database.');
+    // Reset after 3 seconds
+    setTimeout(() => {
+      pet.setIdleAnimation();
+      this.notifyViewUpdate(petId, pet.getState());
+    }, 3000);
   }
 }

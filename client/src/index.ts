@@ -330,53 +330,59 @@ ipcMain.on('deleteDoc', async (e, {filename, query}: DbRemoveConfig) => {
 });
 
 // --- PetController Singleton in Main Process ---
-const petController = new PetController(() => {}); // No view callback needed in main
 
-// ADD THIS LINE:
-petController.loadPetsFromDatabase();
+async function initializePetControllerAndHandlers() {
+  const petController = new PetController(() => {}); // No view callback needed in main
+  await petController.loadPetsFromDatabase();
 
-// Periodically update pet stats and broadcast to renderer
-setInterval(() => {
-  petController.getAllPets().forEach(pet => {
-    pet.updateStats(1000); // 1000 ms = 1 second
+  // Periodically update pet stats and broadcast to renderer
+  setInterval(() => {
+    petController.getAllPets().forEach(pet => {
+      pet.updateStats(1000); // 1000 ms = 1 second
+      petController.savePetToDatabase(pet.getId());
+    });
+    broadcastPetState();
+  }, 1000);
+
+  function broadcastPetState() {
+    const pets = petController.getAllPets();
+    const state = pets.map((pet: any) => ({ ...pet.getState(), id: pet.getId() }));
+    require('electron').BrowserWindow.getAllWindows().forEach((win: any) => {
+      win.webContents.send('pet:stateUpdate', state);
+    });
+  }
+
+  ipcMain.handle('pet:getState', () => {
+    return petController.getAllPets().map(pet => ({ ...pet.getState(), id: pet.getId() }));
   });
-  broadcastPetState();
-}, 1000);
+  ipcMain.on('pet:feed', (event, petId) => {
+    console.log('[IPC] pet:feed', petId);
+    petController.handleFeedPet(petId);
+    broadcastPetState();
+  });
+  ipcMain.on('pet:play', (event, petId) => {
+    console.log('[IPC] pet:play', petId);
+    petController.handlePlayWithPet(petId);
+    broadcastPetState();
+  });
+  ipcMain.on('pet:groom', (event, petId) => {
+    console.log('[IPC] pet:groom', petId);
+    petController.handleGroomPet(petId);
+    broadcastPetState();
+  });
+  ipcMain.on('pet:move', (event, petId, x, y) => {
+    console.log('[IPC] pet:move', petId, x, y);
+    petController.handleMovePet(petId, x, y);
+    broadcastPetState();
+  });
 
-function broadcastPetState() {
-  const pets = petController.getAllPets();
-  const state = pets.map((pet: any) => ({ ...pet.getState(), id: pet.getId() }));
-  require('electron').BrowserWindow.getAllWindows().forEach((win: any) => {
-    win.webContents.send('pet:stateUpdate', state);
+  ipcMain.on('pet:celebrate', async () => {
+    if (petController.getAllPets().length === 0) {
+      await petController.loadPetsFromDatabase();
+    }
+    petController.celebrateActivePet();
+    broadcastPetState();
   });
 }
 
-ipcMain.handle('pet:getState', () => {
-  return petController.getAllPets().map(pet => ({ ...pet.getState(), id: pet.getId() }));
-});
-ipcMain.on('pet:feed', (event, petId) => {
-  console.log('[IPC] pet:feed', petId);
-  petController.handleFeedPet(petId);
-  broadcastPetState();
-});
-ipcMain.on('pet:play', (event, petId) => {
-  console.log('[IPC] pet:play', petId);
-  petController.handlePlayWithPet(petId);
-  broadcastPetState();
-});
-ipcMain.on('pet:groom', (event, petId) => {
-  console.log('[IPC] pet:groom', petId);
-  petController.handleGroomPet(petId);
-  broadcastPetState();
-});
-ipcMain.on('pet:move', (event, petId, x, y) => {
-  console.log('[IPC] pet:move', petId, x, y);
-  petController.handleMovePet(petId, x, y);
-  broadcastPetState();
-});
-
-ipcMain.on('pet:celebrate', () => {
-  console.log('[main process] Received pet:celebrate IPC event');
-  petController.celebrateActivePet();
-  broadcastPetState();
-});
+initializePetControllerAndHandlers();

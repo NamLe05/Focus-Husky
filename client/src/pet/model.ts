@@ -407,4 +407,11 @@ export class PetModel {
       this.id = (state as any)._id;
     }
   }
+
+  /**
+   * Public method to set the animation to 'idle'
+   */
+  public setIdleAnimation(): void {
+    this.setAnimation('idle');
+  }
 }
