@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {v4 as uuid} from 'uuid';
 
 export type PetSpecies = 'husky';
@@ -41,6 +42,7 @@ export class PetModel {
       name,
       species,
       accessories: new Set(),
+      //accessories: null,
       mood: 'neutral',
       animation: 'idle',
       position: {x: 300, y: 300},
@@ -58,6 +60,13 @@ export class PetModel {
   public getId(): PetId {
     return this.id;
   }
+
+  //  // eslint-disable-next-line prettier/prettier
+  //  setState(newState: PetState) {
+  //   // Defensive copy if necessary
+  //   // eslint-disable-next-line prettier/prettier
+  //   this.state = { ...newState, accessories: new Set(newState.accessories) };
+  // }
 
   /**
    * Get the pet's name
@@ -83,6 +92,10 @@ export class PetModel {
     // Returns a copy.
     return new Set(this.state.accessories);
   }
+
+  // public setAccessory(accessoryID: string): void {
+  //   this.state.accessories = accessoryID;
+  // }
 
   /**
    * Renames the pet

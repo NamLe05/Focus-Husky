@@ -1,8 +1,9 @@
+/* eslint-disable prettier/prettier */
 import {useState, useEffect, useRef, useCallback} from 'react';
 import petImg from '../Static/pet.png';
 
 import {PetController} from './controller';
-import {PetId, PetState} from './model';
+import {PetAccessoryId, PetId, PetState, PetModel, PetSpecies} from './model';
 import {getPetSpritePath, getAccessorySpritePath} from './helpers';
 import {useSoundEffects, createSoundEffects} from './soundEffects';
 import { getPetController } from './controller';
@@ -38,6 +39,7 @@ import huskyHappyEating from '../Static/pets/happy_eating.png';
 import huskySadEating from '../Static/pets/sad_eating.png';
 import huskyExcitedEating from '../Static/pets/excited_eating.png';
 import huskyTiredEating from '../Static/pets/tired_eating.png';
+import { addPointsFromTimer } from '../rewards-store/controller';
 
 // FIXED: Create a sprite map for easy lookup
 const spriteMap = {
@@ -76,7 +78,7 @@ const spriteMap = {
       celebrating: huskyTiredCelebrating,
       sleeping: huskyTiredSleeping,
       eating: huskyTiredEating,
-    },
+    }
   },
 };
 
@@ -129,6 +131,7 @@ export default function PetView({
   lockedPosition?: {x: number; y: number};
   dragLayer?: boolean;
 }) {
+
   // Store the active pet and state
   const [petId, setPetId] = useState<PetId | undefined>(
     cachedPetId || undefined,
@@ -137,6 +140,7 @@ export default function PetView({
     cachedPetState || undefined,
   );
   const [isLoading, setIsLoading] = useState<boolean>(!cachedPetState);
+
 
   // Initialize sound effects
   useSoundEffects(); // Preload all sounds
@@ -503,6 +507,7 @@ export default function PetView({
   const handleCompletePomo = () => {
     if (controllerRef.current && petId) {
       controllerRef.current.handlePomodoroCompleted(petId);
+      addPointsFromTimer(30);
     }
   };
 
@@ -612,8 +617,7 @@ export default function PetView({
           onMouseLeave={handlePetMouseLeave}
         >
           {/* Render pet accessories if any */}
-          {Array.isArray(petState.accessories) &&
-            petState.accessories.map(accessoryId => (
+          {Array.from(petState.accessories).map(accessoryId => (
               <div
                 key={accessoryId}
                 className="pet-accessory"

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, {useState, useEffect, useRef} from 'react';
 import './styles.css';
 import {PomodoroController} from './controller';
@@ -13,9 +14,9 @@ export default function PomodoroView() {
   const [timerState, setTimerState] = useState<boolean>(false);
   const [pomodoroState, setPomodoroState] = useState<PomodoroState>({
     state: 'focus',
-    focusTime: 1500,
-    breakTime: 900,
-    remainingTime: 1500,
+    focusTime: 60,
+    breakTime: 60,
+    remainingTime: 5,
   });
 
   const controllerRef = useRef<PomodoroController | null>(null);

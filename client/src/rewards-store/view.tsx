@@ -17,17 +17,33 @@ export default function MarketView() {
   const [activeTab, setActiveTab] = useState<Tab>('pets');
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
-
   const [items, setItems] = useState(store.marketItems[activeTab]);
+  const [equippedItems, setEquippedItems] = useState(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
 
   useEffect(() => {
-    setItems(store.marketItems[activeTab]);
+    const updatePoints = () => {
+      setPoints(store.getTotalPoints());
+      setItems([...store.marketItems[activeTab]]); // Force re-render with new array
+      setEquippedItems(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
+    };
+
+    store.subscribe(updatePoints);
+    updatePoints(); // initialize points state
+
+    return () => {
+      store.unsubscribe(updatePoints);
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
+    setItems([...store.marketItems[activeTab]]);
+    setEquippedItems(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
   }, [activeTab]);
 
 
   //Clicking on a marketplace item
   const onItemClick = (item: marketPlaceItem) => {
-    const points = store?.getTotalPoints?.();
+    //const points = store?.getTotalPoints?.();
 
     if (!item) {
       console.error('Item is undefined');
@@ -40,15 +56,15 @@ export default function MarketView() {
     }
 
     if (item.price > points) {
-      setPopUpMessage(`Not enough points to purchase ${item.name}`);
-      return false;
+      setPopUpMessage(`Not enough points to purchase ${item.name}.`);
+      return;
     }
 
     const success = handleItemPurchase(item, activeTab);
 
     if(success){
-      setPoints(store.getTotalPoints());
-      setItems(store.marketItems[activeTab]);
+      //setPoints(store.getTotalPoints());
+      //setItems(store.marketItems[activeTab]);
       setPopUpMessage(`Congrats! You purchased ${item.name}!`);
     } else {
       setPopUpMessage(`Could not purchase ${item.name}, try again!`);
@@ -56,7 +72,6 @@ export default function MarketView() {
   };
 
   //clicking on the equip button
-  const [equippedItems, setEquippedItems] = useState(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
   const onEquipClick = (item: marketPlaceItem) => {
     markItemAsEquipped(item, activeTab);
     setEquippedItems(item);
@@ -69,18 +84,18 @@ export default function MarketView() {
         <div className="category-nav">
           {(Object.keys(store.marketItems) as Tab[]).map(tab => (
             <div
-              key={tab}
+              key={String(tab)}
               className={`category-item ${activeTab === tab ? 'active' : ''}`}
               onClick={() => setActiveTab(tab)}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {String(tab).charAt(0).toUpperCase() + String(tab).slice(1)}
             </div>
           ))}
         </div>
 
         <div className="tab-content">
           <div className="pet-grid">
-            {items.map(item => (
+            {items.map((item: marketPlaceItem) => (
               <div
                 key={item.ID}
                 className="pet-card"

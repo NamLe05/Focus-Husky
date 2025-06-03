@@ -64,8 +64,9 @@ export class RewardsStore {
         sounds: marketPlaceItem[];
         tasks: marketPlaceItem[];
     };
-    private points: number;
+    public points: number;
     public equipped: equippedItems;
+    private listeners: (() => void)[] = [];
 
     constructor() {
         this.marketItems = {
@@ -107,8 +108,37 @@ export class RewardsStore {
         };
     }
 
+
+  subscribe(listener: () => void){
+    this.listeners.push(listener);
+  }
+
+  unsubscribe(listener: () => void) {
+  this.listeners = this.listeners.filter(l => l !== listener);
+}
+
+  notify() {
+    this.listeners.forEach(listener => listener());
+  }
+
+  public addPoints(amount: number) {
+    if (amount < 0) {
+      console.warn('Cannot add negative points');
+      return;
+    }
+    this.points = this.points + amount;
+    console.log('Points: ', this.getTotalPoints());
+    this.notify();
+  }
+
   public deductPoints(amount: number) {
+    if (amount < 0) {
+      console.warn('Cannot deduct negative points');
+      return;
+    }
     this.points = this.points - amount;
+     console.log(`Points deducted: ${amount}. New total: ${this.points}`);
+    this.notify();
   }
 
   //Get item ID number through name
@@ -126,7 +156,7 @@ export class RewardsStore {
   }
 
     public purchaseItem(category: keyof typeof this.marketItems, itemId: string): boolean {
-        //console.log('Currently equipped Husky: ', this.equipped);
+        console.log('All items equipped: ', this.equipped);
         const items = this.marketItems[category];
         const item = items.find(i => i.ID === itemId);
         if (!item) {
@@ -150,6 +180,7 @@ export class RewardsStore {
         const equippedKey = categoryToEquippedKey[category];
         if (equippedKey) {
             this.equipped[equippedKey] = item;
+            this.notify();
         } else {
             console.warn(`Unknown category: ${category}`);
         }
@@ -190,6 +221,7 @@ export class RewardsStore {
   //updates the users new points
   public updatePoints(newPoints: number): void {
     this.points = newPoints;
+    this.notify();
   }
 
   //return a list of all the owned items
@@ -205,5 +237,10 @@ export class RewardsStore {
       }
     }
     return owned_items;
+  }
+
+  public onTimerComplete(pointsEarned = 30) {
+    this.addPoints(pointsEarned);
+    console.log(`Timer completed! Earned ${pointsEarned} points.`);
   }
 }

@@ -24,3 +24,22 @@ export function markItemAsEquipped(item: marketPlaceItem, category: Tab){
   return store.setEquipped(item, category)
 }
 
+export function addPointsFromTimer(points: number) {
+  console.log('addPointsFromTimer called with:', points);
+  console.log('Points before adding:', store.getTotalPoints());
+  store.onTimerComplete(points);
+  console.log('Points after adding:', store.getTotalPoints());
+}
+
+export function getCurrentPoints() {
+  return store.getTotalPoints();
+}
+
+// Debug function to check store state
+export function debugStoreState() {
+  console.log('=== STORE DEBUG INFO ===');
+  console.log('Current points:', store.getTotalPoints());
+  console.log('Store instance ID:', store.constructor.name);
+  console.log('Listeners count:', (store as any).listeners?.length || 'undefined');
+  console.log('========================');
+}

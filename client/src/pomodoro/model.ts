@@ -1,3 +1,6 @@
+/* eslint-disable prettier/prettier */
+import {store, addPointsFromTimer, debugStoreState} from '../rewards-store/controller';
+
 export type TimerState = 'focus' | 'break';
 
 export interface PomodoroState {
@@ -51,7 +54,10 @@ export class PomodoroTimerModel {
   }
 
   public switchState(): void {
+
+
     if (this.state.state === 'focus') {
+      addPointsFromTimer(15);
       this.state.state = 'break';
       this.state.remainingTime = this.state.breakTime;
     } else {
@@ -60,6 +66,7 @@ export class PomodoroTimerModel {
     }
 
     // 🔔 Trigger tick after state switch
+    debugStoreState();
     this.onTick?.({...this.state});
   }
 
