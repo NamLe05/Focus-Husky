@@ -6,6 +6,7 @@ import {
   TaskAction,
 } from './model';
 import {CourseId, Course} from './course';
+import { celebratePet } from '../pet/petCelebration';
 import { taskCompletePoints } from '../rewards-store/controller';
 
 export type TaskError = 'deleteError' | 'completeError' | 'syncError';
@@ -199,6 +200,8 @@ export class TaskController {
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
     }
+    // Trigger pet celebration
+    celebratePet();
   }
 
   public deleteTask(id?: TaskId) {

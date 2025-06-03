@@ -46,6 +46,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.removeListener('navigate-home', callback);
   },
 
+  // --- Pet IPC API ---
+  getPetState: (): Promise<any> => ipcRenderer.invoke('pet:getState'),
+  feedPet: (petId: string) => ipcRenderer.send('pet:feed', petId),
+  playPet: (petId: string) => ipcRenderer.send('pet:play', petId),
+  groomPet: (petId: string) => ipcRenderer.send('pet:groom', petId),
+  movePet: (petId: string, x: number, y: number) => ipcRenderer.send('pet:move', petId, x, y),
+  onPetStateUpdate: (callback: (state: any) => void) => ipcRenderer.on('pet:stateUpdate', (_event: any, state: any) => callback(state)),
+  removePetStateUpdateListener: (callback: (...args: any[]) => void) => ipcRenderer.removeListener('pet:stateUpdate', callback),
+  celebratePet: () => ipcRenderer.send('pet:celebrate'),
+
   // focus count
   incrementFocusCount: () => {
     ipcRenderer.send('increment-focus-count');

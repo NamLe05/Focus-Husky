@@ -158,7 +158,7 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<HomeView />} />
-          <Route path="/pet" element={<PetView />} />
+          <Route path="/pet" element={<PetView hideSprite={true} showInfoPanel={true}/>} />
           <Route path="/pomodoro" element={<PomodoroView />} />
           <Route path="/tasks" element={<TaskView />} />
           <Route path="/marketView" element={<MarketView />} />

@@ -2,6 +2,7 @@ import {app, BrowserWindow, ipcMain} from 'electron';
 import TypedDatastore from './services/db';
 import {TaskState} from './tasks/model';
 import {PetState} from './pet/model';
+import { PetController } from './pet/controller';
 import { PomodoroStats } from './pomodoro/model';
 import { RewardState } from './rewards-store/model';
 
@@ -87,7 +88,7 @@ ipcMain.handle('open-or-focus-main-home', async () => {
   }
 
   // Tell the main-window renderer to go home
-  // If the page isn’t loaded yet, you can wait for 'did-finish-load':
+  // If the page isn't loaded yet, you can wait for 'did-finish-load':
   if (mainWindow) {
     if (!mainWindow.webContents.isLoadingMainFrame()) {
       mainWindow.webContents.send('navigate-home');
@@ -102,7 +103,10 @@ ipcMain.handle('open-or-focus-main-home', async () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', async () => {
+  createWindow();
+  await createPetWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -235,12 +239,11 @@ const createPetWindow = async (): Promise<void> => {
   }
 
   petWindow = new BrowserWindow({
-    width: 120,
-    height: 350,
+    fullscreen: true,
     title: 'Pet Interaction',
     frame: false,
     transparent: true,
-    resizable: false,
+    resizable: true,
     hasShadow: false,
     alwaysOnTop: true,
     movable: true,
@@ -250,8 +253,20 @@ const createPetWindow = async (): Promise<void> => {
     },
   });
 
+  // Robust always-on-top logic
+  const ensureAlwaysOnTop = () => {
+    if (petWindow) petWindow.setAlwaysOnTop(true, 'screen-saver');
+  };
+  petWindow.on('focus', ensureAlwaysOnTop);
+  petWindow.on('show', ensureAlwaysOnTop);
+  petWindow.on('blur', ensureAlwaysOnTop);
+  // Optionally, listen for visibility-change if supported
+  // petWindow.on('visibility-change', ensureAlwaysOnTop);
+  const alwaysOnTopInterval = setInterval(ensureAlwaysOnTop, 2000);
+
   await petWindow.loadURL(PET_WINDOW_WEBPACK_ENTRY);
   petWindow.on('closed', () => {
+    clearInterval(alwaysOnTopInterval);
     petWindow = null;
   });
 };
@@ -338,6 +353,9 @@ const getDbInstance = (filename: string) => {
   return databases[filename];
 };
 
+// Export getDbInstance globally for use in PetController
+(global as any).getDbInstance = getDbInstance;
+
 ipcMain.on('insertDoc', async (e, {filename, document}: DbInsertConfig) => {
   await getDbInstance(filename).insertDoc(document);
 });
@@ -356,6 +374,64 @@ ipcMain.on(
 ipcMain.on('deleteDoc', async (e, {filename, query}: DbRemoveConfig) => {
   return await getDbInstance(filename).removeDoc(query);
 });
+
+// --- PetController Singleton in Main Process ---
+
+async function initializePetControllerAndHandlers() {
+  const petController = new PetController(() => {}); // No view callback needed in main
+  await petController.loadPetsFromDatabase();
+
+  // Periodically update pet stats and broadcast to renderer
+  setInterval(() => {
+    petController.getAllPets().forEach(pet => {
+      pet.updateStats(1000); // 1000 ms = 1 second
+      petController.savePetToDatabase(pet.getId());
+    });
+    broadcastPetState();
+  }, 1000);
+
+  function broadcastPetState() {
+    const pets = petController.getAllPets();
+    const state = pets.map((pet: any) => ({ ...pet.getState(), id: pet.getId() }));
+    require('electron').BrowserWindow.getAllWindows().forEach((win: any) => {
+      win.webContents.send('pet:stateUpdate', state);
+    });
+  }
+
+  ipcMain.handle('pet:getState', () => {
+    return petController.getAllPets().map(pet => ({ ...pet.getState(), id: pet.getId() }));
+  });
+  ipcMain.on('pet:feed', (event, petId) => {
+    console.log('[IPC] pet:feed', petId);
+    petController.handleFeedPet(petId);
+    broadcastPetState();
+  });
+  ipcMain.on('pet:play', (event, petId) => {
+    console.log('[IPC] pet:play', petId);
+    petController.handlePlayWithPet(petId);
+    broadcastPetState();
+  });
+  ipcMain.on('pet:groom', (event, petId) => {
+    console.log('[IPC] pet:groom', petId);
+    petController.handleGroomPet(petId);
+    broadcastPetState();
+  });
+  ipcMain.on('pet:move', (event, petId, x, y) => {
+    console.log('[IPC] pet:move', petId, x, y);
+    petController.handleMovePet(petId, x, y);
+    broadcastPetState();
+  });
+
+  ipcMain.on('pet:celebrate', async () => {
+    if (petController.getAllPets().length === 0) {
+      await petController.loadPetsFromDatabase();
+    }
+    petController.celebrateActivePet();
+    broadcastPetState();
+  });
+}
+
+initializePetControllerAndHandlers();
 
 
 // Pomodoro handlers

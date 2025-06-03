@@ -41,7 +41,7 @@ const config: ForgeConfig = {
             html: './src/pet/indexPet.html',
             js: './src/pet/rendererPet.tsx',
             name: 'pet_window',
-            preload: {js: './src/pet/preloadPet.ts'}
+            preload: {js: './src/preload.ts'}
           },
         ],
       },

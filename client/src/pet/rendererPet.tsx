@@ -7,7 +7,6 @@ const PetApp = () => (
   <PetView
     draggable={true}
     showInfoPanel={false}
-    lockedPosition={{x: 19, y: 70}}
   />
 );
 

@@ -103,6 +103,7 @@ describe('PetModel', () => {
         energy: 60,
         cleanliness: 50,
         lastInteraction: expect.any(Date),
+        _id: expect.any(String),
       });
     });
 
@@ -184,6 +185,10 @@ describe('PetModel', () => {
       vi.advanceTimersByTime(7000);
 
       // Animation should reset to idle after timeout
+      expect(pet.getAnimation()).toBe('idle');
+
+      // Directly test setIdleAnimation
+      pet.setIdleAnimation();
       expect(pet.getAnimation()).toBe('idle');
     });
 
@@ -290,9 +295,9 @@ describe('PetModel', () => {
       expect(pet.getCleanliness()).toBeLessThan(initialState.cleanliness);
     });
 
-    it('should return null for tiny time updates', () => {
+    it('should return the current state for tiny time updates', () => {
       const result = pet.updateStats(50); // Less than 100ms
-      expect(result).toBeNull();
+      expect(result).toEqual(pet.getState());
     });
 
     it('should return state only when visible changes occur', () => {
