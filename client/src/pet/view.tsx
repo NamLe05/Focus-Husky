@@ -39,6 +39,9 @@ import huskySadEating from '../Static/pets/sad_eating.png';
 import huskyExcitedEating from '../Static/pets/excited_eating.png';
 import huskyTiredEating from '../Static/pets/tired_eating.png';
 
+import {store} from '../rewards-store/controller';
+import {RewardsStore} from '../rewards-store/model';
+
 // FIXED: Create a sprite map for easy lookup
 const spriteMap = {
   husky: {
@@ -612,29 +615,22 @@ export default function PetView({
           onMouseLeave={handlePetMouseLeave}
         >
           {/* Render pet accessories if any */}
-          {Array.isArray(petState.accessories) &&
-            petState.accessories.map(accessoryId => (
-              <div
-                key={accessoryId}
-                className="pet-accessory"
-                style={{
-                  position:
-                    'absolute' /* FIXED: Added absolute positioning for accessories */,
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  backgroundImage: `url(${
-                    typeof getAccessorySpritePath === 'function'
-                      ? getAccessorySpritePath(accessoryId)
-                      : ''
-                  })`,
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                }}
-              />
-            ))}
-
+          {store.equipped.accessory?.image && (
+              <img
+              src={store.equipped.accessory.image}
+              alt="Accessory"
+              style={{
+                position: 'absolute',
+                top: '-10px', // adjust as needed to fit the pet
+                left: '10px',
+                width: '40px',
+                height: '40px',
+                objectFit: 'contain',
+                zIndex: 2,
+                pointerEvents: 'none', // visual only
+              }}
+            />
+            )}
           {/* Hover metrics display */}
           {isHovering && (
             <div
