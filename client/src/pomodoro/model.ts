@@ -1,6 +1,8 @@
 import { pomodoroSessionPoints } from "../rewards-store/controller";
 
 export type TimerState = 'focus' | 'break';
+import timerSound from '../Static/sounds/bell.wav'
+
 
 export interface PomodoroState {
   state: TimerState;
@@ -68,6 +70,7 @@ export class PomodoroTimerModel {
   }
 
   public switchState(): void {
+    
     const justFinishedFocus = this.state.state === 'focus';
 
     if (justFinishedFocus) {
@@ -84,7 +87,8 @@ export class PomodoroTimerModel {
       this.state.state = 'focus';
       this.state.remainingTime = this.state.focusTime;
     }
-
+    const audio = new Audio(timerSound);
+    audio.play();
     this.onTick?.({ ...this.state });
   }
 
