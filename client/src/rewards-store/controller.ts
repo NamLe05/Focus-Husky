@@ -26,7 +26,7 @@ export function markItemAsEquipped(item: marketPlaceItem, category: Tab){
 }
 
 export function taskCompletePoints(): void {
-  store.addPoints(25);
+  void store.addPoints(25);
 }
 
 export async function pomodoroSessionPoints(points: number): Promise<void> {

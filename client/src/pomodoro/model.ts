@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { taskCompletePoints } from '../rewards-store/controller';
 import { pomodoroSessionPoints } from "../rewards-store/controller";
 

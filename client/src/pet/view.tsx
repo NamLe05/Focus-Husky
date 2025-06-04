@@ -1,3 +1,6 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable prefer-const */
+
 import {useState, useEffect, useRef, useCallback} from 'react';
 import petImg from '../Static/pet.png';
 
@@ -602,7 +605,6 @@ export default function PetView({
               </div>
             )}
           </div>
-        )}
       </>
 
       {/* Error message display */}

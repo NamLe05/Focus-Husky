@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, {useState, useEffect, useRef} from 'react';
 import './styles.css';
 import {PomodoroController} from './controller';

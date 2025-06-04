@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable prettier/prettier */
+/* eslint-disable eol-last */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import React, {useEffect, useState} from 'react';
 import './styles.css';
 import {handleItemPurchase, store, markItemAsEquipped} from './controller';
@@ -61,10 +62,6 @@ export default function MarketView() {
   // Handle item purchase
   const onItemClick = async (item: marketPlaceItem) => {
     const currentPoints = store.getTotalPoints();
-
-  //Clicking on a marketplace item
-  const onItemClick = (item: marketPlaceItem) => {
-    const points = store?.getTotalPoints?.();
 
     if (!item) {
       console.error('Item is undefined');

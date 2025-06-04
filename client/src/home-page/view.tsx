@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles.css';

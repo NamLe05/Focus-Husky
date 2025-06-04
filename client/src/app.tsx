@@ -1,5 +1,6 @@
-import React from 'react';
 /* eslint-disable prettier/prettier */
+import React from 'react';
+
 import {createRoot} from 'react-dom/client';
 import {HashRouter, Routes, Route, Link, NavLink} from 'react-router';
 import {useLocation} from 'react-router-dom';
