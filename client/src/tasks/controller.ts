@@ -162,6 +162,50 @@ export class TaskController {
     return createdTaskId;
   }
 
+  /**
+   * Handle create task user action
+   */
+  public async handleCreateTaskImported(task: CanvasTaskModel) {
+    // Verify the validity of the task state
+    // Validate the new state
+    if (!task.isValid()) {
+      // Throw an error
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'createError',
+          'Tried to create a task with invalid fields',
+        );
+      }
+      return;
+    }
+    // Save task to database
+    let createdTaskId: string;
+    try {
+      // TODO: Create a loader feedback in the UI
+      createdTaskId = await window.electron.dbInsert(
+        {
+          filename: TaskController.FILE_NAME,
+          document: task.getState(),
+        },
+        task.getId(),
+      );
+    } catch (err) {
+      // TODO: Handle errors with database
+      if (this.errorCallback !== undefined) {
+        this.errorCallback('createError', 'Failed to save new task, try again');
+      }
+      return;
+    }
+    // Save task in temporary state
+    task.setId(createdTaskId);
+    this.tasks.set(createdTaskId, task);
+    // Update the view
+    if (this.viewUpdateCallback !== undefined) {
+      this.viewUpdateCallback(this.getTaskList());
+    }
+    return createdTaskId;
+  }
+
   public handleTaskUpdate(id: TaskId, task: Partial<TaskState>) {
     const taskToUpdate = this.tasks.get(id);
     // Save old task state
@@ -295,7 +339,7 @@ export class TaskController {
       }
       for (const assignment of assignments) {
         const newTask = new CanvasTaskModel(assignment);
-        this.tasks.set(newTask.getId(), newTask);
+        await this.handleCreateTaskImported(newTask);
       }
       // After the sync is complete, update the view.
       if (this.viewUpdateCallback !== undefined) {

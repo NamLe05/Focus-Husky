@@ -10,8 +10,8 @@ contextBridge.exposeInMainWorld('electron', {
       return res;
     },
   },
-  async dbInsert(config: {filename: string; document: unknown}) {
-    return await ipcRenderer.invoke('insertDoc', config);
+  async dbInsert(config: {filename: string; document: unknown}, id?: string) {
+    return await ipcRenderer.invoke('insertDoc', config, id);
   },
   async dbGetAll(filename: string) {
     return await ipcRenderer.invoke('getAllDocs', filename);
