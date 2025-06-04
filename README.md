@@ -1,5 +1,5 @@
 # Focus-Husky
-Nam Le, Daniel Li, Nitya Addanki, Emily Du, Aradhna Prassad, Tony Punnacherry
+Nam Le, Daniel Li, Nitya Addanki, Emily Du, Aradhna Prasad, Tony Punnacherry
 
 ## Pomodoro Technique
 Our app builds on the Pomodoro Technique by adding playful pet animations to make focus sessions more engaging and fun. The Pomodoro Technique, developed in the late 1980s, is a time management method that breaks work into 25-minute intervals called “Pomodoros,” followed by short 5-minute breaks. After every four intervals, users take a longer break. This structured approach helps reduce mental fatigue, improve focus, and make tasks feel more manageable. By combining this method with cute virtual pet experiences, our app transforms productivity into a more rewarding and enjoyable experience for users.
@@ -32,6 +32,8 @@ Completed by Nitya Addanki, Emily Du, Aradhna Prasad
 ## Goals
 Develop an app to help college students with focus and productivity when studying and completing assignments. Expand our understanding of desktop app development and gain valuable experience in developing a project from scratch within a team. Deepen our knowledge of frameworks and tools such as Electron, React, and Node.js. As well as strengthen our mastery in languages such as JavaScript/TypeScript, HTML, and CSS. Transform the isolating and tedious experience of academic work into one that is engaging and rewarding.
 
+## Extra Component: Study Gym
+The gym is a way for the user to do studying within the app to practice the skills they are learning. The pet will react when you submit answers to the quizzes whether you get the answer correct or incorrect. 
 
 ## Technology stack
  - Electron desktop app
