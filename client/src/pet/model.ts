@@ -34,9 +34,9 @@ export class PetModel {
    * @param name name of the pet
    * @param species species
    */
-  public constructor(name: string, species: PetSpecies) {
+  public constructor(name: string, species: PetSpecies, id?: PetId) {
     // Generate a UUID identified for the pet
-    this.id = uuid();
+    this.id = id ?? uuid();
     this.state = {
       name,
       species,
@@ -177,10 +177,10 @@ export class PetModel {
 
   /**
    * Get a complete snapshot of the pet's state
-   * @returns {PetState} all pet state data
+   * @returns {PetState & {_id: string}} all pet state data with _id
    */
-  public getState(): PetState {
-    return this.state;
+  public getState(): PetState & { _id: string } {
+    return { ...this.state, _id: this.id };
   }
 
   /**
@@ -372,11 +372,11 @@ export class PetModel {
   /**
    * Update pet stats based on elapsed time
    * @param deltaTime Time in milliseconds since last update
-   * @returns Updated pet state if changes occurred
+   * @returns Updated pet state (always returns state for UI refresh)
    */
-  public updateStats(deltaTime: number): PetState | null {
+  public updateStats(deltaTime: number): PetState {
     // Skip tiny updates
-    if (deltaTime < 100) return null;
+    if (deltaTime < 100) return this.getState();
 
     // Convert to minutes for easier calculation
     const minutes = deltaTime / (1000 * 60);
@@ -393,14 +393,25 @@ export class PetModel {
     // Update mood based on new stats
     this.updateMood();
 
-    // Only return state if visible changes occurred
-    if (
-      this.state.mood !== initialMood ||
-      this.state.animation !== initialAnimation
-    ) {
-      return this.getState();
-    }
+    // Always return state for UI refresh
+    return this.getState();
+  }
 
-    return null;
+  /**
+   * Set the pet's state (for loading from database)
+   * @param state The new state to set
+   */
+  public setState(state: PetState & { _id?: string }): void {
+    this.state = state;
+    if ((state as any)._id) {
+      this.id = (state as any)._id;
+    }
+  }
+
+  /**
+   * Public method to set the animation to 'idle'
+   */
+  public setIdleAnimation(): void {
+    this.setAnimation('idle');
   }
 }

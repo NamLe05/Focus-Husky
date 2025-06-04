@@ -30,7 +30,9 @@ contextBridge.exposeInMainWorld('electron', {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   openPomodoroWindow: () => ipcRenderer.send('open-pomodoro-window'),
+  closePomodoroWindow: () => ipcRenderer.send('close-pomodoro-window'),
   openPetWindow: () => ipcRenderer.send('open-pet-window'),
+  isPomodoroWindowOpen: () => ipcRenderer.invoke('is-pomodoro-window-open'),
 
   // Expose the openOrFocusMainHome method (ipc invoke)
   openOrFocusMainHome: () => ipcRenderer.invoke('open-or-focus-main-home'),
@@ -43,4 +45,60 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeNavigateHomeListener: (callback: () => void) => {
     ipcRenderer.removeListener('navigate-home', callback);
   },
+
+  // --- Pet IPC API ---
+  getPetState: (): Promise<any> => ipcRenderer.invoke('pet:getState'),
+  feedPet: (petId: string) => ipcRenderer.send('pet:feed', petId),
+  playPet: (petId: string) => ipcRenderer.send('pet:play', petId),
+  groomPet: (petId: string) => ipcRenderer.send('pet:groom', petId),
+  movePet: (petId: string, x: number, y: number) => ipcRenderer.send('pet:move', petId, x, y),
+  onPetStateUpdate: (callback: (state: any) => void) => ipcRenderer.on('pet:stateUpdate', (_event: any, state: any) => callback(state)),
+  removePetStateUpdateListener: (callback: (...args: any[]) => void) => ipcRenderer.removeListener('pet:stateUpdate', callback),
+  celebratePet: () => ipcRenderer.send('pet:celebrate'),
+
+  // focus count
+  incrementFocusCount: () => {
+    ipcRenderer.send('increment-focus-count');
+    ipcRenderer.send('log-focus-complete'); // also send a log event
+  },
+
+  getFocusCount: async () => {
+    return await ipcRenderer.invoke('get-focus-count');
+  },
+
+
+  // main window listener
+  onFocusSessionEnded: (callback: () => void) => {
+    ipcRenderer.on('focus-session-ended', callback);
+  },
+
+  removeFocusSessionEndedListener: (callback: () => void) => {
+    ipcRenderer.removeListener('focus-session-ended', callback);
+  },
+   notifyFocusSessionEnded: () => {
+    ipcRenderer.send('focus-session-ended');
+  },
+
+  // total time
+  incrementTotalTime: (seconds: number) => {
+    ipcRenderer.send('increment-total-time', seconds);
+  },
+  getTotalTime: async () => {
+    return await ipcRenderer.invoke('get-total-time');
+  },
+
+  getRewards: async () => {
+    return await ipcRenderer.invoke('get-rewards-state');
+  },
+
+  updateRewards: async ({
+  points,
+  ownedItems,
+  }: {
+    points: number;
+    ownedItems: string[];
+  }) => {
+    return await ipcRenderer.invoke('update-rewards-state', { points, ownedItems });
+  },
+
 });

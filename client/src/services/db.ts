@@ -34,7 +34,7 @@ export default class TypedDatastore<T> {
    * @param callback A required function that handles error and found docs
    * @returns
    */
-  async findDoc(query: Partial<T>): Promise<void> {
+  async findDoc(query: Partial<T>): Promise<T[]> {
     return await this.db.findAsync(query);
   }
 

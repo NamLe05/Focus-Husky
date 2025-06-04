@@ -7,6 +7,8 @@ import {
 } from './model';
 import {CourseId, Course} from './course';
 import {CustomDate} from './helpers';
+import { celebratePet } from '../pet/petCelebration';
+import { taskCompletePoints } from '../rewards-store/controller';
 
 export type TaskError =
   | 'deleteError'
@@ -196,9 +198,11 @@ export class TaskController {
     if (id === undefined && this.activeTask !== undefined) {
       // Delete active task
       taskToUpdate = this.tasks.get(this.activeTask);
+      taskCompletePoints();
     } else if (id !== undefined) {
       // Delete specified task
       taskToUpdate = this.tasks.get(id);
+      taskCompletePoints();
     } else {
       if (this.errorCallback !== undefined) {
         this.errorCallback(
@@ -230,6 +234,8 @@ export class TaskController {
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
     }
+    // Trigger pet celebration
+    celebratePet();
   }
 
   public deleteTask(id?: TaskId) {

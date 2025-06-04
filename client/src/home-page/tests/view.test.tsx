@@ -1,8 +1,9 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import {render, screen, fireEvent} from '@testing-library/react';
-import React from 'react';
+import React, { act } from 'react';
 import View from '../view';
 import {MemoryRouter} from 'react-router-dom'; // Import this
+import taskControllerInstance from '../../tasks/controller';
 
 const INITIAL_DATE = new Date('2025-05-20T17:18:00');
 const ONE_MINUTE_LATER = new Date('2025-05-20T17:19:00');
@@ -102,6 +103,54 @@ describe('View component - Pomodoro button', () => {
     };
   });
 
+
+  // Stat card tests
+  describe('View component - Stats and To Do list', () => {
+  beforeEach(() => {
+    (window as any).electronAPI = {
+      openPomodoroWindow: vi.fn(),
+      openPetWindow: vi.fn(),
+      onNavigateHome: vi.fn(),
+      removeNavigateHomeListener: vi.fn(),
+      getFocusCount: vi.fn().mockResolvedValue(5),
+      getTotalTime: vi.fn().mockResolvedValue(3661),
+    };
+  });
+
+  it('renders correct stats info based on electronAPI responses', async () => {
+    render(
+      <MemoryRouter>
+        <View />
+      </MemoryRouter>
+    );
+
+    // Wait for "Sessions Completed :" label to appear and check the sibling's textContent
+    const sessionsCompleted = await screen.findByText('Sessions Completed :');
+    const sessionsValue = sessionsCompleted.nextElementSibling;
+    expect(sessionsValue && sessionsValue.textContent).toBe('5');
+
+    // Wait for "Total Time Focused :" label to appear and check the sibling's textContent
+    const totalTimeFocused = await screen.findByText('Total Time Focused :');
+    const totalTimeValue = totalTimeFocused.nextElementSibling;
+    expect(totalTimeValue && totalTimeValue.textContent).toBe('01:01:01');
+  });
+
+  it('renders To Do list with "No tasks pending 🎉" when there are no tasks', () => {
+    render(
+      <MemoryRouter>
+        <View />
+      </MemoryRouter>
+    );
+
+    // Since todoTasks starts empty, the "No tasks pending 🎉" message should appear
+    const noTasksMessage = screen.getByText('No tasks pending 🎉');
+    expect(noTasksMessage).not.toBeNull();
+  });
+});
+
+
+  // Pomodoro Timer tests
+
   it('calls electronAPI.openPomodoroWindow when Pomodoro start button is clicked', () => {
     render(
       <MemoryRouter>
@@ -113,5 +162,81 @@ describe('View component - Pomodoro button', () => {
     fireEvent.click(startButton);
 
     expect(window.electronAPI.openPomodoroWindow).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows "Start Pomodoro Timer" initially when window is closed', async () => {
+    (window as any).electronAPI.isPomodoroWindowOpen = vi.fn().mockResolvedValue(false);
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <View />
+        </MemoryRouter>
+      );
+    });
+
+    expect(screen.getByText('Start Pomodoro Timer')).toBeTruthy();
+  });
+
+  it('shows "Close Pomodoro Timer" initially when window is open', async () => {
+    (window as any).electronAPI.isPomodoroWindowOpen = vi.fn().mockResolvedValue(true);
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <View />
+        </MemoryRouter>
+      );
+    });
+
+    expect(screen.getByText('Close Pomodoro Timer')).toBeTruthy();
+  });
+
+  it('calls openPomodoroWindow when button clicked if Pomodoro is closed, and changes text', async () => {
+    (window as any).electronAPI.isPomodoroWindowOpen = vi.fn().mockResolvedValue(false);
+    (window as any).electronAPI.openPomodoroWindow = vi.fn();
+    (window as any).electronAPI.closePomodoroWindow = vi.fn();
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <View />
+        </MemoryRouter>
+      );
+    });
+
+    const button = screen.getByRole('button');
+    expect(screen.getByText('Start Pomodoro Timer')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
+    expect(window.electronAPI.openPomodoroWindow).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Close Pomodoro Timer')).toBeTruthy();
+  });
+
+  it('calls closePomodoroWindow when button clicked if Pomodoro is open, and changes text', async () => {
+    (window as any).electronAPI.isPomodoroWindowOpen = vi.fn().mockResolvedValue(true);
+    (window as any).electronAPI.openPomodoroWindow = vi.fn();
+    (window as any).electronAPI.closePomodoroWindow = vi.fn();
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <View />
+        </MemoryRouter>
+      );
+    });
+
+    const button = screen.getByRole('button');
+    expect(screen.getByText('Close Pomodoro Timer')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
+    expect(window.electronAPI.closePomodoroWindow).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Start Pomodoro Timer')).toBeTruthy();
   });
 });
