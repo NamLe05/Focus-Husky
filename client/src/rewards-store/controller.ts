@@ -22,3 +22,10 @@ export function markItemAsOwned(itemId: string, category: Tab) {
 export function taskCompletePoints(): void {
   store.addPoints(25);
 }
+
+export async function pomodoroSessionPoints(points: number): Promise<void> {
+  console.log('Adding points (pomodoro):', points);
+  await store.addPoints(points);
+  // Now DB is up to date. You can still send the updatePoints notification
+  window.electronAPI?.updatePoints?.();
+}

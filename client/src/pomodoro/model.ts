@@ -1,3 +1,5 @@
+import { pomodoroSessionPoints } from "../rewards-store/controller";
+
 export type TimerState = 'focus' | 'break';
 
 export interface PomodoroState {
@@ -72,7 +74,8 @@ export class PomodoroTimerModel {
       // Pass focusElapsed to callback, then reset it
       this.onFocusComplete?.(this.focusElapsed);
       this.focusElapsed = 0;
-
+      pomodoroSessionPoints(5);
+      window.electronAPI?.updatePoints?.();
       // Now switch to break
       this.state.state = 'break';
       this.state.remainingTime = this.state.breakTime;
