@@ -55,6 +55,10 @@ export class TaskModel {
     return this.id;
   }
 
+  public setId(id: TaskId) {
+    this.id = id;
+  }
+
   public getState(): TaskState {
     return this.state;
   }

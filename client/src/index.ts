@@ -2,9 +2,9 @@ import {app, BrowserWindow, ipcMain} from 'electron';
 import TypedDatastore from './services/db';
 import {TaskState} from './tasks/model';
 import {PetState} from './pet/model';
-import { PetController } from './pet/controller';
-import { PomodoroStats } from './pomodoro/model';
-import { RewardState } from './rewards-store/model';
+import {PetController} from './pet/controller';
+import {PomodoroStats} from './pomodoro/model';
+import {RewardState} from './rewards-store/model';
 
 app.disableHardwareAcceleration();
 
@@ -282,20 +282,15 @@ const createPetWindow = async (): Promise<void> => {
   });
 };
 
-
-
 const getFilePath = (filename: string) =>
   app.isPackaged ? `${app.getAppPath()}/data/${filename}` : `data/${filename}`;
-
-
-
 
 // Database API
 type DbInsertConfig =
   | {filename: 'tasks.db'; document: TaskState}
   | {filename: 'pets.db'; document: PetState}
-  | { filename: 'pomodoro.db'; document: PomodoroStats }
-  | { filename: 'rewards.db'; document: RewardState };
+  | {filename: 'pomodoro.db'; document: PomodoroStats}
+  | {filename: 'rewards.db'; document: RewardState};
 
 type DbUpdateConfig =
   | {
@@ -310,15 +305,14 @@ type DbUpdateConfig =
     }
   | {
       filename: 'pomodoro.db';
-      query: Partial<PomodoroStats & { _id: string }>;
-      update: Partial<PomodoroStats> | { $set: Partial<PomodoroStats> };
+      query: Partial<PomodoroStats & {_id: string}>;
+      update: Partial<PomodoroStats> | {$set: Partial<PomodoroStats>};
     }
   | {
       filename: 'rewards.db';
-      query: Partial<RewardState & { _id: string }>;
-      update: Partial<RewardState> | { $set: Partial<RewardState> };
-  };
-    
+      query: Partial<RewardState & {_id: string}>;
+      update: Partial<RewardState> | {$set: Partial<RewardState>};
+    };
 
 type DbRemoveConfig =
   | {
@@ -330,14 +324,13 @@ type DbRemoveConfig =
       query: Partial<PetState> & {_id: string};
     }
   | {
-        filename: 'pomodoro.db';
-        query: Partial<PomodoroStats> & { _id: string };
+      filename: 'pomodoro.db';
+      query: Partial<PomodoroStats> & {_id: string};
     }
   | {
-        filename: 'rewards.db';
-        query: Partial<RewardState> & { _id: string };
+      filename: 'rewards.db';
+      query: Partial<RewardState> & {_id: string};
     };
-  
 
 const databases: {[filename: string]: TypedDatastore<unknown>} = {};
 
@@ -353,11 +346,11 @@ const getDbInstance = (filename: string) => {
       );
     } else if (filename === 'pomodoro.db') {
       databases[filename] = new TypedDatastore<PomodoroStats>(
-        getFilePath(filename)
+        getFilePath(filename),
       );
     } else if (filename === 'rewards.db') {
       databases[filename] = new TypedDatastore<RewardState>(
-        getFilePath(filename)
+        getFilePath(filename),
       );
     }
   }
@@ -367,8 +360,8 @@ const getDbInstance = (filename: string) => {
 // Export getDbInstance globally for use in PetController
 (global as any).getDbInstance = getDbInstance;
 
-ipcMain.on('insertDoc', async (e, {filename, document}: DbInsertConfig) => {
-  await getDbInstance(filename).insertDoc(document);
+ipcMain.handle('insertDoc', async (e, {filename, document}: DbInsertConfig) => {
+  return await getDbInstance(filename).insertDoc(document);
 });
 
 ipcMain.handle('getAllDocs', async (e, filename: string) => {
@@ -403,14 +396,21 @@ async function initializePetControllerAndHandlers() {
 
   function broadcastPetState() {
     const pets = petController.getAllPets();
-    const state = pets.map((pet: any) => ({ ...pet.getState(), id: pet.getId() }));
-    require('electron').BrowserWindow.getAllWindows().forEach((win: any) => {
-      win.webContents.send('pet:stateUpdate', state);
-    });
+    const state = pets.map((pet: any) => ({
+      ...pet.getState(),
+      id: pet.getId(),
+    }));
+    require('electron')
+      .BrowserWindow.getAllWindows()
+      .forEach((win: any) => {
+        win.webContents.send('pet:stateUpdate', state);
+      });
   }
 
   ipcMain.handle('pet:getState', () => {
-    return petController.getAllPets().map(pet => ({ ...pet.getState(), id: pet.getId() }));
+    return petController
+      .getAllPets()
+      .map(pet => ({...pet.getState(), id: pet.getId()}));
   });
   ipcMain.on('pet:feed', (event, petId) => {
     console.log('[IPC] pet:feed', petId);
@@ -444,7 +444,6 @@ async function initializePetControllerAndHandlers() {
 
 initializePetControllerAndHandlers();
 
-
 // Pomodoro handlers
 ipcMain.on('open-pomodoro-window', async () => {
   await createPomodoroWindow();
@@ -461,7 +460,6 @@ ipcMain.on('close-pomodoro-window', () => {
   }
 });
 
-
 function isPomodoroWindowOpen() {
   return pomodoroWindow !== null && !pomodoroWindow.isDestroyed();
 }
@@ -469,40 +467,42 @@ ipcMain.handle('is-pomodoro-window-open', () => {
   return isPomodoroWindowOpen();
 });
 
-
 ipcMain.on('increment-focus-count', async () => {
   const db = getDbInstance('pomodoro.db') as TypedDatastore<PomodoroStats>;
-  const [doc] = await db.findDoc({ _id: 'focus-counter' });
+  const [doc] = await db.findDoc({_id: 'focus-counter'});
 
   if (!doc) {
     // Insert with totalTime initialized to 0
-    await db.insertDoc({ _id: 'focus-counter', focusCount: 0, totalTime: 0 });
+    await db.insertDoc({_id: 'focus-counter', focusCount: 0, totalTime: 0});
   } else {
     // Update the focusCount, keep totalTime as is
     await db.updateDoc(
-      { _id: 'focus-counter' },
-      { $set: { focusCount: doc.focusCount + 1 } }
+      {_id: 'focus-counter'},
+      {$set: {focusCount: doc.focusCount + 1}},
     );
   }
 });
 
 ipcMain.handle('get-focus-count', async () => {
   const db = getDbInstance('pomodoro.db') as TypedDatastore<PomodoroStats>;
-  const [doc] = await db.findDoc({ _id: 'focus-counter' });
+  const [doc] = await db.findDoc({_id: 'focus-counter'});
   return doc?.focusCount ?? 0; // ← return a number, not the whole object
 });
 
-
 ipcMain.on('increment-total-time', async (event, incrementBy: number) => {
   const db = getDbInstance('pomodoro.db') as TypedDatastore<PomodoroStats>;
-  const [doc] = await db.findDoc({ _id: 'focus-counter' });
+  const [doc] = await db.findDoc({_id: 'focus-counter'});
 
   if (!doc) {
-    await db.insertDoc({ _id: 'focus-counter', focusCount: 0, totalTime: incrementBy });
+    await db.insertDoc({
+      _id: 'focus-counter',
+      focusCount: 0,
+      totalTime: incrementBy,
+    });
   } else {
     await db.updateDoc(
-      { _id: 'focus-counter' },
-      { $set: { totalTime: (doc.totalTime ?? 0) + incrementBy } }
+      {_id: 'focus-counter'},
+      {$set: {totalTime: (doc.totalTime ?? 0) + incrementBy}},
     );
   }
 });
@@ -510,7 +510,7 @@ ipcMain.on('increment-total-time', async (event, incrementBy: number) => {
 // Handler to get totalTime
 ipcMain.handle('get-total-time', async () => {
   const db = getDbInstance('pomodoro.db') as TypedDatastore<PomodoroStats>;
-  const [doc] = await db.findDoc({ _id: 'focus-counter' });
+  const [doc] = await db.findDoc({_id: 'focus-counter'});
   return doc?.totalTime ?? 0;
 });
 
@@ -520,12 +520,11 @@ ipcMain.on('focus-session-ended', () => {
   }
 });
 
-
 // Reward Handlers
 
 ipcMain.handle('get-rewards-state', async () => {
   const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
-  const [doc] = await db.findDoc({ _id: 'user-rewards' });
+  const [doc] = await db.findDoc({_id: 'user-rewards'});
 
   if (!doc) {
     const initial: RewardState = {
@@ -540,26 +539,28 @@ ipcMain.handle('get-rewards-state', async () => {
   return doc;
 });
 
+ipcMain.handle(
+  'update-rewards-state',
+  async (event, newState: Partial<RewardState>) => {
+    const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
 
-ipcMain.handle('update-rewards-state', async (event, newState: Partial<RewardState>) => {
-  const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
+    const [existing] = await db.findDoc({_id: 'user-rewards'});
 
-  const [existing] = await db.findDoc({ _id: 'user-rewards' });
+    const updatedState: RewardState = {
+      _id: 'user-rewards',
+      points: newState.points ?? existing?.points ?? 0,
+      ownedItems: newState.ownedItems ?? existing?.ownedItems ?? [],
+    };
 
-  const updatedState: RewardState = {
-    _id: 'user-rewards',
-    points: newState.points ?? existing?.points ?? 0,
-    ownedItems: newState.ownedItems ?? existing?.ownedItems ?? [],
-  };
+    if (existing) {
+      await db.updateDoc({_id: 'user-rewards'}, {$set: updatedState});
+    } else {
+      await db.insertDoc(updatedState);
+    }
 
-  if (existing) {
-    await db.updateDoc({ _id: 'user-rewards' }, { $set: updatedState });
-  } else {
-    await db.insertDoc(updatedState);
-  }
-
-  return; // or return updatedState if you want
-});
+    return; // or return updatedState if you want
+  },
+);
 
 
 ipcMain.on('points-updated', () => {

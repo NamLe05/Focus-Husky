@@ -219,9 +219,9 @@ function TaskCard({
       deadline: htmlInputStringToDate(newDate),
     }));
   };
-  const saveChanges = () => {
+  const saveChanges = async () => {
     if (newItem !== undefined) {
-      const result = controller.handleCreateTask(
+      const result = await controller.handleCreateTask(
         tempTask.title,
         tempTask.description,
         tempTask.course,

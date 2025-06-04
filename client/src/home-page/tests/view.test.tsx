@@ -135,15 +135,15 @@ describe('View component - Pomodoro button', () => {
     expect(totalTimeValue && totalTimeValue.textContent).toBe('01:01:01');
   });
 
-  it('renders To Do list with "No tasks pending 🎉" when there are no tasks', () => {
+  it('renders To Do list with "All Tasks Complete! 🎉" when there are no tasks', () => {
     render(
       <MemoryRouter>
         <View />
       </MemoryRouter>
     );
 
-    // Since todoTasks starts empty, the "No tasks pending 🎉" message should appear
-    const noTasksMessage = screen.getByText('No tasks pending 🎉');
+    // Since todoTasks starts empty, the "All Tasks Complete! 🎉" message should appear
+    const noTasksMessage = screen.getByText('All Tasks Complete! 🎉');
     expect(noTasksMessage).not.toBeNull();
   });
 });

@@ -10,8 +10,8 @@ contextBridge.exposeInMainWorld('electron', {
       return res;
     },
   },
-  dbInsert(config: {filename: string; document: unknown}) {
-    ipcRenderer.send('insertDoc', config);
+  async dbInsert(config: {filename: string; document: unknown}) {
+    return await ipcRenderer.invoke('insertDoc', config);
   },
   async dbGetAll(filename: string) {
     return await ipcRenderer.invoke('getAllDocs', filename);
@@ -51,9 +51,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   feedPet: (petId: string) => ipcRenderer.send('pet:feed', petId),
   playPet: (petId: string) => ipcRenderer.send('pet:play', petId),
   groomPet: (petId: string) => ipcRenderer.send('pet:groom', petId),
-  movePet: (petId: string, x: number, y: number) => ipcRenderer.send('pet:move', petId, x, y),
-  onPetStateUpdate: (callback: (state: any) => void) => ipcRenderer.on('pet:stateUpdate', (_event: any, state: any) => callback(state)),
-  removePetStateUpdateListener: (callback: (...args: any[]) => void) => ipcRenderer.removeListener('pet:stateUpdate', callback),
+  movePet: (petId: string, x: number, y: number) =>
+    ipcRenderer.send('pet:move', petId, x, y),
+  onPetStateUpdate: (callback: (state: any) => void) =>
+    ipcRenderer.on('pet:stateUpdate', (_event: any, state: any) =>
+      callback(state),
+    ),
+  removePetStateUpdateListener: (callback: (...args: any[]) => void) =>
+    ipcRenderer.removeListener('pet:stateUpdate', callback),
   celebratePet: () => ipcRenderer.send('pet:celebrate'),
 
   // focus count
@@ -66,7 +71,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return await ipcRenderer.invoke('get-focus-count');
   },
 
-
   // main window listener
   onFocusSessionEnded: (callback: () => void) => {
     ipcRenderer.on('focus-session-ended', callback);
@@ -75,7 +79,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeFocusSessionEndedListener: (callback: () => void) => {
     ipcRenderer.removeListener('focus-session-ended', callback);
   },
-   notifyFocusSessionEnded: () => {
+  notifyFocusSessionEnded: () => {
     ipcRenderer.send('focus-session-ended');
   },
 
@@ -92,15 +96,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   updateRewards: async ({
-  points,
-  ownedItems,
+    points,
+    ownedItems,
   }: {
     points: number;
     ownedItems: string[];
   }) => {
-    return await ipcRenderer.invoke('update-rewards-state', { points, ownedItems });
+    return await ipcRenderer.invoke('update-rewards-state', {
+      points,
+      ownedItems,
+    });
   },
-
+    
   updatePoints: () => {
     ipcRenderer.send('points-updated');
   },
@@ -119,5 +126,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removePointsUpdatedListener: (wrappedListener: any) => {
     ipcRenderer.removeListener('points-updated', wrappedListener);
   },
-
 });
