@@ -116,6 +116,12 @@ const getControllerInstance = (
   return controllerInstance;
 };
 
+// Local force update hook
+function useForceUpdate() {
+  const [, setTick] = useState(0);
+  return () => setTick(tick => tick + 1);
+}
+
 export default function PetView({
   showInfoPanel = true,
   draggable = true,
@@ -168,6 +174,19 @@ export default function PetView({
 
   // Busy status ref to track if pet is in middle of animation
   const isBusyRef = useRef(false);
+
+  // Real-time equipped accessory sync
+  const forceUpdate = useForceUpdate();
+  useEffect(() => {
+    const handler = async () => {
+      await store.reloadEquippedFromDB();
+      forceUpdate();
+    };
+    (window.electronAPI as any)?.onEquippedUpdated?.(handler);
+    return () => {
+      (window.electronAPI as any)?.removeEquippedUpdatedListener?.(handler);
+    };
+  }, []);
 
   // Fetch pet state and subscribe to updates
   useEffect(() => {
@@ -454,79 +473,62 @@ export default function PetView({
             className={`pet-sprite mood-${petState.mood} ${petState.animation} no-drag ${isDragging && draggable ? 'dragging' : ''}`}
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              width: 112,
-              height: 320,
-              zIndex: -1000,
-              background: 'transparent',
+              left: `${lockedPosition?.x ?? petState.position.x}px`,
+              top: `${lockedPosition?.y ?? petState.position.y}px`,
+              backgroundImage: `url(${spritePath})`,
+              width: '64px',
+              height: '64px',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 100,
+              cursor: 'pointer',
             }}
-          />
-        )}
-        <div
-          ref={petElementRef}
-          className={`pet-sprite mood-${petState.mood} ${petState.animation} no-drag ${isDragging && draggable ? 'dragging' : ''}`}
-          style={{
-            position: 'absolute' /* FIXED: Added absolute positioning */,
-            // left: `${petState.position.x -270}px` /* FIXED: Use left/top instead of transform */,
-            // top: `${petState.position.y - 230}px`,
-            left: `${lockedPosition?.x ?? petState.position.x}px`,
-            top: `${lockedPosition?.y ?? petState.position.y}px`,
-            backgroundImage: `url(${spritePath})`,
-            width: '64px' /* FIXED: Added explicit width and height */,
-            height: '64px',
-            backgroundSize: 'contain' /* FIXED: Ensure sprite fits */,
-            backgroundRepeat: 'no-repeat',
-            zIndex: 100 /* FIXED: Ensure sprite is visible above other elements */,
-            cursor: 'pointer' /* FIXED: Add pointer cursor for better UX */,
-          }}
-          onClick={handlePetClick}
-          onMouseDown={handlePetMouseDown}
-          onMouseEnter={handlePetMouseEnter}
-          onMouseLeave={handlePetMouseLeave}
-        >
-          {/* Render pet accessories if any */}
-          {store.equipped.accessory?.image && (
+            onClick={handlePetClick}
+            onMouseDown={handlePetMouseDown}
+            onMouseEnter={handlePetMouseEnter}
+            onMouseLeave={handlePetMouseLeave}
+          >
+            {/* Render pet accessories if any */}
+            {store.equipped.accessory?.image && (
               <img
-              src={store.equipped.accessory.image}
-              alt="Accessory"
-              style={{
-                position: 'absolute',
-                top: '-10px', // adjust as needed to fit the pet
-                left: '10px',
-                width: '40px',
-                height: '40px',
-                objectFit: 'contain',
-                zIndex: 2,
-                pointerEvents: 'none', // visual only
-              }}
-            />
+                src={store.equipped.accessory.image}
+                alt="Accessory"
+                style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  left: '10px',
+                  width: '40px',
+                  height: '40px',
+                  objectFit: 'contain',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                }}
+              />
             )}
-          {/* Hover metrics display */}
-          {isHovering && (
-            <div
-              className="pet-hover-metrics"
-              style={{
-                position: 'absolute',
-                top: '-60px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.7)',
-                color: 'white',
-                padding: '5px',
-                borderRadius: '5px',
-                width: 'auto',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <div className="metric">💖 {Math.round(petState.happiness)}%</div>
-              <div className="metric">⚡ {Math.round(petState.energy)}%</div>
-              <div className="metric">
-                ✨ {Math.round(petState.cleanliness)}%
+            {/* Hover metrics display */}
+            {isHovering && (
+              <div
+                className="pet-hover-metrics"
+                style={{
+                  position: 'absolute',
+                  top: '-60px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(0,0,0,0.7)',
+                  color: 'white',
+                  padding: '5px',
+                  borderRadius: '5px',
+                  width: 'auto',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <div className="metric">💖 {Math.round(petState.happiness)}%</div>
+                <div className="metric">⚡ {Math.round(petState.energy)}%</div>
+                <div className="metric">
+                  ✨ {Math.round(petState.cleanliness)}%
+                </div>
               </div>
-            </div>
-          )}
-
+            )}
             {/* Wheel menu for interactions */}
             {showWheelMenu && (
               <div
@@ -605,6 +607,7 @@ export default function PetView({
               </div>
             )}
           </div>
+        )}
       </>
 
       {/* Error message display */}

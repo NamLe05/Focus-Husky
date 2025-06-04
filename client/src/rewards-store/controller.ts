@@ -21,8 +21,8 @@ export function markItemAsOwned(itemId: string, category: Tab) {
   }
 }
 
-export function markItemAsEquipped(item: marketPlaceItem, category: Tab){
-  return store.setEquipped(item, category)
+export async function markItemAsEquipped(item: marketPlaceItem | null, category: Tab) {
+  await store.setEquipped(item, category);
 }
 
 export function taskCompletePoints(): void {
@@ -33,4 +33,8 @@ export async function pomodoroSessionPoints(points: number): Promise<void> {
   await store.addPoints(points);
   // Now DB is up to date. You can still send the updatePoints notification
   window.electronAPI?.updatePoints?.();
+}
+
+export async function unequipAccessory() {
+  await store.setEquipped(null, 'accessories');
 }

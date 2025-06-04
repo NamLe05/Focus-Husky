@@ -11,6 +11,7 @@ import {store} from '../rewards-store/controller';
 import {RewardsStore} from '../rewards-store/model';
 import taskControllerInstance from '../tasks/controller'; // Adjust path if needed
 import { TaskId, TaskState, TaskAction } from '../tasks/model'; // Adjust path if needed
+import {unequipAccessory} from '../rewards-store/controller';
 
 type TimeInfo = {
   dayString: string;

@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import React, {useEffect, useState} from 'react';
 import './styles.css';
-import {handleItemPurchase, store, markItemAsEquipped} from './controller';
+import {handleItemPurchase, store, markItemAsEquipped, unequipAccessory} from './controller';
 import { v4 as uuidv4 } from 'uuid';
 import StarImage from '../Static/Star.png';
 import {RewardsStore, CategoryKey,categoryToEquippedKey, marketPlaceItem} from './model';
@@ -18,6 +18,7 @@ export default function MarketView() {
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
   const [items, setItems] = useState<marketPlaceItem[]>(store.marketItems[activeTab]);
+  const [equippedItems, setEquippedItems] = useState(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
 
   // Whenever the active tab changes, reload items from the store
   useEffect(() => {
@@ -41,13 +42,13 @@ export default function MarketView() {
     setItems(store.marketItems[activeTab]);
   };
 
-  // Register “points-updated” listener once and clean up
+  // Register "points-updated" listener once and clean up
   useEffect(() => {
     if (
       typeof window.electronAPI?.onPointsUpdated === 'function' &&
       typeof window.electronAPI?.removePointsUpdatedListener === 'function'
     ) {
-      // When “points-updated” arrives, call refresh()
+      // When "points-updated" arrives, call refresh()
       const wrappedListener = () => {
         void refresh();
       };
@@ -87,13 +88,12 @@ export default function MarketView() {
     }
   };
 
-  //clicking on the equip button
-  const [equippedItems, setEquippedItems] = useState(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
-  const onEquipClick = (item: marketPlaceItem) => {
-    markItemAsEquipped(item, activeTab);
+  // Equip button handler (no local equippedItems state)
+  const onEquipClick = async (item: marketPlaceItem) => {
+    await markItemAsEquipped(item, activeTab);
     setEquippedItems(item);
+    await refresh();
   }
-
 
   return (
     <div id="marketplace">
@@ -109,6 +109,19 @@ export default function MarketView() {
             </div>
           ))}
         </div>
+
+        {/* Show unequip button if an accessory is equipped and the accessories tab is active */}
+        {activeTab === 'accessories' && store.equipped.accessory && (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+            <button
+              className="equip-button"
+              style={{ background: '#fff', color: '#333', border: '1px solid #ccc', borderRadius: '8px', padding: '6px 16px', cursor: 'pointer' }}
+              onClick={async () => { await unequipAccessory(); await refresh(); }}
+            >
+              Unequip Hat
+            </button>
+          </div>
+        )}
 
         <div className="tab-content">
           <div className="pet-grid">
@@ -131,9 +144,9 @@ export default function MarketView() {
                   <div className="owned-badge">Owned</div>
                   <button
                     className="equip-button"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      onEquipClick(item);
+                      await onEquipClick(item);
                     }}
                   >
                     {equippedItems?.ID === item.ID ? 'Equipped' : 'Equip'}

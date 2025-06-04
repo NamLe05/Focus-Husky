@@ -60,6 +60,7 @@ export interface RewardState {
   _id: string;    // always "user-rewards"
   points: number;
   ownedItems: string[];
+  equipped?: Partial<equippedItems>;
 }
 
 export class RewardsStore {
@@ -177,22 +178,33 @@ export class RewardsStore {
 
   private async loadStateFromDB(): Promise<void> {
     try {
-      const state = await window.electronAPI!.getRewards();
+      const state = await window.electronAPI!.getRewards() as RewardState;
       if (!state || typeof state.points !== 'number') {
         return;
       }
       this.points = state.points;
       this.ownedItems = state.ownedItems.slice();
 
-     this.equipped = {
-            pet: {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
-            accessory: null,
-            timer: null,
-            sound: null,
-            task: null,
+      // Restore equipped items if present
+      if (state.equipped) {
+        this.equipped = {
+          pet: state.equipped.pet ?? {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
+          accessory: state.equipped.accessory ?? null,
+          timer: state.equipped.timer ?? null,
+          sound: state.equipped.sound ?? null,
+          task: state.equipped.task ?? null,
         };
+      } else {
+        this.equipped = {
+          pet: {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
+          accessory: null,
+          timer: null,
+          sound: null,
+          task: null,
+        };
+      }
 
-    for (const category of Object.values(this.marketItems)) {
+      for (const category of Object.values(this.marketItems)) {
         for (const item of category) {
           item.owned = state.ownedItems.includes(item.ID);
         }
@@ -269,21 +281,22 @@ export class RewardsStore {
     return true;
   }
 
-  public setEquipped(item: marketPlaceItem, category: keyof typeof this.marketItems): void {
-        const equippedKey = categoryToEquippedKey[category];
-        if (equippedKey) {
-            this.equipped[equippedKey] = item;
-        } else {
-            console.warn(`Unknown category: ${category}`);
-        }
-
-        console.log('Currently equipped: ', this.equipped);
+  public async setEquipped(item: marketPlaceItem | null, category: keyof typeof this.marketItems): Promise<void> {
+    const equippedKey = categoryToEquippedKey[category];
+    if (equippedKey) {
+      this.equipped[equippedKey] = item;
+      // Persist equipped items
+      await this.updateRewards(this.points, this.ownedItems);
+    } else {
+      console.warn(`Unknown category: ${category}`);
     }
+    console.log('Currently equipped: ', this.equipped);
+  }
 
   /** Write out the given `points` + `ownedItems` to the DB */
   public async updateRewards(points: number, ownedItems: string[]): Promise<void> {
     try {
-      await window.electronAPI!.updateRewards({ points, ownedItems });
+      await window.electronAPI!.updateRewards({ points, ownedItems, equipped: this.equipped } as RewardState);
     } catch {
       // ignore failures
     }
@@ -323,5 +336,23 @@ export class RewardsStore {
 
   public canAfford(item: marketPlaceItem): boolean {
     return item.price <= this.points;
+  }
+
+  /** Reload only the equipped state from the DB (for real-time sync) */
+  public async reloadEquippedFromDB(): Promise<void> {
+    try {
+      const state = await window.electronAPI!.getRewards() as RewardState;
+      if (state && state.equipped) {
+        this.equipped = {
+          pet: state.equipped.pet ?? this.equipped.pet,
+          accessory: state.equipped.accessory ?? null,
+          timer: state.equipped.timer ?? null,
+          sound: state.equipped.sound ?? null,
+          task: state.equipped.task ?? null,
+        };
+      }
+    } catch {
+      // ignore
+    }
   }
 }

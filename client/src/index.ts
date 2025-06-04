@@ -530,7 +530,8 @@ ipcMain.handle('get-rewards-state', async () => {
     const initial: RewardState = {
       _id: 'user-rewards',
       points: 200,
-      ownedItems: ['pet-husky'], // you can hardcode initial items or leave empty
+      ownedItems: ['pet-husky'],
+      equipped: {},
     };
     await db.insertDoc(initial);
     return initial;
@@ -550,6 +551,7 @@ ipcMain.handle(
       _id: 'user-rewards',
       points: newState.points ?? existing?.points ?? 0,
       ownedItems: newState.ownedItems ?? existing?.ownedItems ?? [],
+      equipped: newState.equipped ?? existing?.equipped ?? {},
     };
 
     if (existing) {
@@ -558,10 +560,14 @@ ipcMain.handle(
       await db.insertDoc(updatedState);
     }
 
+    // Broadcast equipped-updated to all windows
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('equipped-updated', updatedState.equipped);
+    });
+
     return; // or return updatedState if you want
   },
 );
-
 
 ipcMain.on('points-updated', () => {
   if (mainWindow && !mainWindow.isDestroyed()) {
