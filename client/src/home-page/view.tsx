@@ -228,7 +228,7 @@ const View: React.FC = () => {
                   marginBottom: '50px',
                   //background: 'blue'
                 }}
-              >{store.equipped.pet?.image &&(
+              >{store.equipped && store.equipped.pet?.image &&(
               <img
                 src={store.equipped.pet.image}
                 alt= {store.equipped.pet.name}
@@ -243,7 +243,7 @@ const View: React.FC = () => {
                   //background: 'red'
                 }}
               />
-            )}{store.equipped.accessory?.image && (
+            )}{store.equipped && store.equipped.accessory?.image && (
             <img
               src={store.equipped.accessory.image}
               alt="Accessory"

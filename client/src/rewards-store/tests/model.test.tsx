@@ -22,7 +22,7 @@ describe('RewardsStore API methods', () => {
   });
 
   it('loadStateFromDB correctly updates internal state from API', async () => {
-    // Wait one tick so constructor’s loadStateFromDB() finishes
+    // Wait one tick so constructor's loadStateFromDB() finishes
     await Promise.resolve();
 
     expect(store.getTotalPoints()).toBe(300);
@@ -39,7 +39,8 @@ describe('RewardsStore API methods', () => {
 
     expect(window.electronAPI.updateRewards).toHaveBeenCalledWith({
       points: newPoints,
-      ownedItems
+      ownedItems,
+      equipped: expect.any(Object)
     });
   });
 
