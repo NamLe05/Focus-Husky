@@ -110,12 +110,6 @@ const getControllerInstance = (
   return controllerInstance;
 };
 
-// Type for interaction queue
-interface QueuedInteraction {
-  type: 'feed' | 'play' | 'groom';
-  timestamp: number;
-}
-
 export default function PetView({
   showInfoPanel = true,
   draggable = true,
@@ -147,11 +141,6 @@ export default function PetView({
     groom: 0,
   });
 
-  // Queue for interactions when pet is busy
-  const [interactionQueue, setInteractionQueue] = useState<QueuedInteraction[]>(
-    [],
-  );
-
   // State for pet position dragging
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({x: 0, y: 0});
@@ -174,16 +163,6 @@ export default function PetView({
   // Busy status ref to track if pet is in middle of animation
   const isBusyRef = useRef(false);
 
-  // Process any interactions in the queue
-  const processNextQueuedInteraction = useCallback(() => {
-    if (interactionQueue.length === 0) return;
-    // Get next interaction
-    const [nextInteraction, ...remainingQueue] = interactionQueue;
-    setInteractionQueue(remainingQueue);
-    // Process it
-    handleInteraction(nextInteraction.type, true);
-  }, [interactionQueue]);
-
   // Fetch pet state and subscribe to updates
   useEffect(() => {
     setIsLoading(true);
@@ -197,10 +176,7 @@ export default function PetView({
     });
     const updateHandler = (pets: any[]) => {
       if (pets.length > 0) {
-        setPetId(pets[0].id);
-        setPetState({...pets[0]});
-        setIsLoading(false);
-        console.log('[Renderer] Updated petId:', pets[0].id, 'petState:', pets[0]);
+        handlePetUpdate(pets[0].id, pets[0]);
       }
     };
     (window.electronAPI as any).onPetStateUpdate(updateHandler);
@@ -216,16 +192,13 @@ export default function PetView({
       setPetState({...state});
       setIsLoading(false);
       // No cache needed, all state is from main process
-      // Check if pet was previously busy but now idle
-      if (isBusyRef.current && state.animation === 'idle') {
-        isBusyRef.current = false;
-        processNextQueuedInteraction();
-      }
       if (state.animation !== 'idle') {
         isBusyRef.current = true;
+      } else {
+        isBusyRef.current = false;
       }
     },
-    [processNextQueuedInteraction],
+    []
   );
 
   // Update cooldowns
@@ -274,28 +247,19 @@ export default function PetView({
       () => {
         if (!petId || !petState) return;
         if (petState.happiness < 50) {
-          queueInteraction('play');
+          handleInteraction('play');
         }
         if (petState.energy < 50) {
-          queueInteraction('feed');
+          handleInteraction('feed');
         }
         if (petState.cleanliness < 50) {
-          queueInteraction('groom');
+          handleInteraction('groom');
         }
       },
       5 * 60 * 1000,
     );
     return () => clearInterval(autoInterval);
   }, [autoCareEnabled, petId, petState]);
-
-  // Queue an interaction when pet is busy
-  const queueInteraction = (type: 'feed' | 'play' | 'groom') => {
-    const newInteraction = {
-      type,
-      timestamp: Date.now(),
-    };
-    setInteractionQueue(prev => [...prev, newInteraction]);
-  };
 
   // Handle pet interactions
   const handleInteraction = (
@@ -312,9 +276,8 @@ export default function PetView({
       return;
     }
     if (isBusyRef.current && !bypassBusyCheck) {
-      queueInteraction(type);
-      setErrorMessage('Pet is busy! Interaction queued for later.');
-      setTimeout(() => setErrorMessage(null), 3000);
+      setErrorMessage('Pet is busy! Try again later.');
+      setTimeout(() => setErrorMessage(null), 2000);
       return;
     }
     try {
@@ -632,20 +595,37 @@ export default function PetView({
       {/* Error message display */}
       {errorMessage && (
         <div
-          className="pet-error-message"
           style={{
             position: 'fixed',
-            bottom: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(255,0,0,0.7)',
-            color: 'white',
-            padding: '10px',
-            borderRadius: '5px',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            pointerEvents: 'none',
             zIndex: 1000,
           }}
         >
-          {errorMessage}
+          <div
+            className="pet-error-message"
+            style={{
+              marginBottom: '24px',
+              background: 'rgba(255, 140, 0, 0.85)',
+              color: 'white',
+              padding: '2px 10px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              display: 'inline-block',
+              lineHeight: 1.2,
+              textAlign: 'center',
+              pointerEvents: 'none',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
+            }}
+          >
+            {errorMessage}
+          </div>
         </div>
       )}
 
@@ -750,18 +730,6 @@ export default function PetView({
               />
             </div>
           </div>
-          {interactionQueue.length > 0 && (
-            <div className="queued-interactions">
-              <h4>Queued Interactions: {interactionQueue.length}</h4>
-              <button
-                className="action-button"
-                onClick={processNextQueuedInteraction}
-                disabled={isBusyRef.current}
-              >
-                Process Next
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>
