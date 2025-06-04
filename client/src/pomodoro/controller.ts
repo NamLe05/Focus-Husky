@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { pomodoroSessionPoints } from '../rewards-store/controller';
 import { PomodoroTimerModel, PomodoroState } from './model';
 

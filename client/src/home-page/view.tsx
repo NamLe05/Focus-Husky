@@ -1,11 +1,17 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import {store} from '../rewards-store/controller';
+import {RewardsStore} from '../rewards-store/model';
 import taskControllerInstance from '../tasks/controller'; // Adjust path if needed
 import { TaskId, TaskState, TaskAction } from '../tasks/model'; // Adjust path if needed
+import {unequipAccessory} from '../rewards-store/controller';
 
 type TimeInfo = {
   dayString: string;
@@ -211,8 +217,51 @@ const View: React.FC = () => {
       <Row>
         <Col>
           <div className="activeCard">
-            <h1>Friends</h1>
-            <div className='comingSoon'>Coming Soon!</div>
+            <h1>Your Pet</h1>
+              {/* Wrapper to constrain image size and allow layering */}
+              <div
+                style={{
+                  position: 'relative',
+                  width: '300px',
+                  height: '220px',
+                  marginLeft: '20px',
+                  marginBottom: '50px',
+                  //background: 'blue'
+                }}
+              >{store.equipped && store.equipped.pet?.image &&(
+              <img
+                src={store.equipped.pet.image}
+                alt= {store.equipped.pet.name}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  zIndex: 1,
+                  //background: 'red'
+                }}
+              />
+            )}{store.equipped && store.equipped.accessory?.image && (
+            <img
+              src={store.equipped.accessory.image}
+              alt="Accessory"
+              style={{
+                position: 'absolute',
+                top: '5px', // 👈 this moves it up
+                left: '25%',
+                width: '50%',
+                height: '50%',
+                objectFit: 'contain',
+                zIndex: 2,
+                pointerEvents: 'none',
+              }}
+            />
+          )}</div>
+            <div
+            ></div>
+            {/* Pet image */}
           </div>
         </Col>
         <Col>

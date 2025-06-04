@@ -1,3 +1,6 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable prefer-const */
+
 import {useState, useEffect, useRef, useCallback} from 'react';
 import petImg from '../Static/pet.png';
 
@@ -36,6 +39,9 @@ import huskyHappyEating from '../Static/pets/happy_eating.png';
 import huskySadEating from '../Static/pets/sad_eating.png';
 import huskyExcitedEating from '../Static/pets/excited_eating.png';
 import huskyTiredEating from '../Static/pets/tired_eating.png';
+
+import {store} from '../rewards-store/controller';
+import {RewardsStore} from '../rewards-store/model';
 
 // FIXED: Create a sprite map for easy lookup
 const spriteMap = {
@@ -110,6 +116,12 @@ const getControllerInstance = (
   return controllerInstance;
 };
 
+// Local force update hook
+function useForceUpdate() {
+  const [, setTick] = useState(0);
+  return () => setTick(tick => tick + 1);
+}
+
 export default function PetView({
   showInfoPanel = true,
   draggable = true,
@@ -162,6 +174,19 @@ export default function PetView({
 
   // Busy status ref to track if pet is in middle of animation
   const isBusyRef = useRef(false);
+
+  // Real-time equipped accessory sync
+  const forceUpdate = useForceUpdate();
+  useEffect(() => {
+    const handler = async () => {
+      await store.reloadEquippedFromDB();
+      forceUpdate();
+    };
+    (window.electronAPI as any)?.onEquippedUpdated?.(handler);
+    return () => {
+      (window.electronAPI as any)?.removeEquippedUpdatedListener?.(handler);
+    };
+  }, []);
 
   // Fetch pet state and subscribe to updates
   useEffect(() => {
@@ -455,7 +480,7 @@ export default function PetView({
               height: '64px',
               backgroundSize: 'contain',
               backgroundRepeat: 'no-repeat',
-              zIndex: 9999,
+              zIndex: 100,
               cursor: 'pointer',
             }}
             onClick={handlePetClick}
@@ -464,28 +489,22 @@ export default function PetView({
             onMouseLeave={handlePetMouseLeave}
           >
             {/* Render pet accessories if any */}
-            {Array.isArray(petState.accessories) &&
-              (petState.accessories as string[]).map((accessoryId: string) => (
-                <div
-                  key={accessoryId}
-                  className="pet-accessory"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundImage: `url(${
-                      typeof getAccessorySpritePath === 'function'
-                        ? getAccessorySpritePath(accessoryId)
-                        : ''
-                    })`,
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                  }}
-                />
-              ))}
-
+            {store.equipped.accessory?.image && (
+              <img
+                src={store.equipped.accessory.image}
+                alt="Accessory"
+                style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  left: '10px',
+                  width: '40px',
+                  height: '40px',
+                  objectFit: 'contain',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
             {/* Hover metrics display */}
             {isHovering && (
               <div
@@ -510,7 +529,6 @@ export default function PetView({
                 </div>
               </div>
             )}
-
             {/* Wheel menu for interactions */}
             {showWheelMenu && (
               <div

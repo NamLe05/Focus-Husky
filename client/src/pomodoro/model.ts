@@ -1,3 +1,6 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { taskCompletePoints } from '../rewards-store/controller';
 import { pomodoroSessionPoints } from "../rewards-store/controller";
 
 export type TimerState = 'focus' | 'break';
@@ -70,13 +73,15 @@ export class PomodoroTimerModel {
   }
 
   public switchState(): void {
-    
     const justFinishedFocus = this.state.state === 'focus';
 
     if (justFinishedFocus) {
       // Pass focusElapsed to callback, then reset it
       this.onFocusComplete?.(this.focusElapsed);
       this.focusElapsed = 0;
+
+      //taskCompletePoints();
+
       pomodoroSessionPoints(5);
       window.electronAPI?.updatePoints?.();
       // Now switch to break
@@ -114,7 +119,6 @@ export class PomodoroTimerModel {
   public getRemainingTime(): number {
     return this.state.remainingTime;
   }
-  
 
   public setOnTick(callback: (state: PomodoroState) => void): void {
     this.onTick = callback;

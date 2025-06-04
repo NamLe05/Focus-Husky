@@ -98,13 +98,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateRewards: async ({
     points,
     ownedItems,
+    equipped,
   }: {
     points: number;
     ownedItems: string[];
+    equipped?: any;
   }) => {
     return await ipcRenderer.invoke('update-rewards-state', {
       points,
       ownedItems,
+      equipped,
     });
   },
     
@@ -125,5 +128,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 3) MarketView (renderer) will call this to remove that same listener
   removePointsUpdatedListener: (wrappedListener: any) => {
     ipcRenderer.removeListener('points-updated', wrappedListener);
+  },
+
+  // Real-time equipped-updated event
+  onEquippedUpdated: (callback: (equipped: any) => void) => {
+    ipcRenderer.on('equipped-updated', (_event: any, equipped: any) => callback(equipped));
+  },
+  removeEquippedUpdatedListener: (callback: (...args: any[]) => void) => {
+    ipcRenderer.removeListener('equipped-updated', callback);
   },
 });

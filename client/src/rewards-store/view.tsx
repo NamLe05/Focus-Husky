@@ -1,18 +1,28 @@
-import React, { useEffect, useState } from 'react';
+/* eslint-disable prettier/prettier */
+/* eslint-disable eol-last */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import React, {useEffect, useState} from 'react';
 import './styles.css';
-import { handleItemPurchase, store } from './controller';
+import {handleItemPurchase, store, markItemAsEquipped, unequipAccessory} from './controller';
+import { v4 as uuidv4 } from 'uuid';
 import StarImage from '../Static/Star.png';
-import { marketPlaceItem } from './model';
+import {RewardsStore, CategoryKey,categoryToEquippedKey, marketPlaceItem} from './model';
 import { Modal, Button } from 'react-bootstrap';
 
 // Tab type based on store.marketItems keys
 export type Tab = keyof typeof store.marketItems;
 
 export default function MarketView() {
+
   const [activeTab, setActiveTab] = useState<Tab>('pets');
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
   const [items, setItems] = useState<marketPlaceItem[]>(store.marketItems[activeTab]);
+  const [equippedItems, setEquippedItems] = useState(
+    store.equipped
+      ? store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]
+      : undefined
+  );
 
   // Whenever the active tab changes, reload items from the store
   useEffect(() => {
@@ -36,13 +46,13 @@ export default function MarketView() {
     setItems(store.marketItems[activeTab]);
   };
 
-  // Register “points-updated” listener once and clean up
+  // Register "points-updated" listener once and clean up
   useEffect(() => {
     if (
       typeof window.electronAPI?.onPointsUpdated === 'function' &&
       typeof window.electronAPI?.removePointsUpdatedListener === 'function'
     ) {
-      // When “points-updated” arrives, call refresh()
+      // When "points-updated" arrives, call refresh()
       const wrappedListener = () => {
         void refresh();
       };
@@ -57,6 +67,12 @@ export default function MarketView() {
   // Handle item purchase
   const onItemClick = async (item: marketPlaceItem) => {
     const currentPoints = store.getTotalPoints();
+
+    if (!item) {
+      console.error('Item is undefined');
+      return;
+    }
+
     if (item.owned) {
       setPopUpMessage(`You already own ${item.name}!`);
       return;
@@ -67,7 +83,7 @@ export default function MarketView() {
     }
 
     const success = await handleItemPurchase(item, activeTab);
-    if (success) {
+    if(success){
       // Immediately refresh local state
       await refresh();
       setPopUpMessage(`Congrats! You purchased ${item.name}!`);
@@ -75,6 +91,13 @@ export default function MarketView() {
       setPopUpMessage(`Could not purchase ${item.name}, try again!`);
     }
   };
+
+  // Equip button handler (no local equippedItems state)
+  const onEquipClick = async (item: marketPlaceItem) => {
+    await markItemAsEquipped(item, activeTab);
+    setEquippedItems(item);
+    await refresh();
+  }
 
   return (
     <div id="marketplace">
@@ -90,6 +113,19 @@ export default function MarketView() {
             </div>
           ))}
         </div>
+
+        {/* Show unequip button if an accessory is equipped and the accessories tab is active */}
+        {activeTab === 'accessories' && store.equipped && store.equipped.accessory && (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+            <button
+              className="equip-button"
+              style={{ background: '#fff', color: '#333', border: '1px solid #ccc', borderRadius: '8px', padding: '6px 16px', cursor: 'pointer' }}
+              onClick={async () => { await unequipAccessory(); await refresh(); }}
+            >
+              Unequip Hat
+            </button>
+          </div>
+        )}
 
         <div className="tab-content">
           <div className="pet-grid">
@@ -107,7 +143,20 @@ export default function MarketView() {
                   <img src={StarImage} alt="Star" className="star-icon" />
                   <span>{item.price}</span>
                 </div>
-                {item.owned && <div className="owned-badge">Owned</div>}
+                {item.owned && (
+                <div className="owned-section">
+                  <div className="owned-badge">Owned</div>
+                  <button
+                    className="equip-button"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await onEquipClick(item);
+                    }}
+                  >
+                    {equippedItems?.ID === item.ID ? 'Equipped' : 'Equip'}
+                    </button>
+                    </div>
+                  )}
               </div>
             ))}
           </div>

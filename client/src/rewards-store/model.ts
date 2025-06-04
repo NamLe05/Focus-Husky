@@ -1,25 +1,34 @@
 /* eslint-disable prettier/prettier */
-import { v4 as uuidv4 } from 'uuid';
+/* eslint-disable no-trailing-spaces */
+/* eslint-disable prettier/prettier */
+import {v4 as uuidv4} from 'uuid';
 import HuskyImage from '../Static/Husky.png';
 import FrogImage from '../Static/Frog.png';
 import DuckImage from '../Static/Duck.png';
 import TigerImage from '../Static/Tiger.png';
 
-import HatImage from '../Static/hat.png';
-import CollarImage from '../Static/collar.png';
-import LeashImage from '../Static/leash.png';
+import RedHat from '../Static/red-hat.png';
+import ExplorerHat from '../Static/explorer-hat.png';
+import MidnightHat from '../Static/midnight-hat.png';
 
-import ClassicTimerImage from '../Static/classic-timer.png';
-import PomodoroImage from '../Static/pomodoro.png';
-import StopWatchImage from '../Static/stopwatch.png';
+import ClassicTimerImage from '../Static/coming-soon.png';
+import PomodoroImage from '../Static/coming-soon.png';
+import StopWatchImage from '../Static/coming-soon.png';
 
-import BellImage from '../Static/bell.png';
-import ChimeImage from '../Static/chime.png';
-import AlertImage from '../Static/alert.png';
+import BellImage from '../Static/coming-soon.png';
+import ChimeImage from '../Static/coming-soon.png';
+import AlertImage from '../Static/coming-soon.png';
 
-import CheckListImage from '../Static/checklist.png';
-import HomeworkImage from '../Static/homework.png';
-import CalendarImage from '../Static/calendar.png';
+import CheckListImage from '../Static/coming-soon.png';
+import HomeworkImage from '../Static/coming-soon.png';
+import CalendarImage from '../Static/coming-soon.png';
+
+// export interface Pet {
+//   ID: string;
+//   name: string;
+//   price: number;
+//   owned: boolean;
+// }
 
 export interface marketPlaceItem {
   ID: string;
@@ -29,22 +38,44 @@ export interface marketPlaceItem {
   image: string;
 }
 
+export interface equippedItems {
+    pet: marketPlaceItem | null,
+    accessory: marketPlaceItem | null,
+    timer: marketPlaceItem | null,
+    sound: marketPlaceItem | null,
+    task: marketPlaceItem | null
+}
+
+export const categoryToEquippedKey = {
+        pets: 'pet',
+        accessories: 'accessory',
+        timers: 'timer',
+        sounds: 'sound',
+        tasks: 'task',
+    } as const;
+
+    export type CategoryKey = keyof typeof categoryToEquippedKey;
+
 export interface RewardState {
   _id: string;    // always "user-rewards"
   points: number;
   ownedItems: string[];
+  equipped?: Partial<equippedItems>;
 }
 
 export class RewardsStore {
-  marketItems: {
-    pets: marketPlaceItem[];
-    accessories: marketPlaceItem[];
-    timers: marketPlaceItem[];
-    sounds: marketPlaceItem[];
-    tasks: marketPlaceItem[];
-  };
-  private points: number;
-  private ownedItems: string[];
+
+
+    marketItems:{
+        pets: marketPlaceItem[];
+        accessories: marketPlaceItem[];
+        timers: marketPlaceItem[];
+        sounds: marketPlaceItem[];
+        tasks: marketPlaceItem[];
+    };
+    private points: number;
+    private ownedItems: string[];
+    public equipped: equippedItems;
 
   constructor() {
     this.marketItems = {
@@ -55,41 +86,123 @@ export class RewardsStore {
         { ID: 'pet-frog',   name: 'Frog',   price: 200, owned: false, image: FrogImage   },
       ],
       accessories: [
-        { ID: 'acc-hat',    name: 'Hat',    price: 50,  owned: false, image: HatImage    },
-        { ID: 'acc-collar', name: 'Collar', price: 75,  owned: false, image: CollarImage },
-        { ID: 'acc-leash',  name: 'Leash',  price: 40,  owned: false, image: LeashImage  },
+        { ID: 'acc-hat', 
+          name: 'Red Hat', 
+          price: 50, 
+          owned: false, 
+          image: RedHat},
+        {
+          ID: 'acc-collar',
+          name: 'Explorer Hat',
+          price: 75,
+          owned: false,
+          image: ExplorerHat,
+        },
+        {
+          ID: 'acc-leash',
+          name: 'Midnight Hat',
+          price: 40,
+          owned: false,
+          image: MidnightHat,
+        },
       ],
       timers: [
-        { ID: 'timer-classic',  name: 'Classic Timer', price: 30,  owned: false, image: ClassicTimerImage },
-        { ID: 'timer-pomodoro', name: 'Pomodoro',      price: 25,  owned: false, image: PomodoroImage      },
-        { ID: 'timer-stopwatch',name: 'Stopwatch',     price: 15,  owned: false, image: StopWatchImage    },
+        {
+          ID: 'timer-classic',
+          name: 'Classic Timer',
+          price: 0,
+          owned: false,
+          image: ClassicTimerImage,
+        },
+        {
+          ID: 'timer-pomodoro',
+          name: 'Pomodoro',
+          price: 0,
+          owned: false,
+          image: PomodoroImage,
+        },
+        {
+          ID: 'timer-stopwatch',
+          name: 'Stopwatch',
+          price: 0,
+          owned: false,
+          image: StopWatchImage,
+        },
       ],
       sounds: [
-        { ID: uuidv4(),       name: 'Bell',  price: 30,  owned: false, image: BellImage  },
-        { ID: 'sounds-chime',  name: 'Chime', price: 25,  owned: false, image: ChimeImage },
-        { ID: 'sounds-alert',  name: 'Alert', price: 15,  owned: false, image: AlertImage },
+        {ID: uuidv4(), name: 'Bell', price: 0, owned: false, image: BellImage},
+        {
+          ID: 'sounds-chime',
+          name: 'Chime',
+          price: 0,
+          owned: false,
+          image: ChimeImage,
+        },
+        {
+          ID: 'sounds-alert',
+          name: 'Alert',
+          price: 0,
+          owned: false,
+          image: AlertImage,
+        },
       ],
       tasks: [
-        { ID: 'tasks-checklist', name: 'Checklist', price: 40,  owned: false, image: CheckListImage  },
-        { ID: 'tasks-homework',  name: 'Homework',  price: 45,  owned: false, image: HomeworkImage   },
-        { ID: 'task-calendar',   name: 'Calendar',  price: 55,  owned: false, image: CalendarImage   },
+        {
+          ID: 'tasks-checklist',
+          name: 'Checklist',
+          price: 0,
+          owned: false,
+          image: CheckListImage,
+        },
+        {
+          ID: 'tasks-homework',
+          name: 'Homework',
+          price: 0,
+          owned: false,
+          image: HomeworkImage,
+        },
+        {
+          ID: 'task-calendar',
+          name: 'Calendar',
+          price: 0,
+          owned: false,
+          image: CalendarImage,
+        },
       ],
     };
-
-    // Initialize with default 200; tests can override via loadStateFromDB or updatePoints.
     this.points = 200;
-    this.ownedItems = [];
-    void this.loadStateFromDB();
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.loadStateFromDB();
   }
 
   private async loadStateFromDB(): Promise<void> {
     try {
-      const state = await window.electronAPI!.getRewards();
+      const state = await window.electronAPI!.getRewards() as RewardState;
       if (!state || typeof state.points !== 'number') {
         return;
       }
       this.points = state.points;
       this.ownedItems = state.ownedItems.slice();
+
+      // Restore equipped items if present
+      if (state.equipped) {
+        this.equipped = {
+          pet: state.equipped.pet ?? {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
+          accessory: state.equipped.accessory ?? null,
+          timer: state.equipped.timer ?? null,
+          sound: state.equipped.sound ?? null,
+          task: state.equipped.task ?? null,
+        };
+      } else {
+        this.equipped = {
+          pet: {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
+          accessory: null,
+          timer: null,
+          sound: null,
+          task: null,
+        };
+      }
 
       for (const category of Object.values(this.marketItems)) {
         for (const item of category) {
@@ -101,7 +214,10 @@ export class RewardsStore {
     }
   }
 
-  /** Subtract `amount` from points, syncing with DB first */
+  // public addPoints(amount: number) {
+  //   this.points += amount;
+  // }
+
   public async deductPoints(amount: number): Promise<void> {
     try {
       const state = await window.electronAPI!.getRewards();
@@ -129,10 +245,20 @@ export class RewardsStore {
     }
   }
 
-  /**
-   * Purchase an item using the **in-memory** `this.points` (so that
-   * after calling `updatePoints(…)`, `this.points` truly reflects the latest).
-   */
+  //Get item ID number through name
+  public getItemID(name: string): string {
+    for (const category in this.marketItems) {
+      const items = this.marketItems[category as keyof typeof this.marketItems];
+      for (const item of items) {
+        if (item.name === name) {
+          return item.ID;
+        }
+      }
+    }
+
+    throw new Error('Invalid pet ID');
+  }
+
   public async purchaseItem(
     category: keyof typeof this.marketItems,
     itemId: string
@@ -155,10 +281,22 @@ export class RewardsStore {
     return true;
   }
 
+  public async setEquipped(item: marketPlaceItem | null, category: keyof typeof this.marketItems): Promise<void> {
+    const equippedKey = categoryToEquippedKey[category];
+    if (equippedKey) {
+      this.equipped[equippedKey] = item;
+      // Persist equipped items
+      await this.updateRewards(this.points, this.ownedItems);
+    } else {
+      console.warn(`Unknown category: ${category}`);
+    }
+    console.log('Currently equipped: ', this.equipped);
+  }
+
   /** Write out the given `points` + `ownedItems` to the DB */
   public async updateRewards(points: number, ownedItems: string[]): Promise<void> {
     try {
-      await window.electronAPI!.updateRewards({ points, ownedItems });
+      await window.electronAPI!.updateRewards({ points, ownedItems, equipped: this.equipped } as RewardState);
     } catch {
       // ignore failures
     }
@@ -198,5 +336,23 @@ export class RewardsStore {
 
   public canAfford(item: marketPlaceItem): boolean {
     return item.price <= this.points;
+  }
+
+  /** Reload only the equipped state from the DB (for real-time sync) */
+  public async reloadEquippedFromDB(): Promise<void> {
+    try {
+      const state = await window.electronAPI!.getRewards() as RewardState;
+      if (state && state.equipped) {
+        this.equipped = {
+          pet: state.equipped.pet ?? this.equipped.pet,
+          accessory: state.equipped.accessory ?? null,
+          timer: state.equipped.timer ?? null,
+          sound: state.equipped.sound ?? null,
+          task: state.equipped.task ?? null,
+        };
+      }
+    } catch {
+      // ignore
+    }
   }
 }
