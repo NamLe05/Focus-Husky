@@ -6,9 +6,9 @@ import {TaskAction, TaskId, TaskModel, TaskState} from './model';
 import {
   isTodo,
   isComplete,
-  dateToHtmlInputString,
   htmlInputStringToDate,
   getTodayMidnight,
+  CustomDate,
 } from './helpers';
 
 import Card from 'react-bootstrap/Card';
@@ -24,7 +24,7 @@ import Tabs from 'react-bootstrap/Tabs';
 import Modal from 'react-bootstrap/Modal';
 import './styles.css';
 import {ErrorLoader, ErrorLoaderRef} from '../components/ErrorLoader';
-import { celebratePet } from '../pet/petCelebration';
+import {celebratePet} from '../pet/petCelebration';
 
 type TaskCardProps = {
   id: TaskId;
@@ -80,8 +80,9 @@ type TaskEditableProps = {
   placeholder: string;
   // Could support more types if needed
   type: 'string' | 'date' | 'number' | 'paragraph';
-  getter: string | number | Date | boolean;
+  getter: string | number | CustomDate | boolean;
   setter: (value: string | number | Date | boolean) => void;
+  required?: boolean;
 };
 
 function TaskEditable({
@@ -90,7 +91,11 @@ function TaskEditable({
   type,
   getter,
   setter,
+  required,
 }: TaskEditableProps) {
+  if (required === undefined) {
+    required = false;
+  }
   if (type === 'string' && typeof getter === 'string') {
     return editing ? (
       <div style={{marginRight: '300px'}}>
@@ -100,12 +105,18 @@ function TaskEditable({
           size="sm"
           placeholder={placeholder}
           value={getter}
+          required
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value;
             setter(value);
           }}
-          required
         />
+        <Form.Control.Feedback
+          type="invalid"
+          style={{fontSize: '10px', fontWeight: 'bold'}}
+        >
+          Please enter a value
+        </Form.Control.Feedback>
       </div>
     ) : (
       <span>{getter}</span>
@@ -118,30 +129,44 @@ function TaskEditable({
           size="sm"
           type="datetime-local"
           placeholder={placeholder}
-          value={dateToHtmlInputString(getter)}
+          value={getter.dateToHtmlInputString()}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setter(e.target.value);
           }}
           required
         />
+        <Form.Control.Feedback
+          type="invalid"
+          style={{fontSize: '10px', fontWeight: 'bold'}}
+        >
+          Please enter a date
+        </Form.Control.Feedback>
       </div>
     ) : (
       <span>{getter.toLocaleString()}</span>
     );
   } else if (type === 'paragraph' && typeof getter === 'string') {
     return editing ? (
-      <Form.Control
-        data-testid="task-editable"
-        type="text"
-        size="sm"
-        as="textarea"
-        placeholder={placeholder}
-        value={getter}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          setter(e.target.value);
-        }}
-        required
-      />
+      <>
+        <Form.Control
+          data-testid="task-editable"
+          type="text"
+          size="sm"
+          as="textarea"
+          placeholder={placeholder}
+          value={getter}
+          required
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setter(e.target.value);
+          }}
+        />
+        <Form.Control.Feedback
+          type="invalid"
+          style={{fontSize: '10px', fontWeight: 'bold'}}
+        >
+          Please enter a value
+        </Form.Control.Feedback>
+      </>
     ) : (
       <span>{getter}</span>
     );
@@ -159,6 +184,7 @@ function TaskCard({
   const [editing, setEditing] = useState<boolean>(false);
   const [tempTask, setTempTask] = useState<TaskState>({...task});
   const [completed, setCompleted] = useState<boolean>(isComplete(task.status));
+  const [validated, setValidated] = useState<boolean>(false);
   // If the task is update, cancel edits (todo: refine this logic)
   useEffect(() => {
     setEditing(false);
@@ -193,15 +219,20 @@ function TaskCard({
       deadline: htmlInputStringToDate(newDate),
     }));
   };
-  const saveChanges = () => {
+  const saveChanges = async () => {
     if (newItem !== undefined) {
-      controller.handleCreateTask(
+      const result = await controller.handleCreateTask(
         tempTask.title,
         tempTask.description,
         tempTask.course,
         tempTask.deadline,
       );
-      newItemClose();
+      if (result !== undefined) {
+        newItemClose();
+        setValidated(false);
+      } else {
+        setValidated(true);
+      }
     } else {
       controller.handleTaskUpdate(id, tempTask);
     }
@@ -212,6 +243,7 @@ function TaskCard({
     }
     setEditing(false);
     setTempTask({...task});
+    setValidated(false);
   };
   return (
     <Card
@@ -307,36 +339,38 @@ function TaskCard({
             </div>
           )}
         </div>
-        <Card.Title className="poppins-dark" data-testid="task-card-title">
-          <TaskEditable
-            placeholder="Enter title"
-            editing={editing || newItem !== undefined}
-            type="string"
-            getter={tempTask.title}
-            setter={updateTaskTitle}
-          />
-        </Card.Title>
-        <Card.Subtitle
-          className="mb-2 text-muted"
-          data-testid="task-card-deadline"
-        >
-          <TaskEditable
-            placeholder="Enter deadline"
-            editing={editing || newItem !== undefined}
-            type="date"
-            getter={tempTask.deadline}
-            setter={updateTaskDeadline}
-          />
-        </Card.Subtitle>
-        <Card.Text data-testid="task-card-desc">
-          <TaskEditable
-            placeholder="Enter description"
-            editing={editing || newItem !== undefined}
-            type="paragraph"
-            getter={tempTask.description}
-            setter={updateTaskDescription}
-          />
-        </Card.Text>
+        <Form noValidate validated={validated}>
+          <Card.Title className="poppins-dark" data-testid="task-card-title">
+            <TaskEditable
+              placeholder="Enter title"
+              editing={editing || newItem !== undefined}
+              type="string"
+              getter={tempTask.title}
+              setter={updateTaskTitle}
+            />
+          </Card.Title>
+          <Card.Subtitle
+            className="mb-2 text-muted"
+            data-testid="task-card-deadline"
+          >
+            <TaskEditable
+              placeholder="Enter deadline"
+              editing={editing || newItem !== undefined}
+              type="date"
+              getter={tempTask.deadline}
+              setter={updateTaskDeadline}
+            />
+          </Card.Subtitle>
+          <Card.Text data-testid="task-card-desc">
+            <TaskEditable
+              placeholder="Enter description"
+              editing={editing || newItem !== undefined}
+              type="paragraph"
+              getter={tempTask.description}
+              setter={updateTaskDescription}
+            />
+          </Card.Text>
+        </Form>
       </Card.Body>
     </Card>
   );

@@ -1,7 +1,11 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable prettier/prettier */
 import { taskCompletePoints } from '../rewards-store/controller';
+import { pomodoroSessionPoints } from "../rewards-store/controller";
 
 export type TimerState = 'focus' | 'break';
+import timerSound from '../Static/sounds/bell.mp3'
+
 
 export interface PomodoroState {
   state: TimerState;
@@ -76,8 +80,10 @@ export class PomodoroTimerModel {
       this.onFocusComplete?.(this.focusElapsed);
       this.focusElapsed = 0;
 
-      taskCompletePoints();
+      //taskCompletePoints();
 
+      pomodoroSessionPoints(5);
+      window.electronAPI?.updatePoints?.();
       // Now switch to break
       this.state.state = 'break';
       this.state.remainingTime = this.state.breakTime;
@@ -86,7 +92,8 @@ export class PomodoroTimerModel {
       this.state.state = 'focus';
       this.state.remainingTime = this.state.focusTime;
     }
-
+    const audio = new Audio(timerSound);
+    audio.play();
     this.onTick?.({ ...this.state });
   }
 

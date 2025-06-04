@@ -4,6 +4,8 @@ import {act, fireEvent, render, screen, within} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import View from '../view';
 import taskControllerInstance from '../controller';
+import {CustomDate} from '../helpers';
+import {v4 as uuid} from 'uuid';
 
 describe('Task View', () => {
   beforeEach(() => {
@@ -12,6 +14,14 @@ describe('Task View', () => {
 
     // tell vitest we use mocked time
     vi.useFakeTimers();
+
+    // Mock the API
+    (window as any).electron = {
+      dbInsert: vi.fn().mockImplementation(() => Promise.resolve(uuid())),
+      dbGetAll: vi.fn().mockResolvedValue([]),
+      dbUpdate: vi.fn(),
+      dbRemove: vi.fn(),
+    };
 
     // Set fake time (note that 5 is actually 6 for June)
     vi.setSystemTime(new Date(2025, 5, 28, 0, 0, 0));
@@ -29,17 +39,17 @@ describe('Task View', () => {
   describe('upcoming week task rendering', () => {
     it('shows no upcoming tasks for the week', async () => {
       // Create tasks with wrong dates
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 27, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
-        new Date(2025, 6, 6, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 6, 0, 0, 0)),
       );
       // Expect text with no tasks
       act(() => {
@@ -48,31 +58,31 @@ describe('Task View', () => {
       expect(screen.queryByTestId('no-tasks-msg')).toBeInTheDocument();
       expect(screen.queryByTestId('task-card')).not.toBeInTheDocument();
     });
-    it('shows only upcoming tasks for the week', () => {
+    it('shows only upcoming tasks for the week', async () => {
       // Create tasks with wrong dates
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 27, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
-        new Date(2025, 6, 3, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 3, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 3',
         'dummy',
         1,
-        new Date(2025, 6, 5, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 5, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 4',
         'dummy',
         1,
-        new Date(2025, 6, 6, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 6, 0, 0, 0)),
       );
       // Expect two task cards rendered
       render(<View />);
@@ -133,7 +143,9 @@ describe('Task View', () => {
         screen.getByTestId('save-task-btn').click();
       });
       // Expect a single card
-      expect(screen.queryByTestId('no-tasks-msg')).not.toBeInTheDocument();
+      await vi.waitFor(() =>
+        expect(screen.queryByTestId('no-tasks-msg')).not.toBeInTheDocument(),
+      );
       expect(screen.getAllByTestId('task-card')).toHaveLength(1);
       // Single card should contain correct details
       expect(
@@ -143,16 +155,44 @@ describe('Task View', () => {
         within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
       ).toHaveTextContent('dummy test description');
     });
+    it('prevents invalid fields', async () => {
+      // Create the mock screen
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click button to open task editor
+        screen.queryByTestId('open-new-task-button').click();
+        // Submit task
+        screen.getByTestId('save-task-btn').click();
+      });
+      // Show error messages (and keep in editing mode)
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByTestId('task-editable')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByText('Please enter a value')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByText('Please enter a date')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+    });
   });
 
   describe('task editing', () => {
     it('opens task editor', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -192,11 +232,11 @@ describe('Task View', () => {
     });
     it('edits a task correctly', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -240,16 +280,51 @@ describe('Task View', () => {
         within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
       ).toHaveTextContent('dummy test description');
     });
+    it('prevents invalid fields', async () => {
+      // Create a fake task
+      await taskControllerInstance.handleCreateTask(
+        'dummy task',
+        'dummy',
+        1,
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
+      );
+      // Create the mock screen
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click the edit icon
+        screen.getByTestId('task-edit-btn').click();
+        // Submit task
+        screen.getByTestId('save-task-btn').click();
+      });
+      // Show error messages (and keep in editing mode)
+      within(screen.getByTestId('task-card'))
+        .queryAllByTestId('task-editable')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('task-card'))
+        .queryAllByText('Please enter a value')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('task-card'))
+        .queryAllByText('Please enter a date')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+    });
   });
 
   describe('task deletion and cancel', () => {
     it('prompts user to confirm deletion', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -263,11 +338,11 @@ describe('Task View', () => {
     });
     it('cancel deletion prompt does not affect tasks', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -295,11 +370,11 @@ describe('Task View', () => {
     });
     it('confirm deletion prompt removes task card', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);

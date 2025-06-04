@@ -6,9 +6,16 @@ import {
   TaskAction,
 } from './model';
 import {CourseId, Course} from './course';
-import { taskCompletePoints } from '../rewards-store/controller';
+import {CustomDate} from './helpers';
+import {celebratePet} from '../pet/petCelebration';
+import {taskCompletePoints} from '../rewards-store/controller';
 
-export type TaskError = 'deleteError' | 'completeError' | 'syncError';
+export type TaskError =
+  | 'deleteError'
+  | 'completeError'
+  | 'syncError'
+  | 'updateError'
+  | 'createError';
 
 export class TaskController {
   // Database file name
@@ -72,7 +79,7 @@ export class TaskController {
               doc.title,
               doc.description,
               doc.course,
-              doc.deadline,
+              new CustomDate(doc.deadline),
               doc._id,
               link,
               status,
@@ -102,11 +109,11 @@ export class TaskController {
   /**
    * Handle create task user action
    */
-  public handleCreateTask(
+  public async handleCreateTask(
     title: string,
     description: string,
     course: CourseId,
-    deadline: Date,
+    deadline: CustomDate,
     link?: URL,
   ) {
     // Create task using task model
@@ -118,19 +125,36 @@ export class TaskController {
       undefined,
       link,
     );
-    // Get task ID
-    const createdTaskId = createdTask.getId();
-    // Save task in temporary state
-    this.tasks.set(createdTaskId, createdTask);
+    // Verify the validity of the task state
+    // Validate the new state
+    if (!createdTask.isValid()) {
+      // Throw an error
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'createError',
+          'Tried to create a task with invalid fields',
+        );
+      }
+      return;
+    }
     // Save task to database
+    let createdTaskId: string;
     try {
-      window.electron.dbInsert({
+      // TODO: Create a loader feedback in the UI
+      createdTaskId = await window.electron.dbInsert({
         filename: TaskController.FILE_NAME,
         document: createdTask.getState(),
       });
     } catch (err) {
       // TODO: Handle errors with database
+      if (this.errorCallback !== undefined) {
+        this.errorCallback('createError', 'Failed to save new task, try again');
+      }
+      return;
     }
+    // Save task in temporary state
+    createdTask.setId(createdTaskId);
+    this.tasks.set(createdTaskId, createdTask);
     // Update the view
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
@@ -138,9 +162,25 @@ export class TaskController {
     return createdTaskId;
   }
 
-  public handleTaskUpdate(id: TaskId, task: TaskState) {
+  public handleTaskUpdate(id: TaskId, task: Partial<TaskState>) {
     const taskToUpdate = this.tasks.get(id);
-    taskToUpdate.setState(task);
+    // Save old task state
+    const oldTaskState = taskToUpdate.getState();
+    // Update the task state
+    taskToUpdate.setState({...oldTaskState, ...task});
+    // Validate the new state
+    if (!taskToUpdate.isValid()) {
+      // Revert the state
+      taskToUpdate.setState(oldTaskState);
+      // Throw an error
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'updateError',
+          'Tried to update a task with invalid fields',
+        );
+      }
+      return;
+    }
     // Update in disk
     // TODO: Await and handle any errors in UI
     try {
@@ -159,16 +199,11 @@ export class TaskController {
   }
 
   public markComplete(id?: TaskId) {
-    let taskToUpdate: TaskModel;
-    if (id === undefined && this.activeTask !== undefined) {
+    if (this.activeTask !== undefined) {
       // Delete active task
-      taskToUpdate = this.tasks.get(this.activeTask);
-      taskCompletePoints();
-    } else if (id !== undefined) {
-      // Delete specified task
-      taskToUpdate = this.tasks.get(id);
-      taskCompletePoints();
-    } else {
+      id = this.activeTask;
+    }
+    if (id === undefined) {
       if (this.errorCallback !== undefined) {
         this.errorCallback(
           'completeError',
@@ -177,28 +212,13 @@ export class TaskController {
       }
       return;
     }
-    taskToUpdate.setState({
-      title: taskToUpdate.getState().title,
-      description: taskToUpdate.getState().description,
-      course: taskToUpdate.getState().course,
-      deadline: taskToUpdate.getState().deadline,
-      link: taskToUpdate.getState().link,
-      imported: taskToUpdate.getState().imported,
+    this.handleTaskUpdate(id, {
       status: 'completed',
     });
-    // TODO: Await and handle any errors in UI
-    try {
-      window.electron.dbUpdate(
-        TaskController.FILE_NAME,
-        taskToUpdate.getId(),
-        taskToUpdate.getState(),
-      );
-    } catch (err) {
-      // Ignore for now.
-    }
-    if (this.viewUpdateCallback !== undefined) {
-      this.viewUpdateCallback(this.getTaskList());
-    }
+
+    // Trigger pet celebration and award points
+    celebratePet();
+    taskCompletePoints();
   }
 
   public deleteTask(id?: TaskId) {

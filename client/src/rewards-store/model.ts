@@ -23,12 +23,12 @@ import CheckListImage from '../Static/coming-soon.png';
 import HomeworkImage from '../Static/coming-soon.png';
 import CalendarImage from '../Static/coming-soon.png';
 
-export interface Pet {
-  ID: string;
-  name: string;
-  price: number;
-  owned: boolean;
-}
+// export interface Pet {
+//   ID: string;
+//   name: string;
+//   price: number;
+//   owned: boolean;
+// }
 
 export interface marketPlaceItem {
   ID: string;
@@ -57,9 +57,9 @@ export const categoryToEquippedKey = {
     export type CategoryKey = keyof typeof categoryToEquippedKey;
 
 export interface RewardState {
-  _id: string; // e.g., 'user-rewards'
+  _id: string;    // always "user-rewards"
   points: number;
-  ownedItems: string[]; 
+  ownedItems: string[];
 }
 
 export class RewardsStore {
@@ -73,39 +73,16 @@ export class RewardsStore {
         tasks: marketPlaceItem[];
     };
     private points: number;
+    private ownedItems: string[];
     public equipped: equippedItems;
 
   constructor() {
     this.marketItems = {
       pets: [
-        {
-          ID: 'pet-husky',
-          name: 'Husky',
-          price: 200,
-          owned: true,
-          image: HuskyImage,
-        },
-        {
-          ID: 'pet-tiger',
-          name: 'Tiger',
-          price: 200,
-          owned: false,
-          image: TigerImage,
-        },
-        {
-          ID: 'pet-duck',
-          name: 'Duck',
-          price: 200,
-          owned: false,
-          image: DuckImage,
-        },
-        {
-          ID: 'pet-frog',
-          name: 'Frog',
-          price: 200,
-          owned: false,
-          image: FrogImage,
-        },
+        { ID: 'pet-husky',  name: 'Husky',  price: 200, owned: true,  image: HuskyImage  },
+        { ID: 'pet-tiger',  name: 'Tiger',  price: 200, owned: false, image: TigerImage  },
+        { ID: 'pet-duck',   name: 'Duck',   price: 200, owned: false, image: DuckImage   },
+        { ID: 'pet-frog',   name: 'Frog',   price: 200, owned: false, image: FrogImage   },
       ],
       accessories: [
         { ID: 'acc-hat', 
@@ -197,16 +174,15 @@ export class RewardsStore {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.loadStateFromDB();
   }
-  
-  
-  async loadStateFromDB() {
-    const state = await window.electronAPI?.getRewards?.();
-    if (!state || typeof state.points !== 'number') {
-      console.warn('No reward state loaded — skipping initialization.');
-      return;
-    }
 
-    this.points = state.points;
+  private async loadStateFromDB(): Promise<void> {
+    try {
+      const state = await window.electronAPI!.getRewards();
+      if (!state || typeof state.points !== 'number') {
+        return;
+      }
+      this.points = state.points;
+      this.ownedItems = state.ownedItems.slice();
 
      this.equipped = {
             pet: {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
@@ -217,20 +193,44 @@ export class RewardsStore {
         };
 
     for (const category of Object.values(this.marketItems)) {
-      for (const item of category) {
-        if (state.ownedItems.includes(item.ID)) {
-          item.owned = true;
+        for (const item of category) {
+          item.owned = state.ownedItems.includes(item.ID);
         }
       }
+    } catch {
+      // On error, keep defaults (points=200, no ownedItems)
     }
-  } 
-
-  public deductPoints(amount: number) {
-    this.points = this.points - amount;
   }
 
-  public addPoints(amount: number) {
-    this.points += amount;
+  // public addPoints(amount: number) {
+  //   this.points += amount;
+  // }
+
+  public async deductPoints(amount: number): Promise<void> {
+    try {
+      const state = await window.electronAPI!.getRewards();
+      this.points = state?.points ?? this.points;
+      this.ownedItems = state?.ownedItems.slice() ?? this.ownedItems;
+
+      this.points = Math.max(0, this.points - amount);
+      await this.updateRewards(this.points, this.ownedItems);
+    } catch {
+      // ignore
+    }
+  }
+
+  /** Add `amount` to points, syncing with DB first */
+  public async addPoints(amount: number): Promise<void> {
+    try {
+      const state = await window.electronAPI!.getRewards();
+      this.points = state?.points ?? this.points;
+      this.ownedItems = state?.ownedItems.slice() ?? this.ownedItems;
+
+      this.points += amount;
+      await this.updateRewards(this.points, this.ownedItems);
+    } catch {
+      // ignore
+    }
   }
 
   //Get item ID number through name
@@ -252,35 +252,20 @@ export class RewardsStore {
     itemId: string
   ): Promise<boolean> {
     const items = this.marketItems[category];
-    const item = items.find(i => i.ID === itemId);
+    const item = items.find((i) => i.ID === itemId);
     if (!item) {
-      console.log(`Item with ID ${itemId} not found in category ${category}`);
       return false;
     }
-    if (item.owned) {
-      console.log(`User already owns ${item.name}`);
+    // Allow purchase if price == points; reject only if price > points
+    if (item.owned || item.price > this.points) {
       return false;
     }
-    if (item.price > this.points) {
-      console.log(`Not enough points to purchase ${item.name}`);
-      return false;
-    }
-    
-    // Deduct points
-    this.deductPoints(item.price);
-    
-    // Mark item as owned
+
+    // Deduct in-memory first, then persist
+    this.points -= item.price;
     item.owned = true;
-
-    // Prepare updated owned items list: gather all owned item IDs from all categories
-    const ownedItems = Object.values(this.marketItems)
-      .flat()
-      .filter(i => i.owned)
-      .map(i => i.ID);
-
-    // Call updateRewards with new points and ownedItems array
-    await this.updateRewards(this.points, ownedItems);
-
+    this.ownedItems.push(item.ID);
+    await this.updateRewards(this.points, this.ownedItems);
     return true;
   }
 
@@ -295,65 +280,48 @@ export class RewardsStore {
         console.log('Currently equipped: ', this.equipped);
     }
 
-  async updateRewards(points: number, ownedItems: string[]): Promise<void> {
+  /** Write out the given `points` + `ownedItems` to the DB */
+  public async updateRewards(points: number, ownedItems: string[]): Promise<void> {
     try {
-      // Assuming you expose this via your preload API as electronAPI.updateRewards
-      await window.electronAPI.updateRewards({ points, ownedItems });
-      console.log('Rewards updated successfully');
-    } catch (error) {
-      console.error('Failed to update rewards:', error);
+      await window.electronAPI!.updateRewards({ points, ownedItems });
+    } catch {
+      // ignore failures
     }
   }
 
-  
-
-    // gets the specific item based on item ID
-    // returns exception if pet with give name is not in list of available pets
-    public getItem(id: string): marketPlaceItem {
-
-        for (const category in this.marketItems){
-            const items = this.marketItems[category as keyof typeof this.marketItems];
-            for (const item of items){
-                if (item.ID === id){
-                    return item;
-
-                }
-            }
-        }
-        throw new Error(`Item ${id} not found`);
-    }
-
-  // returns users' current list of points available to spend
-  public getTotalPoints() {
+  public getTotalPoints(): number {
     return this.points;
   }
 
-  // checks if user has enough points to spend on an item
-  public canAfford(item: marketPlaceItem): boolean {
-    if (item.price > this.points) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  //updates the users new points
-  public updatePoints(newPoints: number): void {
+  /** Set `this.points` locally, then persist to DB. */
+  public async updatePoints(newPoints: number): Promise<void> {
     this.points = newPoints;
+    await this.updateRewards(this.points, this.ownedItems);
   }
 
-  //return a list of all the owned items
-  public getOwnedItems() {
-    const owned_items: marketPlaceItem[] = [];
-
-    for (const category in this.marketItems) {
-      const items = this.marketItems[category as keyof typeof this.marketItems];
-      for (const item of items) {
-        if (item.owned === true) {
-          owned_items.push(item);
+  public getOwnedItems(): marketPlaceItem[] {
+    const ownedList: marketPlaceItem[] = [];
+    for (const category of Object.values(this.marketItems)) {
+      for (const item of category) {
+        if (item.owned) {
+          ownedList.push(item);
         }
       }
     }
-    return owned_items;
+    return ownedList;
+  }
+
+  public getItem(id: string): marketPlaceItem {
+    for (const category of Object.values(this.marketItems)) {
+      const found = category.find((item) => item.ID === id);
+      if (found) {
+        return found;
+      }
+    }
+    throw new Error(`Item with ID ${id} not found`);
+  }
+
+  public canAfford(item: marketPlaceItem): boolean {
+    return item.price <= this.points;
   }
 }
