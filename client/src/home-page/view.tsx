@@ -212,13 +212,14 @@ const View: React.FC = () => {
         <Col>
           <div className="activeCard">
             <h1>Friends</h1>
+            <div className='comingSoon'>Coming Soon!</div>
           </div>
         </Col>
         <Col>
           <div className="activeCard">
             <h1>To Do</h1>
             <ul className="taskList">
-              {todoTasks.length === 0 && <li className="noTasks">No tasks pending 🎉</li>}
+              {todoTasks.length === 0 && <li className="noTasks">All Tasks Complete! 🎉</li>}
               {todoTasks.map(([id, task]) => (
                 <li key={id} className="taskListItem">
                   <span className="bullet">&#x2022;</span>
