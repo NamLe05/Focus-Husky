@@ -11,17 +11,17 @@ import RedHat from '../Static/red-hat.png';
 import ExplorerHat from '../Static/explorer-hat.png';
 import MidnightHat from '../Static/midnight-hat.png';
 
-import ClassicTimerImage from '../Static/classic-timer.png';
-import PomodoroImage from '../Static/pomodoro.png';
-import StopWatchImage from '../Static/stopwatch.png';
+import ClassicTimerImage from '../Static/coming-soon.png';
+import PomodoroImage from '../Static/coming-soon.png';
+import StopWatchImage from '../Static/coming-soon.png';
 
-import BellImage from '../Static/bell.png';
-import ChimeImage from '../Static/chime.png';
-import AlertImage from '../Static/alert.png';
+import BellImage from '../Static/coming-soon.png';
+import ChimeImage from '../Static/coming-soon.png';
+import AlertImage from '../Static/coming-soon.png';
 
-import CheckListImage from '../Static/checklist.png';
-import HomeworkImage from '../Static/homework.png';
-import CalendarImage from '../Static/calendar.png';
+import CheckListImage from '../Static/coming-soon.png';
+import HomeworkImage from '../Static/coming-soon.png';
+import CalendarImage from '../Static/coming-soon.png';
 
 export interface Pet {
   ID: string;
@@ -132,38 +132,38 @@ export class RewardsStore {
         {
           ID: 'timer-classic',
           name: 'Classic Timer',
-          price: 30,
+          price: 0,
           owned: false,
           image: ClassicTimerImage,
         },
         {
           ID: 'timer-pomodoro',
           name: 'Pomodoro',
-          price: 25,
+          price: 0,
           owned: false,
           image: PomodoroImage,
         },
         {
           ID: 'timer-stopwatch',
           name: 'Stopwatch',
-          price: 15,
+          price: 0,
           owned: false,
           image: StopWatchImage,
         },
       ],
       sounds: [
-        {ID: uuidv4(), name: 'Bell', price: 30, owned: false, image: BellImage},
+        {ID: uuidv4(), name: 'Bell', price: 0, owned: false, image: BellImage},
         {
           ID: 'sounds-chime',
           name: 'Chime',
-          price: 25,
+          price: 0,
           owned: false,
           image: ChimeImage,
         },
         {
           ID: 'sounds-alert',
           name: 'Alert',
-          price: 15,
+          price: 0,
           owned: false,
           image: AlertImage,
         },
@@ -172,21 +172,21 @@ export class RewardsStore {
         {
           ID: 'tasks-checklist',
           name: 'Checklist',
-          price: 40,
+          price: 0,
           owned: false,
           image: CheckListImage,
         },
         {
           ID: 'tasks-homework',
           name: 'Homework',
-          price: 45,
+          price: 0,
           owned: false,
           image: HomeworkImage,
         },
         {
           ID: 'task-calendar',
           name: 'Calendar',
-          price: 55,
+          price: 0,
           owned: false,
           image: CalendarImage,
         },
