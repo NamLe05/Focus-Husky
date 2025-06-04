@@ -18,7 +18,11 @@ export default function MarketView() {
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
   const [items, setItems] = useState<marketPlaceItem[]>(store.marketItems[activeTab]);
-  const [equippedItems, setEquippedItems] = useState(store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]);
+  const [equippedItems, setEquippedItems] = useState(
+    store.equipped
+      ? store.equipped[categoryToEquippedKey[activeTab as CategoryKey]]
+      : undefined
+  );
 
   // Whenever the active tab changes, reload items from the store
   useEffect(() => {
@@ -111,7 +115,7 @@ export default function MarketView() {
         </div>
 
         {/* Show unequip button if an accessory is equipped and the accessories tab is active */}
-        {activeTab === 'accessories' && store.equipped.accessory && (
+        {activeTab === 'accessories' && store.equipped && store.equipped.accessory && (
           <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
             <button
               className="equip-button"
