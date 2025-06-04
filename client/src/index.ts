@@ -129,9 +129,8 @@ app.on('activate', () => {
 // code. You can also put them in separate files and import them here.
 ipcMain.handle('getCanvasAssignments', async (e, userToken) => {
   console.log('invoking the API');
-  // Canvas will maintain an updated state of tasks for up to 3 months (~1 quarter)
+  // Canvas will maintain an updated state of tasks for up to 1 month
   const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - 3);
 
   // First, we need to query all the planner items.
   const api = `${CANVAS_BASE_URL}/api/v1/planner/items`;
@@ -360,8 +359,10 @@ const getDbInstance = (filename: string) => {
 // Export getDbInstance globally for use in PetController
 (global as any).getDbInstance = getDbInstance;
 
-ipcMain.handle('insertDoc', async (e, {filename, document}: DbInsertConfig) => {
-  return await getDbInstance(filename).insertDoc(document);
+ipcMain.handle(
+  'insertDoc',
+  async (e, {filename, document}: DbInsertConfig, id?: string) => {
+    return await getDbInstance(filename).insertDoc(document, id);
 });
 
 ipcMain.handle('getAllDocs', async (e, filename: string) => {

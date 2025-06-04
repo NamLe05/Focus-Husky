@@ -24,7 +24,9 @@ export default class TypedDatastore<T> {
    * Inserts a new document into the typed database
    * @param document A valid document of type <T>
    */
-  async insertDoc(document: T): Promise<string> {
+  async insertDoc(document: T, id?: string): Promise<string> {
+    const modifiedDoc: T & {_id?: string} = document;
+    modifiedDoc._id = id;
     const doc = await this.db.insertAsync(document);
     return doc._id;
   }
