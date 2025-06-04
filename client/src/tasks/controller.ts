@@ -7,8 +7,8 @@ import {
 } from './model';
 import {CourseId, Course} from './course';
 import {CustomDate} from './helpers';
-import { celebratePet } from '../pet/petCelebration';
-import { taskCompletePoints } from '../rewards-store/controller';
+import {celebratePet} from '../pet/petCelebration';
+import {taskCompletePoints} from '../rewards-store/controller';
 
 export type TaskError =
   | 'deleteError'
@@ -157,12 +157,12 @@ export class TaskController {
     return createdTaskId;
   }
 
-  public handleTaskUpdate(id: TaskId, task: TaskState) {
+  public handleTaskUpdate(id: TaskId, task: Partial<TaskState>) {
     const taskToUpdate = this.tasks.get(id);
     // Save old task state
     const oldTaskState = taskToUpdate.getState();
     // Update the task state
-    taskToUpdate.setState(task);
+    taskToUpdate.setState({...oldTaskState, ...task});
     // Validate the new state
     if (!taskToUpdate.isValid()) {
       // Revert the state
@@ -194,16 +194,10 @@ export class TaskController {
   }
 
   public markComplete(id?: TaskId) {
-    let taskToUpdate: TaskModel;
     if (id === undefined && this.activeTask !== undefined) {
       // Delete active task
-      taskToUpdate = this.tasks.get(this.activeTask);
-      taskCompletePoints();
-    } else if (id !== undefined) {
-      // Delete specified task
-      taskToUpdate = this.tasks.get(id);
-      taskCompletePoints();
-    } else {
+      id = this.activeTask;
+    } else if (id === undefined) {
       if (this.errorCallback !== undefined) {
         this.errorCallback(
           'completeError',
@@ -212,30 +206,13 @@ export class TaskController {
       }
       return;
     }
-    taskToUpdate.setState({
-      title: taskToUpdate.getState().title,
-      description: taskToUpdate.getState().description,
-      course: taskToUpdate.getState().course,
-      deadline: taskToUpdate.getState().deadline,
-      link: taskToUpdate.getState().link,
-      imported: taskToUpdate.getState().imported,
+    this.handleTaskUpdate(id, {
       status: 'completed',
     });
-    // TODO: Await and handle any errors in UI
-    try {
-      window.electron.dbUpdate(
-        TaskController.FILE_NAME,
-        taskToUpdate.getId(),
-        taskToUpdate.getState(),
-      );
-    } catch (err) {
-      // Ignore for now.
-    }
-    if (this.viewUpdateCallback !== undefined) {
-      this.viewUpdateCallback(this.getTaskList());
-    }
-    // Trigger pet celebration
+
+    // Trigger pet celebration and award points
     celebratePet();
+    taskCompletePoints();
   }
 
   public deleteTask(id?: TaskId) {
