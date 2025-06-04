@@ -83,6 +83,7 @@ export class TaskController {
               doc._id,
               link,
               status,
+              doc.imported,
             );
             // Get task ID
             const createdTaskId = createdTask.getId();

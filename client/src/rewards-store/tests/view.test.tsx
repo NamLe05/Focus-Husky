@@ -1,9 +1,9 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
 import React from 'react';
 import {render, screen, fireEvent} from '@testing-library/react';
-import MarketView from './view';
-import {RewardsStore} from './model';
-import * as ControllerModule from './controller';
+import MarketView from '../view';
+import {RewardsStore} from '../model';
+import * as ControllerModule from '../controller';
 
 // describe('MarketView - testing the UI buttons and functionality', () => {
 
@@ -25,8 +25,8 @@ describe('MarketView - testing the UI when user has low points', () => {
     testStore.marketItems.pets = [testStore.marketItems.pets[0]];
 
     vi.spyOn(ControllerModule, 'store', 'get').mockReturnValue(testStore);
-    vi.spyOn(ControllerModule, 'handleItemPurchase').mockImplementation(
-      () => false,
+    vi.spyOn(ControllerModule, 'handleItemPurchase').mockReturnValue(
+      Promise.resolve(false),
     );
   });
 

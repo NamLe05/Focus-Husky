@@ -188,7 +188,7 @@ export class RewardsStore {
       // Restore equipped items if present
       if (state.equipped) {
         this.equipped = {
-          pet: state.equipped.pet ?? {ID: uuidv4(), name: 'Husky', price: 200, owned: true, image: HuskyImage},
+          pet: state.equipped.pet ?? {ID: state._id, name: 'Husky', price: 200, owned: true, image: HuskyImage},
           accessory: state.equipped.accessory ?? null,
           timer: state.equipped.timer ?? null,
           sound: state.equipped.sound ?? null,
