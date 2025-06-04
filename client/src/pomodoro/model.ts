@@ -1,7 +1,7 @@
 import { pomodoroSessionPoints } from "../rewards-store/controller";
 
 export type TimerState = 'focus' | 'break';
-import timerSound from '../Static/sounds/bell.wav'
+import timerSound from '../Static/sounds/bell.mp3'
 
 
 export interface PomodoroState {

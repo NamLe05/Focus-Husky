@@ -455,7 +455,6 @@ ipcMain.handle('get-rewards-state', async () => {
 
 
 ipcMain.handle('update-rewards-state', async (event, newState: Partial<RewardState>) => {
-  console.log('saved item')
   const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
 
   const [existing] = await db.findDoc({ _id: 'user-rewards' });
