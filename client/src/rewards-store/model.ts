@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { v4 as uuidv4 } from 'uuid';
 import HuskyImage from '../Static/Husky.png';
 import FrogImage from '../Static/Frog.png';
