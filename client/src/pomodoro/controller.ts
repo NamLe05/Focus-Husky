@@ -1,3 +1,4 @@
+import { pomodoroSessionPoints } from '../rewards-store/controller';
 import { PomodoroTimerModel, PomodoroState } from './model';
 
 export class PomodoroController {
@@ -36,6 +37,11 @@ export class PomodoroController {
       const delta = elapsedSeconds - this.lastSentElapsed;
       if (delta > 0) {
         window.electronAPI?.incrementTotalTime?.(delta);
+        const pointsToAdd = Math.floor(delta / 60);
+        if (pointsToAdd > 0) {
+          pomodoroSessionPoints(pointsToAdd);
+          window.electronAPI?.updatePoints?.();
+        }
       }
 
       window.electronAPI?.notifyFocusSessionEnded?.();
@@ -57,6 +63,12 @@ export class PomodoroController {
 
         if (delta >= 60) { // every 60 seconds increment total time
           window.electronAPI?.incrementTotalTime?.(delta);
+
+          const pointsToAdd = Math.floor(delta / 60);
+          if (pointsToAdd > 0) {
+            pomodoroSessionPoints(pointsToAdd);
+            window.electronAPI?.updatePoints?.();
+          }
           this.lastSentElapsed = elapsed;
         }
       }
@@ -79,6 +91,11 @@ export class PomodoroController {
         if (delta > 0) {
           window.electronAPI?.incrementTotalTime?.(delta);
           window.electronAPI?.notifyFocusSessionEnded?.();
+          const pointsToAdd = Math.floor(delta / 60);
+          if (pointsToAdd > 0) {
+            pomodoroSessionPoints(pointsToAdd);
+            window.electronAPI?.updatePoints?.();
+          }
           this.lastSentElapsed = elapsed;
         }
       }
@@ -88,7 +105,6 @@ export class PomodoroController {
       this.timerModel.start();
       this.startPeriodicUpdate();
     }
-
     this.timerState = !this.timerState;
     this.updateViewState();
   }
@@ -104,7 +120,6 @@ export class PomodoroController {
         this.lastSentElapsed = elapsed;
       }
     }
-
     this.timerModel.switchState();
     this.updateViewState();
   }

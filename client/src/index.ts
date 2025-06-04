@@ -474,3 +474,10 @@ ipcMain.handle('update-rewards-state', async (event, newState: Partial<RewardSta
 
   return; // or return updatedState if you want
 });
+
+
+ipcMain.on('points-updated', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('points-updated');
+  }
+});

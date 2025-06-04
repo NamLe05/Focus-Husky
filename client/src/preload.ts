@@ -91,4 +91,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return await ipcRenderer.invoke('update-rewards-state', { points, ownedItems });
   },
 
+  updatePoints: () => {
+    ipcRenderer.send('points-updated');
+  },
+
+  // 2) MarketView (renderer) will call this to register a listener
+  onPointsUpdated: (callback: () => void) => {
+    // Wrap it so we can remove exactly this listener later
+    const wrapped = () => {
+      callback();
+    };
+    ipcRenderer.on('points-updated', wrapped);
+    return wrapped; 
+  },
+
+  // 3) MarketView (renderer) will call this to remove that same listener
+  removePointsUpdatedListener: (wrappedListener: any) => {
+    ipcRenderer.removeListener('points-updated', wrappedListener);
+  },
+
 });
