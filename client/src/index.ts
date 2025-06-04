@@ -221,8 +221,19 @@ const createPomodoroWindow = async (): Promise<void> => {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   });
+
+  // Robust always-on-top logic for Pomodoro window
+  const ensurePomodoroAlwaysOnTop = () => {
+    if (pomodoroWindow) pomodoroWindow.setAlwaysOnTop(true, 'screen-saver');
+  };
+  pomodoroWindow.on('focus', ensurePomodoroAlwaysOnTop);
+  pomodoroWindow.on('show', ensurePomodoroAlwaysOnTop);
+  pomodoroWindow.on('blur', ensurePomodoroAlwaysOnTop);
+  const pomodoroAlwaysOnTopInterval = setInterval(ensurePomodoroAlwaysOnTop, 2000);
+
   await pomodoroWindow.loadURL(POMODORO_WINDOW_WEBPACK_ENTRY);
   pomodoroWindow.on('closed', () => {
+    clearInterval(pomodoroAlwaysOnTopInterval);
     pomodoroWindow = null;
   });
 };
@@ -531,7 +542,6 @@ ipcMain.handle('get-rewards-state', async () => {
 ipcMain.handle(
   'update-rewards-state',
   async (event, newState: Partial<RewardState>) => {
-    console.log('saved item');
     const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
 
     const [existing] = await db.findDoc({_id: 'user-rewards'});
@@ -551,3 +561,10 @@ ipcMain.handle(
     return; // or return updatedState if you want
   },
 );
+
+
+ipcMain.on('points-updated', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('points-updated');
+  }
+});

@@ -206,3 +206,17 @@
   margin-top: 0.2vh;
   user-select: text;
 }
+
+.comingSoon {
+    margin-left: 40%;
+    padding-top: 10%;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.noTasks {
+    margin-left: 28%;
+    padding-top: 10%;
+    font-weight: 600;
+    font-size: 18px;
+}

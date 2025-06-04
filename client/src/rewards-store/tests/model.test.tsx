@@ -12,7 +12,7 @@ describe('RewardsStore API methods', () => {
   beforeEach(() => {
     vi.resetModules();
 
-    // Mock the electronAPI methods
+    // Mock electronAPI before constructing the store
     (window as any).electronAPI = {
       getRewards: vi.fn().mockResolvedValue(mockInitialState),
       updateRewards: vi.fn().mockResolvedValue(undefined)
@@ -22,7 +22,8 @@ describe('RewardsStore API methods', () => {
   });
 
   it('loadStateFromDB correctly updates internal state from API', async () => {
-    await store.loadStateFromDB();
+    // Wait one tick so constructor’s loadStateFromDB() finishes
+    await Promise.resolve();
 
     expect(store.getTotalPoints()).toBe(300);
     const ownedItems = store.getOwnedItems().map(i => i.ID);
@@ -43,10 +44,10 @@ describe('RewardsStore API methods', () => {
   });
 
   it('purchaseItem updates ownership and points if item can be afforded', async () => {
-    // Ensure enough points to buy
-    await store.loadStateFromDB();
-    const itemId = 'acc-collar'; // Price 75 < 300
+    // Wait for initial load
+    await Promise.resolve();
 
+    const itemId = 'acc-collar'; // price 75 < 300
     const result = await store.purchaseItem('accessories', itemId);
 
     expect(result).toBe(true);
@@ -58,7 +59,7 @@ describe('RewardsStore API methods', () => {
   });
 
   it('purchaseItem returns false and does nothing if item is already owned', async () => {
-    await store.loadStateFromDB();
+    await Promise.resolve();
 
     const result = await store.purchaseItem('pets', 'pet-husky');
     expect(result).toBe(false);
@@ -66,10 +67,12 @@ describe('RewardsStore API methods', () => {
   });
 
   it('purchaseItem returns false if not enough points', async () => {
-    await store.loadStateFromDB();
+    await Promise.resolve();
 
-    // Reduce points manually to simulate insufficient funds
-    store.updatePoints(10);
+    // Simulate insufficient funds
+    await store.updatePoints(10);
+    // Clear the call made by updatePoints
+    (window as any).electronAPI.updateRewards.mockClear();
 
     const result = await store.purchaseItem('accessories', 'acc-collar'); // price 75
     expect(result).toBe(false);
@@ -77,7 +80,7 @@ describe('RewardsStore API methods', () => {
   });
 
   it('purchaseItem returns false if item ID not found', async () => {
-    await store.loadStateFromDB();
+    await Promise.resolve();
 
     const result = await store.purchaseItem('pets', 'nonexistent-id');
     expect(result).toBe(false);
@@ -85,20 +88,17 @@ describe('RewardsStore API methods', () => {
   });
 
   it('loadStateFromDB does nothing if electronAPI returns undefined', async () => {
-  // Make getRewards return undefined
-  (window as any).electronAPI.getRewards = vi.fn().mockResolvedValue(undefined);
+    // Make getRewards return undefined
+    (window as any).electronAPI.getRewards = vi.fn().mockResolvedValue(undefined);
 
-  // Manually reset the store to avoid side effects from earlier tests
-  store = new RewardsStore();
+    // Re-create store so constructor sees undefined
+    store = new RewardsStore();
+    await Promise.resolve();
 
-  // Attempt to load
-  await store.loadStateFromDB();
-
-  // Points should remain default (200), and no items should be owned
-  expect(store.getTotalPoints()).toBe(200);
-  const ownedItems = store.getOwnedItems();
-  expect(ownedItems.length).toBe(1);
-});
-
-
+    // Points should stay default (200), and only the default owned item remains
+    expect(store.getTotalPoints()).toBe(200);
+    const ownedItems = store.getOwnedItems().map(i => i.ID);
+    expect(ownedItems).toContain('pet-husky');
+    expect(ownedItems.length).toBe(1);
+  });
 });
