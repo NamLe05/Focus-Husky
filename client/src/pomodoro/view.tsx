@@ -3,7 +3,6 @@ import './styles.css';
 import {PomodoroController} from './controller';
 import {PomodoroState} from './model';
 import PetView from '../pet/view';
-
 import settingImg from '../Static/settings.png';
 
 export default function PomodoroView() {

@@ -1,4 +1,8 @@
+import { pomodoroSessionPoints } from "../rewards-store/controller";
+
 export type TimerState = 'focus' | 'break';
+import timerSound from '../Static/sounds/bell.mp3'
+
 
 export interface PomodoroState {
   state: TimerState;
@@ -66,13 +70,15 @@ export class PomodoroTimerModel {
   }
 
   public switchState(): void {
+    
     const justFinishedFocus = this.state.state === 'focus';
 
     if (justFinishedFocus) {
       // Pass focusElapsed to callback, then reset it
       this.onFocusComplete?.(this.focusElapsed);
       this.focusElapsed = 0;
-
+      pomodoroSessionPoints(5);
+      window.electronAPI?.updatePoints?.();
       // Now switch to break
       this.state.state = 'break';
       this.state.remainingTime = this.state.breakTime;
@@ -81,7 +87,8 @@ export class PomodoroTimerModel {
       this.state.state = 'focus';
       this.state.remainingTime = this.state.focusTime;
     }
-
+    const audio = new Audio(timerSound);
+    audio.play();
     this.onTick?.({ ...this.state });
   }
 

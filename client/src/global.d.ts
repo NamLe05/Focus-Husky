@@ -30,6 +30,11 @@ declare global {
       }>;
 
       updateRewards: (payload: { points: number; ownedItems: string[] }) => Promise<void>;
+
+      updatePoints: () => void;
+      onPointsUpdated: (callback: () => void) => void;
+      removePointsUpdatedListener: (callback: () => void) => void;
+      
     };
     electron: ElectronAPI;
   }

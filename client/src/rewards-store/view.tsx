@@ -1,50 +1,75 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import './styles.css';
-import {handleItemPurchase, store} from './controller';
-import {v4 as uuidv4} from 'uuid';
+import { handleItemPurchase, store } from './controller';
 import StarImage from '../Static/Star.png';
+import { marketPlaceItem } from './model';
+import { Modal, Button } from 'react-bootstrap';
 
-import {RewardsStore, marketPlaceItem} from './model';
-import {Modal, Button} from 'react-bootstrap';
-
-// Tab type and item interface
-
+// Tab type based on store.marketItems keys
 export type Tab = keyof typeof store.marketItems;
 
 export default function MarketView() {
   const [activeTab, setActiveTab] = useState<Tab>('pets');
   const [points, setPoints] = useState(store.getTotalPoints());
   const [popUpMessage, setPopUpMessage] = useState<string | null>(null);
+  const [items, setItems] = useState<marketPlaceItem[]>(store.marketItems[activeTab]);
 
-  const [items, setItems] = useState(store.marketItems[activeTab]);
-
+  // Whenever the active tab changes, reload items from the store
   useEffect(() => {
     setItems(store.marketItems[activeTab]);
   }, [activeTab]);
 
-  const onItemClick = (item: marketPlaceItem) => {
-    const points = store?.getTotalPoints?.();
-
-    if (!item) {
-      console.error('Item is undefined');
-      return;
+  // Refresh function: fetch latest rewards from main process, update store, then local state
+  const refresh = async () => {
+    // 1) Fetch the up-to-date rewards state (points + ownedItems) from the database
+    const rewards = await window.electronAPI!.getRewards();
+    // 2) Update the in-memory store so its marketItems[].owned flags and points match
+    store.updatePoints(rewards.points);
+    // Mark owned flags for every item
+    for (const category of Object.values(store.marketItems)) {
+      for (const item of category) {
+        item.owned = rewards.ownedItems.includes(item.ID);
+      }
     }
+    // 3) Update local React state
+    setPoints(rewards.points);
+    setItems(store.marketItems[activeTab]);
+  };
 
+  // Register “points-updated” listener once and clean up
+  useEffect(() => {
+    if (
+      typeof window.electronAPI?.onPointsUpdated === 'function' &&
+      typeof window.electronAPI?.removePointsUpdatedListener === 'function'
+    ) {
+      // When “points-updated” arrives, call refresh()
+      const wrappedListener = () => {
+        void refresh();
+      };
+      window.electronAPI.onPointsUpdated(wrappedListener);
+
+      return () => {
+        window.electronAPI.removePointsUpdatedListener(wrappedListener);
+      };
+    }
+  }, [activeTab]);
+
+  // Handle item purchase
+  const onItemClick = async (item: marketPlaceItem) => {
+    const currentPoints = store.getTotalPoints();
     if (item.owned) {
       setPopUpMessage(`You already own ${item.name}!`);
       return;
     }
-
-    if (item.price > points) {
+    if (item.price > currentPoints) {
       setPopUpMessage(`Not enough points to purchase ${item.name}`);
-      return false;
+      return;
     }
 
-    const success = handleItemPurchase(item, activeTab);
-
+    const success = await handleItemPurchase(item, activeTab);
     if (success) {
-      setPoints(store.getTotalPoints());
-      setItems(store.marketItems[activeTab]);
+      // Immediately refresh local state
+      await refresh();
       setPopUpMessage(`Congrats! You purchased ${item.name}!`);
     } else {
       setPopUpMessage(`Could not purchase ${item.name}, try again!`);
@@ -55,7 +80,7 @@ export default function MarketView() {
     <div id="marketplace">
       <div className="marketplace-container">
         <div className="category-nav">
-          {(Object.keys(store.marketItems) as Tab[]).map(tab => (
+          {(Object.keys(store.marketItems) as Tab[]).map((tab) => (
             <div
               key={tab}
               className={`category-item ${activeTab === tab ? 'active' : ''}`}
@@ -68,7 +93,7 @@ export default function MarketView() {
 
         <div className="tab-content">
           <div className="pet-grid">
-            {items.map(item => (
+            {items.map((item) => (
               <div
                 key={item.ID}
                 className="pet-card"
@@ -89,11 +114,10 @@ export default function MarketView() {
         </div>
 
         <div className="star-counter">
-          <div className="star-background">{/* SVG omitted for brevity */}</div>
           <img src={StarImage} alt="Star" className="star-icon-large" />
           <div className="total-stars">{points}</div>
         </div>
-        {/*POP UP MESSAGE*/}
+
         <Modal
           show={!!popUpMessage}
           onHide={() => setPopUpMessage(null)}
@@ -111,15 +135,6 @@ export default function MarketView() {
             </Button>
           </Modal.Footer>
         </Modal>
-
-        {/* {popUpMessage && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <p>{popUpMessage}</p>
-              <button onClick={() => setPopUpMessage(null)}>Close</button>
-            </div>
-          </div>
-        )} */}
       </div>
     </div>
   );

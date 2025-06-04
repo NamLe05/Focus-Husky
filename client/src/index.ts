@@ -531,7 +531,6 @@ ipcMain.handle('get-rewards-state', async () => {
 
 
 ipcMain.handle('update-rewards-state', async (event, newState: Partial<RewardState>) => {
-  console.log('saved item')
   const db = getDbInstance('rewards.db') as TypedDatastore<RewardState>;
 
   const [existing] = await db.findDoc({ _id: 'user-rewards' });
@@ -549,4 +548,11 @@ ipcMain.handle('update-rewards-state', async (event, newState: Partial<RewardSta
   }
 
   return; // or return updatedState if you want
+});
+
+
+ipcMain.on('points-updated', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('points-updated');
+  }
 });
