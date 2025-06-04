@@ -1,5 +1,5 @@
 import {v4 as uuid} from 'uuid';
-import {mapSubmissionToStatus} from './helpers';
+import {CustomDate, mapSubmissionToStatus} from './helpers';
 import {CourseId} from './course';
 
 export const CANVAS_BASE_URL = 'https://canvas.uw.edu/';
@@ -18,7 +18,7 @@ export type TaskState = {
   description: string;
   status: TaskStatus;
   course: CourseId;
-  deadline: Date;
+  deadline: CustomDate;
   imported: boolean;
   link?: URL;
 };
@@ -31,7 +31,7 @@ export class TaskModel {
     title: string,
     description: string,
     course: CourseId,
-    deadline: Date,
+    deadline: CustomDate,
     id?: TaskId,
     link?: URL,
     status?: TaskStatus,
@@ -61,6 +61,21 @@ export class TaskModel {
 
   public setState(state: TaskState) {
     this.state = state;
+  }
+
+  /**
+   * Verifies that the current task state is valid
+   */
+  public isValid(): boolean {
+    // Do not allow empty titles or descriptions
+    if (!this.state.title) return false;
+    if (!this.state.description) return false;
+
+    // Do not allow invalid dates
+    if (this.state.deadline.invalid) return false;
+
+    // If no validation errors fail...
+    return true;
   }
 }
 
@@ -119,7 +134,7 @@ export class CanvasTaskModel extends TaskModel {
       canvas_data.plannable.title,
       'Assignment imported from Canvas',
       canvas_data.course_id,
-      new Date(canvas_data.plannable_date),
+      new CustomDate(canvas_data.plannable_date),
       canvas_data.plannable_id.toString(),
       new URL(CANVAS_BASE_URL + canvas_data.html_url),
       canvas_data.planner_override !== null &&

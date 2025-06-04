@@ -1,5 +1,6 @@
 import {describe, vi, it, expect, beforeEach, afterEach} from 'vitest';
 import {TaskController} from '../controller';
+import {CustomDate, getTodayMidnight} from '../helpers';
 import {getTodayMidnight} from '../helpers';
 import * as RewardsController from '../../rewards-store/controller';
 
@@ -52,6 +53,124 @@ describe('Task Model', () => {
           },
         ],
       ]);
+    });
+    it('should not allow empty titles', () => {
+      controller.handleCreateTask('', 'sample', 0, getTodayMidnight());
+      expect(mockErrorCallback).toHaveBeenCalledWith(
+        'createError',
+        expect.anything(),
+      );
+    });
+    it('should not allow empty descriptions', () => {
+      controller.handleCreateTask('Sample', '', 0, getTodayMidnight());
+      expect(mockErrorCallback).toHaveBeenCalledWith(
+        'createError',
+        expect.anything(),
+      );
+    });
+    it('should not allow invalid dates', () => {
+      controller.handleCreateTask(
+        'Sample',
+        'sample',
+        0,
+        new CustomDate('fake'),
+      );
+      expect(mockErrorCallback).toHaveBeenCalledWith(
+        'createError',
+        expect.anything(),
+      );
+    });
+  });
+  describe('Task editing', () => {
+    it('should call view update with correct task list', () => {
+      const newTaskId = controller.handleCreateTask(
+        'Sample',
+        'sample',
+        0,
+        getTodayMidnight(),
+      );
+      controller.handleTaskUpdate(newTaskId, {
+        title: 'Edited Sample',
+        description: 'edited sample',
+        status: 'not started',
+        course: 0,
+        deadline: getTodayMidnight(),
+        imported: false,
+      });
+
+      expect(mockViewUpdateCallback).toHaveBeenNthCalledWith(2, [
+        [
+          newTaskId,
+          {
+            title: 'Edited Sample',
+            description: 'edited sample',
+            status: 'not started',
+            course: 0,
+            deadline: getTodayMidnight(),
+            imported: false,
+          },
+        ],
+      ]);
+    });
+    it('should not allow empty titles', () => {
+      const newTaskId = controller.handleCreateTask(
+        'Sample',
+        'sample',
+        0,
+        getTodayMidnight(),
+      );
+      controller.handleTaskUpdate(newTaskId, {
+        title: '',
+        description: 'sample',
+        status: 'not started',
+        course: 0,
+        deadline: getTodayMidnight(),
+        imported: false,
+      });
+      expect(mockErrorCallback).toHaveBeenCalledWith(
+        'updateError',
+        expect.anything(),
+      );
+    });
+    it('should not allow empty descriptions', () => {
+      const newTaskId = controller.handleCreateTask(
+        'Sample',
+        'sample',
+        0,
+        getTodayMidnight(),
+      );
+      controller.handleTaskUpdate(newTaskId, {
+        title: 'Sample',
+        description: '',
+        status: 'not started',
+        course: 0,
+        deadline: getTodayMidnight(),
+        imported: false,
+      });
+      expect(mockErrorCallback).toHaveBeenCalledWith(
+        'updateError',
+        expect.anything(),
+      );
+    });
+    it('should not allow invalid dates', () => {
+      const newTaskId = controller.handleCreateTask(
+        'Sample',
+        'sample',
+        0,
+        getTodayMidnight(),
+      );
+      controller.handleTaskUpdate(newTaskId, {
+        title: 'Sample',
+        description: 'sample',
+        status: 'not started',
+        course: 0,
+        deadline: new CustomDate('fake'),
+        imported: false,
+      });
+      expect(mockErrorCallback).toHaveBeenCalledWith(
+        'updateError',
+        expect.anything(),
+      );
     });
   });
 

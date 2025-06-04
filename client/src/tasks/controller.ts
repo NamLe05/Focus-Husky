@@ -6,10 +6,16 @@ import {
   TaskAction,
 } from './model';
 import {CourseId, Course} from './course';
+import {CustomDate} from './helpers';
 import { celebratePet } from '../pet/petCelebration';
 import { taskCompletePoints } from '../rewards-store/controller';
 
-export type TaskError = 'deleteError' | 'completeError' | 'syncError';
+export type TaskError =
+  | 'deleteError'
+  | 'completeError'
+  | 'syncError'
+  | 'updateError'
+  | 'createError';
 
 export class TaskController {
   // Database file name
@@ -73,7 +79,7 @@ export class TaskController {
               doc.title,
               doc.description,
               doc.course,
-              doc.deadline,
+              new CustomDate(doc.deadline),
               doc._id,
               link,
               status,
@@ -107,7 +113,7 @@ export class TaskController {
     title: string,
     description: string,
     course: CourseId,
-    deadline: Date,
+    deadline: CustomDate,
     link?: URL,
   ) {
     // Create task using task model
@@ -119,6 +125,18 @@ export class TaskController {
       undefined,
       link,
     );
+    // Verify the validity of the task state
+    // Validate the new state
+    if (!createdTask.isValid()) {
+      // Throw an error
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'createError',
+          'Tried to create a task with invalid fields',
+        );
+      }
+      return;
+    }
     // Get task ID
     const createdTaskId = createdTask.getId();
     // Save task in temporary state
@@ -141,7 +159,23 @@ export class TaskController {
 
   public handleTaskUpdate(id: TaskId, task: TaskState) {
     const taskToUpdate = this.tasks.get(id);
+    // Save old task state
+    const oldTaskState = taskToUpdate.getState();
+    // Update the task state
     taskToUpdate.setState(task);
+    // Validate the new state
+    if (!taskToUpdate.isValid()) {
+      // Revert the state
+      taskToUpdate.setState(oldTaskState);
+      // Throw an error
+      if (this.errorCallback !== undefined) {
+        this.errorCallback(
+          'updateError',
+          'Tried to update a task with invalid fields',
+        );
+      }
+      return;
+    }
     // Update in disk
     // TODO: Await and handle any errors in UI
     try {

@@ -4,6 +4,7 @@ import {act, fireEvent, render, screen, within} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import View from '../view';
 import taskControllerInstance from '../controller';
+import {CustomDate} from '../helpers';
 
 describe('Task View', () => {
   beforeEach(() => {
@@ -33,13 +34,13 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 27, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
-        new Date(2025, 6, 6, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 6, 0, 0, 0)),
       );
       // Expect text with no tasks
       act(() => {
@@ -54,25 +55,25 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 27, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
-        new Date(2025, 6, 3, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 3, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 3',
         'dummy',
         1,
-        new Date(2025, 6, 5, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 5, 0, 0, 0)),
       );
       taskControllerInstance.handleCreateTask(
         'dummy task 4',
         'dummy',
         1,
-        new Date(2025, 6, 6, 0, 0, 0),
+        new CustomDate(new Date(2025, 6, 6, 0, 0, 0)),
       );
       // Expect two task cards rendered
       render(<View />);
@@ -143,6 +144,34 @@ describe('Task View', () => {
         within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
       ).toHaveTextContent('dummy test description');
     });
+    it('prevents invalid fields', async () => {
+      // Create the mock screen
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click button to open task editor
+        screen.queryByTestId('open-new-task-button').click();
+        // Submit task
+        screen.getByTestId('save-task-btn').click();
+      });
+      // Show error messages (and keep in editing mode)
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByTestId('task-editable')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByText('Please enter a value')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByText('Please enter a date')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+    });
   });
 
   describe('task editing', () => {
@@ -152,7 +181,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -196,7 +225,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -240,6 +269,41 @@ describe('Task View', () => {
         within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
       ).toHaveTextContent('dummy test description');
     });
+    it('prevents invalid fields', async () => {
+      // Create a fake task
+      taskControllerInstance.handleCreateTask(
+        'dummy task',
+        'dummy',
+        1,
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
+      );
+      // Create the mock screen
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click the edit icon
+        screen.getByTestId('task-edit-btn').click();
+        // Submit task
+        screen.getByTestId('save-task-btn').click();
+      });
+      // Show error messages (and keep in editing mode)
+      within(screen.getByTestId('task-card'))
+        .queryAllByTestId('task-editable')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('task-card'))
+        .queryAllByText('Please enter a value')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('task-card'))
+        .queryAllByText('Please enter a date')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+    });
   });
 
   describe('task deletion and cancel', () => {
@@ -249,7 +313,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -267,7 +331,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
@@ -299,7 +363,7 @@ describe('Task View', () => {
         'dummy task',
         'dummy',
         1,
-        new Date(2025, 5, 29, 0, 0, 0),
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
       );
       act(() => {
         render(<View />);
