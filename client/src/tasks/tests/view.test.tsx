@@ -144,6 +144,34 @@ describe('Task View', () => {
         within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
       ).toHaveTextContent('dummy test description');
     });
+    it('prevents invalid fields', async () => {
+      // Create the mock screen
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click button to open task editor
+        screen.queryByTestId('open-new-task-button').click();
+        // Submit task
+        screen.getByTestId('save-task-btn').click();
+      });
+      // Show error messages (and keep in editing mode)
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByTestId('task-editable')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByText('Please enter a value')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('new-task-card'))
+        .queryAllByText('Please enter a date')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+    });
   });
 
   describe('task editing', () => {
@@ -240,6 +268,41 @@ describe('Task View', () => {
       expect(
         within(screen.getByTestId('task-card')).getByTestId('task-card-desc'),
       ).toHaveTextContent('dummy test description');
+    });
+    it('prevents invalid fields', async () => {
+      // Create a fake task
+      taskControllerInstance.handleCreateTask(
+        'dummy task',
+        'dummy',
+        1,
+        new CustomDate(new Date(2025, 5, 29, 0, 0, 0)),
+      );
+      // Create the mock screen
+      act(() => {
+        render(<View />);
+      });
+      act(() => {
+        // Click the edit icon
+        screen.getByTestId('task-edit-btn').click();
+        // Submit task
+        screen.getByTestId('save-task-btn').click();
+      });
+      // Show error messages (and keep in editing mode)
+      within(screen.getByTestId('task-card'))
+        .queryAllByTestId('task-editable')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('task-card'))
+        .queryAllByText('Please enter a value')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
+      within(screen.getByTestId('task-card'))
+        .queryAllByText('Please enter a date')
+        .forEach(element => {
+          expect(element).toBeVisible();
+        });
     });
   });
 
