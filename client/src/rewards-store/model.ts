@@ -7,9 +7,9 @@ import FrogImage from '../Static/Frog.png';
 import DuckImage from '../Static/Duck.png';
 import TigerImage from '../Static/Tiger.png';
 
-import HatImage from '../Static/hat.png';
-import CollarImage from '../Static/collar.png';
-import LeashImage from '../Static/leash.png';
+import RedHat from '../Static/red-hat.png';
+import ExplorerHat from '../Static/explorer-hat.png';
+import MidnightHat from '../Static/midnight-hat.png';
 
 import ClassicTimerImage from '../Static/classic-timer.png';
 import PomodoroImage from '../Static/pomodoro.png';
@@ -109,23 +109,23 @@ export class RewardsStore {
       ],
       accessories: [
         { ID: 'acc-hat', 
-          name: 'Hat', 
+          name: 'Red Hat', 
           price: 50, 
           owned: false, 
-          image: HatImage},
+          image: RedHat},
         {
           ID: 'acc-collar',
-          name: 'Collar',
+          name: 'Explorer Hat',
           price: 75,
           owned: false,
-          image: CollarImage,
+          image: ExplorerHat,
         },
         {
           ID: 'acc-leash',
-          name: 'Leash',
+          name: 'Midnight Hat',
           price: 40,
           owned: false,
-          image: LeashImage,
+          image: MidnightHat,
         },
       ],
       timers: [
