@@ -558,7 +558,7 @@ ipcMain.handle(
     if (existing) {
       await db.updateDoc({_id: 'user-rewards'}, {$set: updatedState});
     } else {
-      await db.insertDoc(updatedState);
+      await db.insertDoc(updatedState, 'user-rewards');
     }
 
     // Broadcast equipped-updated to all windows
