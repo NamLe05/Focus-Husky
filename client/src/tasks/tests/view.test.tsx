@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 import View from '../view';
 import taskControllerInstance from '../controller';
 import {CustomDate} from '../helpers';
+import {v4 as uuid} from 'uuid';
 
 describe('Task View', () => {
   beforeEach(() => {
@@ -13,6 +14,14 @@ describe('Task View', () => {
 
     // tell vitest we use mocked time
     vi.useFakeTimers();
+
+    // Mock the API
+    (window as any).electron = {
+      dbInsert: vi.fn().mockImplementation(() => Promise.resolve(uuid())),
+      dbGetAll: vi.fn().mockResolvedValue([]),
+      dbUpdate: vi.fn(),
+      dbRemove: vi.fn(),
+    };
 
     // Set fake time (note that 5 is actually 6 for June)
     vi.setSystemTime(new Date(2025, 5, 28, 0, 0, 0));
@@ -30,13 +39,13 @@ describe('Task View', () => {
   describe('upcoming week task rendering', () => {
     it('shows no upcoming tasks for the week', async () => {
       // Create tasks with wrong dates
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
         new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
@@ -49,27 +58,27 @@ describe('Task View', () => {
       expect(screen.queryByTestId('no-tasks-msg')).toBeInTheDocument();
       expect(screen.queryByTestId('task-card')).not.toBeInTheDocument();
     });
-    it('shows only upcoming tasks for the week', () => {
+    it('shows only upcoming tasks for the week', async () => {
       // Create tasks with wrong dates
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
         new CustomDate(new Date(2025, 5, 27, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 2',
         'dummy',
         1,
         new CustomDate(new Date(2025, 6, 3, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 3',
         'dummy',
         1,
         new CustomDate(new Date(2025, 6, 5, 0, 0, 0)),
       );
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task 4',
         'dummy',
         1,
@@ -134,7 +143,9 @@ describe('Task View', () => {
         screen.getByTestId('save-task-btn').click();
       });
       // Expect a single card
-      expect(screen.queryByTestId('no-tasks-msg')).not.toBeInTheDocument();
+      await vi.waitFor(() =>
+        expect(screen.queryByTestId('no-tasks-msg')).not.toBeInTheDocument(),
+      );
       expect(screen.getAllByTestId('task-card')).toHaveLength(1);
       // Single card should contain correct details
       expect(
@@ -177,7 +188,7 @@ describe('Task View', () => {
   describe('task editing', () => {
     it('opens task editor', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
@@ -221,7 +232,7 @@ describe('Task View', () => {
     });
     it('edits a task correctly', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
@@ -271,7 +282,7 @@ describe('Task View', () => {
     });
     it('prevents invalid fields', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
@@ -309,7 +320,7 @@ describe('Task View', () => {
   describe('task deletion and cancel', () => {
     it('prompts user to confirm deletion', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
@@ -327,7 +338,7 @@ describe('Task View', () => {
     });
     it('cancel deletion prompt does not affect tasks', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,
@@ -359,7 +370,7 @@ describe('Task View', () => {
     });
     it('confirm deletion prompt removes task card', async () => {
       // Create a fake task
-      taskControllerInstance.handleCreateTask(
+      await taskControllerInstance.handleCreateTask(
         'dummy task',
         'dummy',
         1,

@@ -109,7 +109,7 @@ export class TaskController {
   /**
    * Handle create task user action
    */
-  public handleCreateTask(
+  public async handleCreateTask(
     title: string,
     description: string,
     course: CourseId,
@@ -137,19 +137,24 @@ export class TaskController {
       }
       return;
     }
-    // Get task ID
-    const createdTaskId = createdTask.getId();
-    // Save task in temporary state
-    this.tasks.set(createdTaskId, createdTask);
     // Save task to database
+    let createdTaskId: string;
     try {
-      window.electron.dbInsert({
+      // TODO: Create a loader feedback in the UI
+      createdTaskId = await window.electron.dbInsert({
         filename: TaskController.FILE_NAME,
         document: createdTask.getState(),
       });
     } catch (err) {
       // TODO: Handle errors with database
+      if (this.errorCallback !== undefined) {
+        this.errorCallback('createError', 'Failed to save new task, try again');
+      }
+      return;
     }
+    // Save task in temporary state
+    createdTask.setId(createdTaskId);
+    this.tasks.set(createdTaskId, createdTask);
     // Update the view
     if (this.viewUpdateCallback !== undefined) {
       this.viewUpdateCallback(this.getTaskList());
@@ -194,10 +199,11 @@ export class TaskController {
   }
 
   public markComplete(id?: TaskId) {
-    if (id === undefined && this.activeTask !== undefined) {
+    if (this.activeTask !== undefined) {
       // Delete active task
       id = this.activeTask;
-    } else if (id === undefined) {
+    }
+    if (id === undefined) {
       if (this.errorCallback !== undefined) {
         this.errorCallback(
           'completeError',

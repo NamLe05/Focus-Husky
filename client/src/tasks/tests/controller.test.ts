@@ -1,10 +1,10 @@
-import {describe, vi, it, expect, beforeEach, afterEach} from 'vitest';
+import {describe, vi, it, expect, beforeEach} from 'vitest';
 import {TaskController} from '../controller';
 import {CustomDate, getTodayMidnight} from '../helpers';
-import {getTodayMidnight} from '../helpers';
 import * as RewardsController from '../../rewards-store/controller';
+import {v4 as uuid} from 'uuid';
 
-vi.mock('../../pet/petCelebration', () => ({ celebratePet: vi.fn() }));
+vi.mock('../../pet/petCelebration', () => ({celebratePet: vi.fn()}));
 
 describe('Task Model', () => {
   let controller: TaskController;
@@ -27,14 +27,21 @@ describe('Task Model', () => {
       mockActionCallback,
       mockErrorCallback,
     );
-
-    // Reset mocks after setup
+    // Reset mocks before setup
     vi.resetAllMocks();
+
+    // Mock the API
+    (window as any).electron = {
+      dbInsert: vi.fn().mockImplementation(() => Promise.resolve(uuid())),
+      dbGetAll: vi.fn().mockResolvedValue([]),
+      dbUpdate: vi.fn(),
+      dbRemove: vi.fn(),
+    };
   });
 
   describe('Task creation', () => {
-    it('should call view update with correct task list', () => {
-      const newTaskId = controller.handleCreateTask(
+    it('should call view update with correct task list', async () => {
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -54,22 +61,22 @@ describe('Task Model', () => {
         ],
       ]);
     });
-    it('should not allow empty titles', () => {
-      controller.handleCreateTask('', 'sample', 0, getTodayMidnight());
+    it('should not allow empty titles', async () => {
+      await controller.handleCreateTask('', 'sample', 0, getTodayMidnight());
       expect(mockErrorCallback).toHaveBeenCalledWith(
         'createError',
         expect.anything(),
       );
     });
-    it('should not allow empty descriptions', () => {
-      controller.handleCreateTask('Sample', '', 0, getTodayMidnight());
+    it('should not allow empty descriptions', async () => {
+      await controller.handleCreateTask('Sample', '', 0, getTodayMidnight());
       expect(mockErrorCallback).toHaveBeenCalledWith(
         'createError',
         expect.anything(),
       );
     });
-    it('should not allow invalid dates', () => {
-      controller.handleCreateTask(
+    it('should not allow invalid dates', async () => {
+      await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -82,8 +89,8 @@ describe('Task Model', () => {
     });
   });
   describe('Task editing', () => {
-    it('should call view update with correct task list', () => {
-      const newTaskId = controller.handleCreateTask(
+    it('should call view update with correct task list', async () => {
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -112,8 +119,8 @@ describe('Task Model', () => {
         ],
       ]);
     });
-    it('should not allow empty titles', () => {
-      const newTaskId = controller.handleCreateTask(
+    it('should not allow empty titles', async () => {
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -132,8 +139,8 @@ describe('Task Model', () => {
         expect.anything(),
       );
     });
-    it('should not allow empty descriptions', () => {
-      const newTaskId = controller.handleCreateTask(
+    it('should not allow empty descriptions', async () => {
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -152,8 +159,8 @@ describe('Task Model', () => {
         expect.anything(),
       );
     });
-    it('should not allow invalid dates', () => {
-      const newTaskId = controller.handleCreateTask(
+    it('should not allow invalid dates', async () => {
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -172,11 +179,35 @@ describe('Task Model', () => {
         expect.anything(),
       );
     });
+    it('allow partial updates', async () => {
+      const newTaskId = await controller.handleCreateTask(
+        'Sample',
+        'sample',
+        0,
+        getTodayMidnight(),
+      );
+      controller.handleTaskUpdate(newTaskId, {
+        title: 'Edited Sample Title',
+      });
+      expect(mockViewUpdateCallback).toHaveBeenNthCalledWith(2, [
+        [
+          newTaskId,
+          {
+            title: 'Edited Sample Title',
+            description: 'sample',
+            status: 'not started',
+            course: 0,
+            deadline: getTodayMidnight(),
+            imported: false,
+          },
+        ],
+      ]);
+    });
   });
 
   describe('Task completion', () => {
-    it('update the task status to completed', () => {
-      const newTaskId = controller.handleCreateTask(
+    it('update the task status to completed', async () => {
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -206,10 +237,10 @@ describe('Task Model', () => {
       expect(mockViewUpdateCallback).not.toHaveBeenCalled();
     });
 
-    it('25 points added to rewards when task is completed', () => {
+    it('25 points added to rewards when task is completed', async () => {
       const check = vi.spyOn(RewardsController, 'taskCompletePoints');
-      
-      const newTaskId = controller.handleCreateTask(
+
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
@@ -218,12 +249,12 @@ describe('Task Model', () => {
 
       controller.markComplete(newTaskId);
       expect(check).toHaveBeenCalled();
-    })
+    });
   });
 
   describe('Task deletion', () => {
-    it('remove the task from the list when deleted', () => {
-      const newTaskId = controller.handleCreateTask(
+    it('remove the task from the list when deleted', async () => {
+      const newTaskId = await controller.handleCreateTask(
         'Sample',
         'sample',
         0,
